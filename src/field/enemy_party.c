@@ -129,6 +129,9 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     #endif
 
     PokeParty_Init(bp->poke_party[num], 6);
+    #ifdef COPY_ENEMY_PARTY
+    PokeParty_Init(bp->poke_party[0], 6);
+    #endif
 
     buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
 
@@ -531,6 +534,9 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     for (i = 0; i < pokecount; i++)
     {
         PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
+        #ifdef COPY_ENEMY_PARTY
+        PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+        #endif
         sys_FreeMemoryEz(mons[i]);
     }
 

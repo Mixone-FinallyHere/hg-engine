@@ -107,5 +107,8 @@
 // set to FALSE to INCLUDE them
 #define EXCLUDE_MEGAS_FROM_RANDOMIZER FALSE
 
+// COPY_ENEMY_PARTY twill make player party be the enemy trainers
+// comment out the line below to disable it
+#define COPY_ENEMY_PARTY
 
 #endif
