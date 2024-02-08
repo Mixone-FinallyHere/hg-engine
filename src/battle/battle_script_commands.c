@@ -2610,7 +2610,11 @@ u32 CalculateBallShakes(void *bw, struct BattleStruct *sp)
     u32 i, captureRate, ballRate, type1, type2;
     BOOL noCatch = TRUE; // This should be a define in config.h but to avoid merge 
                          // issues with that file putting it here as a placeholder
-    if (noCatch && !(BattleTypeGet(bw) & BATTLE_TYPE_CATCHING_DEMO)) {
+    if (noCatch) {
+        if (BattleTypeGet(bw) & BATTLE_TYPE_CATCHING_DEMO) // catching demo to avoid issues
+        {
+            return 4;
+        }
         return 0;
     }
     if (BattleTypeGet(bw) & (BATTLE_TYPE_POKE_PARK | BATTLE_TYPE_CATCHING_DEMO)) // poke park and safari zone always succeed
