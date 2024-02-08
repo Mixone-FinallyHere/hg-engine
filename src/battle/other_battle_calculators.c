@@ -1176,6 +1176,13 @@ BOOL CantEscape(void *bw, struct BattleStruct *ctx, int battlerId, MESSAGE_PARAM
     u8 side UNUSED;
     int item;
     u32 battleType;
+    BOOL noEscape = TRUE; // This should be a define in config.h but to avoid merge 
+                          // issues with that file putting it here as a placeholder
+    if (noEscape) {
+        msg->msg_tag = 0;
+        msg->msg_id = BATTLE_MSG_NO_ESCAPE;
+        return TRUE;
+    }
 
     battleType = BattleTypeGet(bw);
     item = HeldItemHoldEffectGet(ctx, battlerId);

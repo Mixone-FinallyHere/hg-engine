@@ -1397,3 +1397,4 @@ The weirdness disappeared\nfrom the battlefield.
 {STRVAR_1 1, 0, 0}’s HP was restored.
 The wild {STRVAR_1 1, 0, 0}’s HP was restored.
 The foe’s {STRVAR_1 1, 0, 0}’s HP was restored.
+NOPE!!\r
