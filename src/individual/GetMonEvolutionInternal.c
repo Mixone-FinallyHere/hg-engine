@@ -311,7 +311,8 @@ u16 GetMonEvolutionInternal(struct Party *party, struct PartyPokemon *pokemon, u
                     for (int k = 0; k < 6; k++)
                     {
                         if (!CheckIfMonsAreEqual(pokemon, PokeParty_GetMemberPointer(party, k)) // make sure that pancham doesn't satisfy its own requirement
-                         && (GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_1, NULL) == TYPE_DARK || GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_2, NULL) == TYPE_DARK)) // if either type is dark then set evolution
+                         && (GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_1, NULL) == TYPE_DARK 
+                         || GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_2, NULL) == TYPE_DARK)) // if either type is dark then set evolution
                         {
                             GET_TARGET_AND_SET_FORM;
                             *method_ret = EVO_LEVEL_DARK_TYPE_MON_IN_PARTY;
@@ -320,6 +321,22 @@ u16 GetMonEvolutionInternal(struct Party *party, struct PartyPokemon *pokemon, u
                     }
                 }
                 break;
+            case EVO_LEVEL_DRAGON_TYPE_MON_IN_PARTY:
+                if (evoTable[i].param <= level && party != NULL)
+                {
+                    for (int k = 0; k < 6; k++)
+                    {
+                        if (!CheckIfMonsAreEqual(pokemon, PokeParty_GetMemberPointer(party, k)) // make sure that pokemon doesn't satisfy its own requirement
+                         && (GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_1, NULL) == TYPE_DRAGON 
+                         || GetMonData(PokeParty_GetMemberPointer(party, k), MON_DATA_TYPE_2, NULL) == TYPE_DRAGON)) // if either type is dragon then set evolution
+                        {
+                            GET_TARGET_AND_SET_FORM;
+                            *method_ret = EVO_LEVEL_DRAGON_TYPE_MON_IN_PARTY;
+                            break;
+                        }
+                    }
+                }
+                break;               
             case EVO_LEVEL_NATURE_LOW_KEY:
                 lowkey = 1;
                 FALLTHROUGH;

@@ -1,5 +1,10 @@
 .macro movedata,movenum,name
 
+	.if strlen(name) > 15
+		.notice name + " is too long"		
+		;.importobj "nonexistant.o"  ; This line makes compile fail but n sure if there is a better way
+	.endif
+
     movename movenum, name
     movenamecaps movenum, name
     userusedmovename 3*movenum, "{STRVAR_1 1, 0, 0} used\\n" + name + "!"

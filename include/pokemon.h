@@ -589,6 +589,7 @@ typedef enum EvoMethod
     EVO_LEVEL_NATURE_LOW_KEY,
     EVO_AMOUNT_OF_CRITICAL_HITS,
     EVO_HURT_IN_BATTLE_AMOUNT,
+    EVO_LEVEL_DRAGON_TYPE_MON_IN_PARTY,
     //EVO_DARK_SCROLL,  // implemented through a forme-change-esque cut scene
     //EVO_WATER_SCROLL, // implemented through a forme-change-esque cut scene
 } EvoMethod;
