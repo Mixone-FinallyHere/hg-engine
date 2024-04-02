@@ -2399,6 +2399,9 @@ u32 ServerWazaKoyuuCheck(void *bw, struct BattleStruct *sp);
  */
 u8 CalcSpeed(void *bw, struct BattleStruct *sp, int client1, int client2, int flag);
 
+#define CALCSPEED_FLAG_NOTHING 0
+#define CALCSPEED_FLAG_NO_PRIORITY 0x80
+
 /**
  *  @brief set move status effects for super effective and calculate modified damage
  *
@@ -2509,8 +2512,9 @@ u32 GrabMegaTargetForm(u32 mon, u32 item);
 
 
 typedef struct BattleBGStorage {
-    u16 baseEntry:15;
+    u16 baseEntry:14;
     u16 hasDayNightPals:1;
+    u16 hasPlatforms:1;
 } BattleBGStorage;
 
 
@@ -2540,6 +2544,9 @@ typedef enum BattleBg {
     BATTLE_BG_BATTLE_HALL,
     NUM_VANILLA_BATTLE_BACKGROUNDS,
     BATTLE_BG_ELECTRIC_TERRAIN = 23,
+    BATTLE_BG_MISTY_TERRAIN,
+    BATTLE_BG_GRASSY_TERRAIN,
+    BATTLE_BG_PSYCHIC_TERRAIN,
 } BattleBg;
 
 
@@ -2583,5 +2590,14 @@ typedef enum Terrain {
  *  @param terrain platform id to load
  */
 void LoadDifferentBattleBackground(struct BattleSystem *bw, u32 bg, u32 terrain);
+
+/**
+ *  @brief Sorts clients' execution order factoring in who has already performed their action
+ *  @param bw battle work structure; void * because we haven't defined the battle work structure. Apparently we have but we don't use it here so
+ *  @param sp global battle structure
+ */
+void DynamicSortClientExecutionOrder(void *bw, struct BattleStruct *sp);
+
+void LONG_CALL BattleControllerPlayer_CalcExecutionOrder(struct BattleSystem *bw, struct BattleStruct *sp);
 
 #endif // BATTLE_H

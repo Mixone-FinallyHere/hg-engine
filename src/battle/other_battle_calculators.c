@@ -823,6 +823,17 @@ u8 CalcSpeed(void *bw, struct BattleStruct *sp, int client1, int client2, int fl
         }
     }
 
+    if (sp->field_condition & FIELD_STATUS_TRICK_ROOM) {
+        speed1 = (10000 - speed1) % 8192;
+        speed2 = (10000 - speed2) % 8192;
+    }
+
+    if (flag & CALCSPEED_FLAG_NO_PRIORITY)
+    {
+        priority1 = 0;
+        priority2 = 0;
+    }
+
     if (priority1 == priority2)
     {
         if ((quick_claw1) && (quick_claw2)) // both mons quick claws activates/items that put them first
@@ -882,17 +893,6 @@ u8 CalcSpeed(void *bw, struct BattleStruct *sp, int client1, int client2, int fl
         {
             ret = 0;
         }
-        else if (sp->field_condition & FIELD_STATUS_TRICK_ROOM)
-        {
-            if (speed1 > speed2)
-            {
-                ret = 1;
-            }
-            if ((speed1 == speed2) && (BattleRand(bw) & 1))
-            {
-                ret = 2;
-            }
-        }
         else
         {
             if (speed1 < speed2)
@@ -913,6 +913,98 @@ u8 CalcSpeed(void *bw, struct BattleStruct *sp, int client1, int client2, int fl
     return ret;
 }
 
+/**
+ *  @brief Sorts clients' execution order factoring in who has already performed their action
+ *  @param bw battle work structure; void * because we haven't defined the battle work structure. Apparently we have but we don't use it here so
+ *  @param sp global battle structure
+ */
+void DynamicSortClientExecutionOrder(void *bw, struct BattleStruct *sp) {
+    int maxBattlers;
+    int i, j;
+    int temp1, temp2;
+    int currentAttackerId = 0;
+
+    maxBattlers = BattleWorkClientSetMaxGet(bw);
+
+    for (i = 0; i < maxBattlers; i++) {
+        if (sp->attack_client == sp->client_agi_work[i]) {
+            currentAttackerId = i;
+        }
+    }
+
+    // u8 buf[64];
+    // sprintf(buf, "Current attacker: %d\n", sp->attack_client);
+    // debugsyscall(buf);
+    // sprintf(buf, " Before turn_order: ");
+    // debugsyscall(buf);
+
+    // for (i = 0; i < maxBattlers; i++) {
+    //     sprintf(buf, "%d ", sp->client_agi_work[i]);
+    //     debugsyscall(buf);
+    // }
+
+    // sprintf(buf, "\n\n");
+    // debugsyscall(buf);
+
+    for (i = currentAttackerId; i < maxBattlers - 1; i++) {
+        // sprintf(buf, "i: %d\n", i);
+        // debugsyscall(buf);
+        for (j = i + 1; j < maxBattlers; j++) {
+            // sprintf(buf, "j: %d\n", j);
+            // debugsyscall(buf);
+            temp1 = sp->client_agi_work[i];
+            temp2 = sp->client_agi_work[j];
+
+            u32 command1 = sp->client_act_work[temp1][3];
+            u32 command2 = sp->client_act_work[temp2][3];
+
+            // sprintf(buf, "temp1: %d\ntemp2: %d\n", temp1, temp2);
+            // debugsyscall(buf);
+
+            u8 flag;
+
+            if (command1 == command2) {
+                if (command1 == SELECT_FIGHT_COMMAND) {
+                    flag = 0;
+                } else {
+                    flag = 1;
+                }
+                // sprintf(buf, "Comparing client %d and %d\n", temp1, temp2);
+                // debugsyscall(buf);
+                if (CalcSpeed(bw, sp, temp1, temp2, flag)) {
+                    // sprintf(buf, "Swapping %d and %d\n", temp1, temp2);
+                    // debugsyscall(buf);
+                    sp->client_agi_work[i] = temp2;
+                    sp->client_agi_work[j] = temp1;
+                }
+            }
+        }
+    }
+
+    // also sort turn_order, i.e. weather application + turn end things
+    for (i = 0; i < maxBattlers - 1; i++) {
+        for (j = i + 1; j < maxBattlers; j++) {
+            temp1 = sp->turn_order[i];
+            temp2 = sp->turn_order[j];
+
+            if (CalcSpeed(bw, sp, temp1, temp2, CALCSPEED_FLAG_NO_PRIORITY)) {
+                sp->turn_order[i] = temp2;
+                sp->turn_order[j] = temp1;
+            }
+        }
+    }
+
+    // sprintf(buf, " After turn_order: ");
+    // debugsyscall(buf);
+
+    // for (i = 0; i < maxBattlers; i++) {
+    //     sprintf(buf, "%d ", sp->client_agi_work[i]);
+    //     debugsyscall(buf);
+    // }
+
+    // sprintf(buf, "\n\n");
+    // debugsyscall(buf);
+}
 
 const u8 CriticalRateTable[] =
 {
