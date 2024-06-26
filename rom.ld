@@ -675,3 +675,4 @@ Sav2_PlayerData_GetOptionsAddr = 0x02028EA8 | 1;
 ScrNative_WaitApplication = 0x020429F8 | 1;
 StartMoveRelearner = 0x0204ECD0 | 1;
 CreateScriptContext = 0x020400AC | 1;
+SaveArray_PCStorage_Get = 0x020270D8 | 1;
