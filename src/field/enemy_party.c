@@ -15,6 +15,8 @@
 #include "../../include/constants/moves.h"
 #include "../../include/constants/species.h"
 #include "../../include/constants/weather_numbers.h"
+#include "../../include/pokemon_storage_system.h"
+
 
 #define NELEMS_POKEFORMDATATBL 285
 
@@ -130,6 +132,12 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
 
     PokeParty_Init(bp->poke_party[num], 6);
     #ifdef COPY_ENEMY_PARTY
+    #ifdef SAVE_OWN_PARTY
+    for (int i = 0; i < bp->poke_party[0]->count; i++) {
+        struct BoxPokemon mon = bp->poke_party[0]->members[i].box;
+        PCStorage_PlaceMonInFirstEmptySlotInAnyBox(SaveArray_PCStorage_Get(gFieldSysPtr->savedata), &mon);
+    }
+    #endif
     PokeParty_Init(bp->poke_party[0], 6);
     #endif
 
@@ -587,7 +595,7 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     ResetPartyPokemonAbility(encounterPartyPokemon);
     InitBoxMonMoveset(&encounterPartyPokemon->box);
     #endif
-    
+
     if (space_for_setmondata != 0)
     {
         change_form = 1;
