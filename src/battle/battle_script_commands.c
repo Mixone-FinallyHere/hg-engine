@@ -1086,6 +1086,8 @@ BOOL btl_scr_cmd_24_jumptocurmoveeffectscript(void *bw UNUSED, struct BattleStru
     int effect;
 
     IncrementBattleScriptPtr(sp, 1);
+    // IyMsPSksb2RtYm9pLGpjfix/aWBqLGhpf3h+eW94AQZlaiwka2pTfm1iaCQlLCksPTw8LDExLDwlLHcBBiwsLCx/fCEyb3l+fmlieFNhY3ppU2ViaGl0LDEsPT48NwEGcSws  
+
     effect = sp->moveTbl[sp->current_move_index].effect;
 
     if (GetBattlerAbility(sp, sp->attack_client) == ABILITY_SHEER_FORCE)
