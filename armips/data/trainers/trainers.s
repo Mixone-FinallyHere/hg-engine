@@ -69,7 +69,7 @@ trainerdata 1, "PLACE_HOLD"
 
 trainerdata 2, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 1
     item ITEM_NONE
@@ -91,7 +91,7 @@ trainerdata 2, "Silver"
 
 trainerdata 3, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 1
     item ITEM_NONE
@@ -11948,7 +11948,7 @@ trainerdata 262, "Red"
 
 trainerdata 263, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12007,7 +12007,7 @@ trainerdata 263, "Silver"
 
 trainerdata 264, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12088,7 +12088,7 @@ trainerdata 264, "Silver"
 
 trainerdata 265, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 1
     item ITEM_NONE
@@ -12110,7 +12110,7 @@ trainerdata 265, "Silver"
 
 trainerdata 266, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_NONE
@@ -12146,7 +12146,7 @@ trainerdata 266, "Silver"
 
 trainerdata 267, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12205,7 +12205,7 @@ trainerdata 267, "Silver"
 
 trainerdata 268, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12286,7 +12286,7 @@ trainerdata 268, "Silver"
 
 trainerdata 269, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_NONE
@@ -12322,7 +12322,7 @@ trainerdata 269, "Silver"
 
 trainerdata 270, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12381,7 +12381,7 @@ trainerdata 270, "Silver"
 
 trainerdata 271, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -12451,7 +12451,7 @@ trainerdata 271, "Silver"
 
 trainerdata 272, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12952,7 +12952,7 @@ trainerdata 284, "Corey"
 
 trainerdata 285, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13033,7 +13033,7 @@ trainerdata 285, "Silver"
 
 trainerdata 286, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13114,7 +13114,7 @@ trainerdata 286, "Silver"
 
 trainerdata 287, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13195,7 +13195,7 @@ trainerdata 287, "Silver"
 
 trainerdata 288, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -13265,7 +13265,7 @@ trainerdata 288, "Silver"
 
 trainerdata 289, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -20949,7 +20949,7 @@ trainerdata 490, "Cyrus"
 
 trainerdata 491, "Jupiter"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_FULL_RESTORE
@@ -31467,7 +31467,7 @@ trainerdata 734, "Clair"
 
 trainerdata 735, "Silver"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_FULL_RESTORE
@@ -31518,7 +31518,7 @@ trainerdata 735, "Silver"
 
 trainerdata 736, "Silver"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_FULL_RESTORE
