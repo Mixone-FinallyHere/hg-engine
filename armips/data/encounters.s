@@ -13718,7 +13718,7 @@ pokemon SPECIES_NONE
 
 .close
 
-encounterdata   134//VICTORY_ROAD
+encounterdata   134//King's Cavern
 
 walkrate 25
 surfrate 15
@@ -13726,49 +13726,50 @@ rocksmashrate 0
 oldrodrate 100
 goodrodrate 0
 superrodrate 0
-walklevels 32, 32, 32, 32, 33, 33, 34, 34, 36, 35, 36, 35
+walklevels 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1
 
 //morning encounter slots
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
+pokemon SPECIES_RALTS
+pokemon SPECIES_RALTS
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+pokemon SPECIES_MILCERY
+pokemon SPECIES_ZUBAT
+pokemon SPECIES_WOOBAT
+pokemon SPECIES_NOIBAT
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+monwithform SPECIES_GEODUDE, 1
+pokemon SPECIES_TOXEL
 
 //day encounter slots
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
+pokemon SPECIES_RALTS
+pokemon SPECIES_RALTS
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+pokemon SPECIES_MILCERY
+pokemon SPECIES_ZUBAT
+pokemon SPECIES_WOOBAT
+pokemon SPECIES_NOIBAT
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+monwithform SPECIES_GEODUDE, 1
+pokemon SPECIES_TOXEL
 
 //night encounter slots
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_GRAVELER
-pokemon SPECIES_GOLBAT
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_DONPHAN
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
-pokemon SPECIES_ONIX
-pokemon SPECIES_RHYHORN
+pokemon SPECIES_RALTS
+pokemon SPECIES_RALTS
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+pokemon SPECIES_MILCERY
+pokemon SPECIES_ZUBAT
+pokemon SPECIES_WOOBAT
+pokemon SPECIES_NOIBAT
+pokemon SPECIES_SPRITZEE
+pokemon SPECIES_SWIRLIX
+monwithform SPECIES_GEODUDE, 1
+pokemon SPECIES_TOXEL
+
 //hoenn encounter slots
 pokemon SPECIES_NONE
 pokemon SPECIES_NONE
@@ -13778,22 +13779,22 @@ pokemon SPECIES_NONE
 pokemon SPECIES_NONE
 
 //surf encounters
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
+encounter SPECIES_FINNEON, 2, 2
+encounter SPECIES_MAGIKARP, 2, 2
+encounter SPECIES_FEEBAS, 1, 1
+encounter SPECIES_MAGIKARP, 1, 1
+encounter SPECIES_FEEBAS, 1, 1
 
 //rock smash encounters
 encounter SPECIES_NONE, 0, 0
 encounter SPECIES_NONE, 0, 0
 
 //old rod encounters
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
-encounter SPECIES_NONE, 0, 0
+encounter SPECIES_CLAMPERL, 2, 2
+encounter SPECIES_BINACLE, 2, 2
+encounter SPECIES_SHELLDER, 1, 1
+encounter SPECIES_TYMPOLE, 1, 1
+encounter SPECIES_HORSEA, 1, 1
 
 //good rod encounters
 encounter SPECIES_NONE, 0, 0
@@ -13820,7 +13821,7 @@ pokemon SPECIES_NONE
 
 .close
 
-encounterdata   135//VICTORY_ROAD
+encounterdata   135//Caelestia Springs
 
 walkrate 25
 surfrate 15
@@ -13828,49 +13829,50 @@ rocksmashrate 0
 oldrodrate 100
 goodrodrate 0
 superrodrate 0
-walklevels 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+walklevels 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1
 
 //morning encounter slots
-pokemon SPECIES_DARUMAKA
-pokemon SPECIES_TRUBBISH
-pokemon SPECIES_ZORUA
-monwithform SPECIES_SANDSHREW, 1
-pokemon SPECIES_MINCCINO
-pokemon SPECIES_ESPURR
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
-pokemon SPECIES_GOOMY
-pokemon SPECIES_GOOMY
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_NIDORAN_F
+pokemon SPECIES_NIDORAN_M
+pokemon SPECIES_WIMPOD
+pokemon SPECIES_SPINARAK
+pokemon SPECIES_VENIPEDE
+pokemon SPECIES_SEWADDLE
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_YAMPER
+pokemon SPECIES_JOLTIK
 
 //day encounter slots
-pokemon SPECIES_DARUMAKA
-pokemon SPECIES_TRUBBISH
-pokemon SPECIES_ZORUA
-monwithform SPECIES_SANDSHREW, 1
-pokemon SPECIES_MINCCINO
-pokemon SPECIES_ESPURR
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
-pokemon SPECIES_GOOMY
-pokemon SPECIES_GOOMY
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_NIDORAN_F
+pokemon SPECIES_NIDORAN_M
+pokemon SPECIES_WIMPOD
+pokemon SPECIES_SPINARAK
+pokemon SPECIES_VENIPEDE
+pokemon SPECIES_SEWADDLE
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_YAMPER
+pokemon SPECIES_JOLTIK
 
 //night encounter slots
-pokemon SPECIES_DARUMAKA
-pokemon SPECIES_TRUBBISH
-pokemon SPECIES_ZORUA
-monwithform SPECIES_SANDSHREW, 1
-pokemon SPECIES_MINCCINO
-pokemon SPECIES_ESPURR
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
-pokemon SPECIES_GOOMY
-pokemon SPECIES_GOOMY
-pokemon SPECIES_SPRITZEE
-pokemon SPECIES_SWIRLIX
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_GRUBBIN
+pokemon SPECIES_NIDORAN_F
+pokemon SPECIES_NIDORAN_M
+pokemon SPECIES_WIMPOD
+pokemon SPECIES_SPINARAK
+pokemon SPECIES_VENIPEDE
+pokemon SPECIES_SEWADDLE
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_GOSSIFLEUR
+pokemon SPECIES_YAMPER
+pokemon SPECIES_JOLTIK
+
 //hoenn encounter slots
 pokemon SPECIES_NONE
 pokemon SPECIES_NONE

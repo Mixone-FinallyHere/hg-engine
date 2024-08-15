@@ -18356,7 +18356,7 @@ levelup SPECIES_INKAY
 levelup SPECIES_MALAMAR
     learnset MOVE_NASTY_PLOT, 1
     learnset MOVE_TAUNT, 1
-    learnset MOVE_REVERSE, 1
+    learnset MOVE_REVERSAL, 1
     learnset MOVE_TACKLE, 1
     learnset MOVE_LEER, 1
     learnset MOVE_PECK, 4
@@ -19611,7 +19611,7 @@ levelup SPECIES_GRUBBIN
     learnset MOVE_STRUGGLE_BUG, 13
     learnset MOVE_ELECTROWEB, 16
     learnset MOVE_BITE, 19
-    learnset MOVE_VISE_GRIP, 22
+    learnset MOVE_VICE_GRIP, 22
     learnset MOVE_BUG_BITE, 25
     learnset MOVE_SPARK, 28
     learnset MOVE_STICKY_WEB, 31
@@ -19639,7 +19639,7 @@ levelup SPECIES_CHARJABUG
     learnset MOVE_STRUGGLE_BUG, 13
     learnset MOVE_ELECTROWEB, 16
     learnset MOVE_BITE, 19
-    learnset MOVE_VISE_GRIP, 23
+    learnset MOVE_VICE_GRIP, 23
     learnset MOVE_BUG_BITE, 26
     learnset MOVE_SPARK, 29
     learnset MOVE_STICKY_WEB, 32
@@ -19675,7 +19675,7 @@ levelup SPECIES_VIKAVOLT
     learnset MOVE_STRUGGLE_BUG, 13
     learnset MOVE_ELECTROWEB, 16
     learnset MOVE_BITE, 19
-    learnset MOVE_VISE_GRIP, 24
+    learnset MOVE_VICE_GRIP, 24
     learnset MOVE_BUG_BITE, 27
     learnset MOVE_SPARK, 30
     learnset MOVE_STICKY_WEB, 33
@@ -24404,7 +24404,7 @@ levelup SPECIES_BELLIBOLT
 levelup SPECIES_WATTREL
     learnset MOVE_PECK, 1
     learnset MOVE_GROWL, 1
-    learnset MOVE_THUNDERSHOCK, 4
+    learnset MOVE_THUNDER_SHOCK, 4
     learnset MOVE_QUICK_ATTACK, 7
     learnset MOVE_MUD_SLAP, 10
     learnset MOVE_GUST, 13
@@ -24438,7 +24438,7 @@ levelup SPECIES_KILOWATTREL
     learnset MOVE_TAILWIND, 1
     learnset MOVE_PECK, 1
     learnset MOVE_GROWL, 1
-    learnset MOVE_THUNDERSHOCK, 4
+    learnset MOVE_THUNDER_SHOCK, 4
     learnset MOVE_QUICK_ATTACK, 7
     learnset MOVE_MUD_SLAP, 10
     learnset MOVE_GUST, 13
@@ -24846,7 +24846,7 @@ levelup SPECIES_WIGLETT
     learnset MOVE_SWIFT, 19
     learnset MOVE_WATER_PULSE, 22
     learnset MOVE_FEINT_ATTACK, 25
-    learnset MOVE_BUBBLEBEAM, 28
+    learnset MOVE_BUBBLE_BEAM, 28
     learnset MOVE_COVET, 31
     learnset MOVE_FLIP_TURN, 34
     learnset MOVE_HEADBUTT, 37
@@ -24878,7 +24878,7 @@ levelup SPECIES_WUGTRIO
     learnset MOVE_SWIFT, 19
     learnset MOVE_WATER_PULSE, 22
     learnset MOVE_FEINT_ATTACK, 25
-    learnset MOVE_BUBBLEBEAM, 29
+    learnset MOVE_BUBBLE_BEAM, 29
     learnset MOVE_COVET, 32
     learnset MOVE_FLIP_TURN, 35
     learnset MOVE_HEADBUTT, 38
