@@ -2,7 +2,7 @@
 #define INCLUDE_POKEMON_STORAGE_SYSTEM_H
 
 #include "config.h"
-//#include "save.h"
+#include "save.h"
 #include "types.h"
 #include "pokemon.h"
 #include "constants/save.h"
