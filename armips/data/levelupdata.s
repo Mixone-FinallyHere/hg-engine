@@ -17,13 +17,13 @@ levelup SPECIES_BULBASAUR
     learnset MOVE_TACKLE, 1
     learnset MOVE_GROWL, 1
     learnset MOVE_VINE_WHIP, 3
-    learnset MOVE_LEECH_SEED, 5
-    learnset MOVE_ACID_SPRAY, 8
+    learnset MOVE_POISON_POWDER, 5
+    learnset MOVE_ACID, 8
     learnset MOVE_RAZOR_LEAF, 12
-    learnset MOVE_POISON_POWDER, 15
+    learnset MOVE_HEADBUTT, 15
     learnset MOVE_SLEEP_POWDER, 15
     learnset MOVE_MAGICAL_LEAF, 18
-    learnset MOVE_HEADBUTT, 21
+    learnset MOVE_LEECH_SEED, 21
     learnset MOVE_SLUDGE, 24
     learnset MOVE_SWEET_SCENT, 27
     learnset MOVE_TAKE_DOWN, 30
@@ -46,13 +46,13 @@ levelup SPECIES_IVYSAUR
     learnset MOVE_TACKLE, 1
     learnset MOVE_GROWL, 1
     learnset MOVE_VINE_WHIP, 4
-    learnset MOVE_LEECH_SEED, 6
-    learnset MOVE_ACID_SPRAY, 9
+    learnset MOVE_POISON_POWDER, 6
+    learnset MOVE_ACID, 9
     learnset MOVE_RAZOR_LEAF, 13
-    learnset MOVE_POISON_POWDER, 16
+    learnset MOVE_HEADBUTT, 16
     learnset MOVE_SLEEP_POWDER, 16
     learnset MOVE_MAGICAL_LEAF, 19
-    learnset MOVE_HEADBUTT, 22
+    learnset MOVE_LEECH_SEED, 22
     learnset MOVE_SLUDGE, 25
     learnset MOVE_SWEET_SCENT, 28
     learnset MOVE_TAKE_DOWN, 31

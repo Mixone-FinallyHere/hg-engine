@@ -361,9 +361,9 @@ _0274: // Trainer 71
     trainertextentry  71, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Porygon2: PeeTwoooo!\n"
 
 _0280: // Trainer 5
-    trainertextentry   5, TEXT_NOTICE_IN_OVERWORLD, "Oh, you are a cute little Trainer!\nI like you, but I won’t hold back!\r"
-    trainertextentry   5, TEXT_DEFEATED_IN_BATTLE, "Let’s see...\nOops, it’s over?\n"
-    trainertextentry   5, TEXT_DEFEATED_IN_OVERWORLD, "Wow, you must be good to beat me!\nKeep it up!\n"
+    trainertextentry   5, TEXT_NOTICE_IN_OVERWORLD, "Welcome to you first mirror\nbattle. We both use my team!\r"
+    trainertextentry   5, TEXT_DEFEATED_IN_BATTLE, "You're just...\nme but better...!\n"
+    trainertextentry   5, TEXT_DEFEATED_IN_OVERWORLD, "Mirror battles are the new\nthing! A true test of skill!\n"
 
 _028C: // Trainer 70
     trainertextentry  70, TEXT_NOTICE_IN_OVERWORLD, "Give it your best shot, or I’ll take\nyou down!\r"
@@ -1199,9 +1199,14 @@ _0A30: // Trainer 249
     trainertextentry 249, TEXT_DEFEATED_IN_OVERWORLD, "I ran out of Poké Balls while I was\ncatching Pokémon.\rI should’ve bought some more...\n"
 
 _0A3C: // Trainer 4
-    trainertextentry   4, TEXT_NOTICE_IN_OVERWORLD, "I caught a bunch of Pokémon.\nLet me battle with you!\r"
-    trainertextentry   4, TEXT_DEFEATED_IN_BATTLE, "Awwwww...\n"
-    trainertextentry   4, TEXT_DEFEATED_IN_OVERWORLD, "You can catch Pokémon even if you have\nsix with you.\rIf you catch one, it’ll go to your Box\nautomatically.\n"
+    trainertextentry  4, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "WOAH! Where do you think\nyou're going!\fDouble battle time!\r"
+    trainertextentry 4, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "Blown back!\n"
+    trainertextentry  4, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "My Combee stood no chance...\n"
+    trainertextentry  4, TEXT_DOUBLE_ONLY_1_POKEMON_1, "2 or more Pokemon required.\n"
+    trainertextentry  4, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2, "Combee: BEEEEE!\r"
+    trainertextentry  4, TEXT_DOUBLE_DEFEATED_IN_BATTLE_2, "Combee: beee...\n"
+    trainertextentry  4, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2, "Combee: beee...\n"
+    trainertextentry  4, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Combee: BEEEEE!\n"
     trainertextentry   4, TEXT_REMATCH_IN_OVERWORLD, "I was waiting for you. Let’s battle!\r"
 
 _0A4C: // Trainer 383
@@ -1294,14 +1299,9 @@ _0B04: // Trainer 65
     trainertextentry 65, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Serperior: Ser!!\r"
 
 _0B14: // Trainer 6
-    trainertextentry 6, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Are you a Trainer? Let’s have a\npractice battle.\r"
-    trainertextentry 6, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "Oh, no!\nI just can’t win...\n"
-    trainertextentry 6, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "You’re too strong to be a\npractice partner.\n"
-    trainertextentry 6, TEXT_DOUBLE_ONLY_1_POKEMON_1, "You’ve only got one Pokémon.\nSo we can’t battle.\n"
-    trainertextentry 6, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2, "Serperior: Ser!!\r"
-    trainertextentry 6, TEXT_DOUBLE_DEFEATED_IN_BATTLE_2, "Ah...\n"
-    trainertextentry 6, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2, "Serperior: Ser...\n"
-    trainertextentry 6, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Serperior: Ser!!\r"
+    trainertextentry 6, TEXT_NOTICE_IN_OVERWORLD, "Wow, another trainer!\nBattle time!\r"
+    trainertextentry 6, TEXT_DEFEATED_IN_BATTLE, "My lunch money!\n"
+    trainertextentry 6, TEXT_DEFEATED_IN_OVERWORLD, "You are a meanie.\nI'm sad now. *waah*\n"
 
 _0B20: // Trainer 62
     trainertextentry  62, TEXT_NOTICE_IN_OVERWORLD, "This is where I do my training!\r"
