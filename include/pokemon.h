@@ -1436,6 +1436,14 @@ u16 LONG_CALL GetSpeciesBasedOnForm(int mons_no, int form_no);
 u16 LONG_CALL GetOriginalSpeciesBasedOnAdjustedForm(u32 mons_no);
 
 /**
+ *  @brief pass adjusted species and return form of the base species it applies to
+ *
+ *  @param mons_no species that has already been adjusted by form number by GetSpeciesBasedOnForm
+ *  @return form of adjusted species
+ */
+u16 LONG_CALL GetFormBasedOnAdjustedForm(u32 mons_no);
+
+/**
  *  @brief grab index in ARC_POKEICON from original species, egg status, and form number
  *
  *  @param mons base species index
@@ -1776,10 +1784,6 @@ void LONG_CALL Mon_UpdateShayminForm(struct PartyPokemon *mon, int form);
 
 void LONG_CALL Daycare_GetBothBoxMonsPtr(Daycare *dayCare, struct BoxPokemon **boxmons);
 
-void LONG_CALL ov12_02263D14(void *bsys, int battlerId, u32 a2, int slot);
-
-void LONG_CALL *SelectPartyMonAndLearnMove(void *taskman, u32 heapId);
-
-u32 LONG_CALL CalcMonExpToNextLevel(struct PartyPokemon *mon);
+BOOL LONG_CALL CanUseItemOnPokemon(struct PartyPokemon *mon, u16 itemID, s32 moveIdx, u32 heapID);
 
 #endif

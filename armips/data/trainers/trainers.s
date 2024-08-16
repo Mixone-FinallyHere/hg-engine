@@ -67,55 +67,139 @@ trainerdata 1, "PLACE_HOLD"
         ballseal 0
     endparty
 
-trainerdata 2, "Silver"
-    trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+trainerdata 2, "Lilly"
+	trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
+    trainerclass CLASS_SCHOOL_KID_F
      
-    nummons 1
+    nummons 3
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
-    aiflags F_PRIORITIZE_SUPER_EFFECTIVE | 0
+    aiflags F_PRIORITIZE_SUPER_EFFECTIVE | F_EVALUATE_ATTACKS | F_PRIORITIZE_DAMAGE | 0
     battletype SINGLE_BATTLE
     endentry
 
     party 2
-        // mon 0
-        ivs 0
-        abilityslot 0
-        level 5
-        pokemon SPECIES_CYNDAQUIL
-        ballseal 0
+    // mon 0
+		ivs 250
+		abilityslot 32
+		level 4
+		pokemon SPECIES_PATRAT
+		item ITEM_NONE
+		move MOVE_TACKLE
+		move MOVE_LEER
+		move MOVE_NONE
+		move MOVE_NONE
+		ability ABILITY_KEEN_EYE
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_NAIVE
+		shinylock 0
+		ballseal 0
+	// mon 1
+		ivs 250
+		abilityslot 32
+		level 4
+		pokemon SPECIES_POOCHYENA
+		item ITEM_NONE
+		move MOVE_TACKLE
+		move MOVE_HOWL
+		move MOVE_NONE
+		move MOVE_NONE
+		ability ABILITY_INTIMIDATE
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_HARDY
+		shinylock 0
+		ballseal 0
+	// mon 2
+		ivs 250
+		abilityslot 32
+		level 4
+		pokemon SPECIES_MINCCINO
+		item ITEM_NONE
+		move MOVE_POUND
+		move MOVE_BABY_DOLL_EYES
+		move MOVE_NONE
+		move MOVE_NONE
+		ability ABILITY_TECHNICIAN
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_NAUGHTY
+		shinylock 0
+		ballseal 0
     endparty
 
-trainerdata 3, "Silver"
-    trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+trainerdata 3, "Jack"
+	trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
+    trainerclass CLASS_ROUGHNECK
      
-    nummons 1
+    nummons 0x80 | 3
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
-    aiflags F_PRIORITIZE_SUPER_EFFECTIVE | 0
+    aiflags F_PRIORITIZE_SUPER_EFFECTIVE | F_EVALUATE_ATTACKS | F_PRIORITIZE_DAMAGE | 0
     battletype SINGLE_BATTLE
     endentry
 
     party 3
         // mon 0
-        ivs 0
-        abilityslot 0
-        level 5
-        pokemon SPECIES_TOTODILE
-        ballseal 0
+		ivs 250
+		abilityslot 32
+		level 5
+		pokemon SPECIES_DROWZEE
+		item ITEM_JABOCA_BERRY
+		move MOVE_PSYWAVE
+		move MOVE_NIGHT_SHADE
+		move MOVE_POISON_GAS
+		move MOVE_NONE
+		ability ABILITY_INNER_FOCUS
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_CALM
+		shinylock 0
+		ballseal 5
+	// mon 1
+		ivs 250
+		abilityslot 32
+		level 5
+		pokemon SPECIES_CROAGUNK
+		item ITEM_ROWAP_BERRY
+		move MOVE_SUPER_FANG
+		move MOVE_PURSUIT
+		move MOVE_FAKE_OUT
+		move MOVE_NONE
+		ability ABILITY_POISON_TOUCH
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_IMPISH
+		shinylock 0
+		ballseal 5
+	// mon 2
+		ivs 250
+		abilityslot 32
+		level 5
+		pokemon SPECIES_BUNNELBY
+		item ITEM_ORAN_BERRY
+		move MOVE_SUPER_FANG
+		move MOVE_SEISMIC_TOSS
+		move MOVE_QUICK_ATTACK
+		move MOVE_ENDEAVOR
+		ability ABILITY_CHEEK_POUCH
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_JOLLY
+		shinylock 1
+		ballseal 5
     endparty
 
-trainerdata 4, "Wade"
+trainerdata 4, "Billy"
 	trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
     trainerclass CLASS_BUG_CATCHER
      
-    nummons 3
+    nummons 2
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
@@ -128,24 +212,24 @@ trainerdata 4, "Wade"
         // mon 0
 		ivs 250
 		abilityslot 32
-		level 22
-		pokemon SPECIES_YANMEGA
+		level 4
+		pokemon SPECIES_COMBEE
 		item ITEM_NONE
-		move MOVE_U_TURN
-		move MOVE_OMINOUS_WIND
-		move MOVE_ANCIENT_POWER
-		move MOVE_SILVER_WIND
+		move MOVE_GUST
+		move MOVE_STRING_SHOT
+		move MOVE_NONE
+		move MOVE_NONE
 		ability ABILITY_SPEED_BOOST
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 100, 0, 0, 0, 0, 0
+		setevs 0, 0, 0, 0, 0, 0
 		nature NATURE_MODEST
 		shinylock 0
-		ballseal 9
+		ballseal 0
 	// mon 1
 		ivs 250
 		abilityslot 32
-		level 21
-		pokemon SPECIES_CHARJABUG
+		level 5
+		pokemon SPECIES_PINECO
 		item ITEM_LEFTOVERS
 		move MOVE_PROTECT
 		move MOVE_HELPING_HAND
@@ -153,33 +237,17 @@ trainerdata 4, "Wade"
 		move MOVE_STRUGGLE_BUG
 		ability ABILITY_BATTERY
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 252, 0, 0, 0, 0, 0
+		setevs 0, 0, 0, 0, 0, 0
 		nature NATURE_BOLD
-		shinylock 1
-		ballseal 9
-	// mon 2
-		ivs 250
-		abilityslot 32
-		level 22
-		pokemon SPECIES_ACCELGOR
-		item ITEM_LIECHI_BERRY
-		move MOVE_SILVER_WIND
-		move MOVE_ENDURE
-		move MOVE_REVERSAL
-		move MOVE_GIGA_DRAIN
-		ability ABILITY_SWARM
-		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 252, 0, 0, 252, 0, 0
-		nature NATURE_HARDY
 		shinylock 0
-		ballseal 9
+		ballseal 0
     endparty
 
-trainerdata 5, "Victoria"
+trainerdata 5, "Kellen"
 	trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
-    trainerclass CLASS_BEAUTY
+    trainerclass CLASS_ACE_TRAINER_M
      
-    nummons 3
+    nummons 0x80 | 3
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
@@ -192,99 +260,115 @@ trainerdata 5, "Victoria"
         // mon 0
 		ivs 250
 		abilityslot 32
-		level 39
-		pokemon SPECIES_STOUTLAND
-		item ITEM_EJECT_BUTTON
-		move MOVE_TAKE_DOWN
-		move MOVE_WILD_CHARGE
-		move MOVE_BODY_SLAM
-		move MOVE_PSYCHIC_FANGS
-		ability ABILITY_INTIMIDATE
+		level 5
+		pokemon SPECIES_PANPOUR
+		item ITEM_NONE
+		move MOVE_SCRATCH
+		move MOVE_WATER_GUN
+		move MOVE_GROWL
+		move MOVE_NONE
+		ability ABILITY_TORRENT
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 0, 0, 252, 0, 0, 0
-		nature NATURE_IMPISH
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_HARDY
 		shinylock 0
 		ballseal 0
 	// mon 1
 		ivs 250
 		abilityslot 32
-		level 40
-		pokemon SPECIES_PIDGEOT
-		item ITEM_CHARTI_BERRY
-		move MOVE_FLY
-		move MOVE_U_TURN
-		move MOVE_SECRET_POWER
-		move MOVE_ROOST
-		ability ABILITY_BIG_PECKS
+		level 5
+		pokemon SPECIES_PANSEAR
+		item ITEM_ORAN_BERRY
+		move MOVE_FURY_SWIPES
+		move MOVE_EMBER
+		move MOVE_LEER
+		move MOVE_NONE
+		ability ABILITY_BLAZE
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 0, 0, 0, 252, 0, 0
-		nature NATURE_JOLLY
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_HARDY
 		shinylock 0
 		ballseal 0
 	// mon 2
 		ivs 250
 		abilityslot 32
-		level 38
-		pokemon SPECIES_AMBIPOM
-		item ITEM_LIFE_ORB
-		move MOVE_FAKE_OUT
-		move MOVE_GIGA_IMPACT
+		level 5
+		pokemon SPECIES_PANSAGE
+		item ITEM_NONE
+		move MOVE_POUND
+		move MOVE_LEAFAGE
+		move MOVE_TAIL_WHIP
 		move MOVE_NONE
-		move MOVE_NONE
-		ability ABILITY_SCRAPPY
+		ability ABILITY_OVERGROW
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 0, 0, 0, 252, 0, 0
+		setevs 0, 0, 0, 0, 0, 0
 		nature NATURE_HARDY
 		shinylock 0
 		ballseal 0
     endparty
 
-trainerdata 6, "Cole"
+trainerdata 6, "Lilly"
 	trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
-    trainerclass CLASS_POLICEMAN
+    trainerclass CLASS_SCHOOL_KID_F
      
-    nummons 2
+    nummons 3
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
     item ITEM_NONE
 	aiflags F_PRIORITIZE_SUPER_EFFECTIVE | F_EVALUATE_ATTACKS | F_EXPERT_ATTACKS | 0
-    battletype DOUBLE_BATTLE
+    battletype SINGLE_BATTLE
     endentry
 
     party 6
-       // mon 0
+      // mon 0
 		ivs 250
 		abilityslot 32
-		level 20
-		monwithform SPECIES_GROWLITHE, 1
-		item ITEM_SHUCA_BERRY
-		move MOVE_BITE
-		move MOVE_ROCK_TOMB
-		move MOVE_FLAME_CHARGE
-		move MOVE_SMART_STRIKE
-		ability ABILITY_INTIMIDATE
+		level 4
+		pokemon SPECIES_PATRAT
+		item ITEM_NONE
+		move MOVE_TACKLE
+		move MOVE_LEER
+		move MOVE_NONE
+		move MOVE_NONE
+		ability ABILITY_KEEN_EYE
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 0, 252, 0, 0, 0, 0
-		nature NATURE_ADAMANT
-		shinylock 1
-		ballseal 16
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_NAIVE
+		shinylock 0
+		ballseal 0
 	// mon 1
 		ivs 250
 		abilityslot 32
-		level 21
-		pokemon SPECIES_LUXIO
-		item ITEM_MAGNET
-		move MOVE_SPARK
-		move MOVE_ICE_FANG
-		move MOVE_SNARL
-		move MOVE_QUICK_ATTACK
+		level 4
+		pokemon SPECIES_POOCHYENA
+		item ITEM_NONE
+		move MOVE_TACKLE
+		move MOVE_HOWL
+		move MOVE_NONE
+		move MOVE_NONE
 		ability ABILITY_INTIMIDATE
 		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
-		setevs 0, 0, 0, 152, 0, 0
-		nature NATURE_JOLLY
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_HARDY
 		shinylock 0
-        ballseal 16
+		ballseal 0
+	// mon 2
+		ivs 250
+		abilityslot 32
+		level 4
+		pokemon SPECIES_MINCCINO
+		item ITEM_NONE
+		move MOVE_POUND
+		move MOVE_BABY_DOLL_EYES
+		move MOVE_NONE
+		move MOVE_NONE
+		ability ABILITY_TECHNICIAN
+		setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spe, spatk, spdef
+		setevs 0, 0, 0, 0, 0, 0
+		nature NATURE_NAUGHTY
+		shinylock 0
+		ballseal 0
     endparty
 
 trainerdata 7, "Irwin"
@@ -11948,7 +12032,7 @@ trainerdata 262, "Red"
 
 trainerdata 263, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12007,7 +12091,7 @@ trainerdata 263, "Silver"
 
 trainerdata 264, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12088,7 +12172,7 @@ trainerdata 264, "Silver"
 
 trainerdata 265, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 1
     item ITEM_NONE
@@ -12110,7 +12194,7 @@ trainerdata 265, "Silver"
 
 trainerdata 266, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_NONE
@@ -12146,7 +12230,7 @@ trainerdata 266, "Silver"
 
 trainerdata 267, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12205,7 +12289,7 @@ trainerdata 267, "Silver"
 
 trainerdata 268, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12286,7 +12370,7 @@ trainerdata 268, "Silver"
 
 trainerdata 269, "Silver"
     trainermontype TRAINER_DATA_TYPE_NOTHING
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_NONE
@@ -12322,7 +12406,7 @@ trainerdata 269, "Silver"
 
 trainerdata 270, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 4
     item ITEM_NONE
@@ -12381,7 +12465,7 @@ trainerdata 270, "Silver"
 
 trainerdata 271, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -12451,7 +12535,7 @@ trainerdata 271, "Silver"
 
 trainerdata 272, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -12952,7 +13036,7 @@ trainerdata 284, "Corey"
 
 trainerdata 285, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13033,7 +13117,7 @@ trainerdata 285, "Silver"
 
 trainerdata 286, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13114,7 +13198,7 @@ trainerdata 286, "Silver"
 
 trainerdata 287, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_NONE
@@ -13195,7 +13279,7 @@ trainerdata 287, "Silver"
 
 trainerdata 288, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -13265,7 +13349,7 @@ trainerdata 288, "Silver"
 
 trainerdata 289, "Silver"
     trainermontype TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 5
     item ITEM_NONE
@@ -20949,7 +21033,7 @@ trainerdata 490, "Cyrus"
 
 trainerdata 491, "Jupiter"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 6
     item ITEM_FULL_RESTORE
@@ -31467,7 +31551,7 @@ trainerdata 734, "Clair"
 
 trainerdata 735, "Silver"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_FULL_RESTORE
@@ -31518,7 +31602,7 @@ trainerdata 735, "Silver"
 
 trainerdata 736, "Silver"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES
-    trainerclass CLASS_IRIS
+    trainerclass CLASS_IRIS_OLD
      
     nummons 3
     item ITEM_FULL_RESTORE

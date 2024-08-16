@@ -15,6 +15,10 @@
 #include "../../include/constants/moves.h"
 #include "../../include/constants/species.h"
 #include "../../include/constants/weather_numbers.h"
+#include "../../include/pokemon_storage_system.h"
+
+
+#define NELEMS_POKEFORMDATATBL 285
 
 /**
  *  @brief swap two integer values with each other given pointers
@@ -42,6 +46,44 @@ void randomize(int arr[], int n) {
     }
 }
 
+/**
+ *  @brief generates a random valid species
+ *
+ *  @return new species
+ */
+u32 getValidRandomSpecies() {
+    u32 new_species;
+    new_species = 1 + gf_rand()%MAX_ID_RANDOMIZED;
+    if(new_species == 494 || new_species == 495) new_species = SPECIES_SHUCKLE;
+    if(new_species > 507 && new_species < 544) new_species += 37 + gf_rand()%(MAX_ID_RANDOMIZED - 506);
+    return new_species;
+}
+
+/**
+ *  @brief generates a random valid form for the given species
+ *  
+ *  @param species the species to get a form of
+ *  @return new species
+ */
+u32 getValidRandomSpeciesForm(u32 species) {
+    u8 form_count = 1;
+    struct FormData *PokeFormDataTbl = sys_AllocMemory(HEAPID_MAIN_HEAP, NELEMS_POKEFORMDATATBL * sizeof(struct FormData));
+    ArchiveDataLoad(PokeFormDataTbl, ARC_CODE_ADDONS, CODE_ADDON_FORM_DATA);
+    for(u32 i=0; i<NELEMS_POKEFORMDATATBL; i++) {
+        if (PokeFormDataTbl[i].species == species) {
+            #if EXCLUDE_MEGAS_FROM_RANDOMIZER
+            if(PokeFormDataTbl[i].file >= SPECIES_ALOLAN_REGIONAL_START) {
+                form_count += 1;
+            }
+            #else
+            form_count += 1;
+            #endif            
+        }
+    }
+    sys_FreeMemoryEz(PokeFormDataTbl);
+    return gf_rand()%form_count;
+}
+
 extern u32 gLastPokemonLevelForMoneyCalc;
 
 /**
@@ -60,7 +102,44 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
 
     seed_tmp = gf_get_seed();
 
+    #ifdef RANDOMIZE_PLAYER_PARTY_TRAINERS
+    u16 new_player_nickname[11 + 1];
+    u32 new_player_species;
+    u8 new_player_form_no;
+    struct PartyPokemon *pp;
+    struct Party *party = bp->poke_party[0];
+    s32 player_poke_count = bp->poke_party[0]->count;
+
+    for(int k = 0; k < player_poke_count; k++) {
+        pp = PokeParty_GetMemberPointer(party, k); // ToDo : WHY da F does setting it to k here crash? it properly traverses count
+        new_player_species = getValidRandomSpecies();
+        #ifdef RANDOMIZE_FORMS
+        new_player_form_no = getValidRandomSpeciesForm(new_player_species);
+        SetMonData(pp, MON_DATA_FORM, (u8 *)&new_player_form_no);
+        #endif
+        SetMonData(pp, MON_DATA_SPECIES, &new_player_species);
+        GetSpeciesNameIntoArray(GetMonData(pp, MON_DATA_SPECIES, NULL), 0, new_player_nickname);
+        SetMonData(pp, MON_DATA_NICKNAME, new_player_nickname);
+        RecalcPartyPokemonStats(pp);
+        ResetPartyPokemonAbility(pp);
+        for (j = 0; j < 4; j++)
+        {
+            SetPartyPokemonMoveAtPos(pp, MOVE_NONE, j);
+        }
+        InitBoxMonMoveset(&pp->box);
+    }    
+    #endif
+
     PokeParty_Init(bp->poke_party[num], 6);
+    #ifdef COPY_ENEMY_PARTY
+    #ifdef SAVE_OWN_PARTY
+    for (int i = 0; i < bp->poke_party[0]->count; i++) {
+        struct BoxPokemon mon = bp->poke_party[0]->members[i].box;
+        PCStorage_PlaceMonInFirstEmptySlotInAnyBox(SaveArray_PCStorage_Get(gFieldSysPtr->savedata), &mon);
+    }
+    #endif
+    PokeParty_Init(bp->poke_party[0], 6);
+    #endif
 
     buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
 
@@ -150,6 +229,13 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         offset += 2;
         form_no = (species & 0xF800) >> 11;
         species &= 0x07FF;
+
+        #ifdef RANDOMIZE_TRAINER_PARTIES_NOT_SMART
+        species = getValidRandomSpecies();
+        #ifdef RANDOMIZE_FORMS
+        form_no = getValidRandomSpeciesForm(species);
+        #endif       
+        #endif
 
         // item field - conditional
         if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ITEMS)
@@ -456,6 +542,9 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     for (i = 0; i < pokecount; i++)
     {
         PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
+        #ifdef COPY_ENEMY_PARTY
+        PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+        #endif
         sys_FreeMemoryEz(mons[i]);
     }
 
@@ -482,6 +571,9 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     u8 change_form = 0;
     u8 form_no;
     u16 species;
+    #ifdef RANDOMIZED_WILD
+    u16 nickname[11 + 1];
+    #endif
 
     if (encounterInfo->isEgg == 0 && encounterInfo->ability == ABILITY_COMPOUND_EYES)
     {
@@ -489,6 +581,20 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     }
 
     species = GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL);
+
+    #ifdef RANDOMIZED_WILD
+    species = getValidRandomSpecies();
+    #ifdef RANDOMIZE_FORMS
+    form_no = getValidRandomSpeciesForm(species);    
+    SetMonData(encounterPartyPokemon, MON_DATA_FORM, (u8 *)&form_no);
+    #endif
+    SetMonData(encounterPartyPokemon, MON_DATA_SPECIES, &species);
+    GetSpeciesNameIntoArray(GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL), 0, nickname);
+    SetMonData(encounterPartyPokemon, MON_DATA_NICKNAME, nickname);
+    RecalcPartyPokemonStats(encounterPartyPokemon);
+    ResetPartyPokemonAbility(encounterPartyPokemon);
+    InitBoxMonMoveset(&encounterPartyPokemon->box);
+    #endif
 
     if (space_for_setmondata != 0)
     {

@@ -675,8 +675,11 @@ Sav2_PlayerData_GetOptionsAddr = 0x02028EA8 | 1;
 ScrNative_WaitApplication = 0x020429F8 | 1;
 StartMoveRelearner = 0x0204ECD0 | 1;
 CreateScriptContext = 0x020400AC | 1;
+SaveArray_PCStorage_Get = 0x020270D8 | 1;
 GetNaturalGiftType = 0x022558A4 | 1;
 
 BattleContext_CheckMoveImprisoned = 0x02252C74 | 1;
 BattleContext_CheckMoveUnuseableInGravity = 0x02252DC4 | 1;
 BattleContext_CheckMoveHealBlocked = 0x02252DF8 | 1;
+
+CanUseItemOnPokemon = 0x0208FD9C | 1;

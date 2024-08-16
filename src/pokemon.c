@@ -23,6 +23,8 @@
 #define NELEMS_POKEFORMDATATBL 285
 
 extern u32 word_to_store_form_at;
+// [preevo] = {species, form}, [postevo] = {species, form},
+u16 ALIGN4 gEvolutionSceneOverride[2][2];
 
 u32 GetLevelCap(void);
 u32 MonTryLearnMoveOnLevelUp(struct PartyPokemon *mon, int * last_i, u16 * sp0);
@@ -44,6 +46,7 @@ BOOL LONG_CALL ScrNative_WaitApplication(struct SCRIPTCONTEXT *ctx);
 BOOL LONG_CALL GetOtherFormPic(MON_PIC *picdata, u16 mons_no, u8 dir, u8 col, u8 form_no)
 {
     u32 ret = FALSE;
+
     word_to_store_form_at = form_no;
 
     if (form_no != 0)
@@ -65,6 +68,20 @@ BOOL LONG_CALL GetOtherFormPic(MON_PIC *picdata, u16 mons_no, u8 dir, u8 col, u8
         sys_FreeMemoryEz(PokeFormDataTbl);
     }
     return ret;
+}
+
+void SetPartyPokemonParamsForEvoCutscene(struct PartyPokemon *mon, u16 *targetSpecies, BOOL clearEvoStructure)
+{
+    u32 form = 0;
+    if (gEvolutionSceneOverride[0][0] == *targetSpecies)
+        form = gEvolutionSceneOverride[0][1];
+    else if (gEvolutionSceneOverride[1][0] == *targetSpecies)
+        form = gEvolutionSceneOverride[1][1];
+    SetMonData(mon, MON_DATA_SPECIES, targetSpecies);
+    if (form)
+        SetMonData(mon, MON_DATA_FORM, &form);
+    if (clearEvoStructure)
+        memset(gEvolutionSceneOverride, 0, sizeof(gEvolutionSceneOverride));
 }
 
 /**
@@ -180,6 +197,33 @@ u16 LONG_CALL GetOriginalSpeciesBasedOnAdjustedForm(u32 mons_no)
             }
         }
         sys_FreeMemoryEz(PokeFormDataTbl);
+    }
+    return mons_no;
+}
+
+/**
+ *  @brief pass adjusted species and return form of the base species it applies to
+ *
+ *  @param mons_no species that has already been adjusted by form number by GetSpeciesBasedOnForm
+ *  @return form of adjusted species
+ */
+u16 LONG_CALL GetFormBasedOnAdjustedForm(u32 mons_no)
+{
+    if (mons_no > MAX_MON_NUM) {
+        struct FormData *PokeFormDataTbl = sys_AllocMemory(HEAPID_MAIN_HEAP, NELEMS_POKEFORMDATATBL * sizeof(struct FormData));
+        ArchiveDataLoad(PokeFormDataTbl, ARC_CODE_ADDONS, CODE_ADDON_FORM_DATA);
+
+        for (u32 i = 0; i < NELEMS_POKEFORMDATATBL; i++)
+        {
+            if (mons_no == PokeFormDataTbl[i].file)
+            {
+                mons_no = PokeFormDataTbl[i].form_no;
+                break;
+            }
+        }
+        sys_FreeMemoryEz(PokeFormDataTbl);
+    } else {
+        return 0; // base species are all before MAX_MON_NUM
     }
     return mons_no;
 }
@@ -1483,29 +1527,25 @@ u32 LONG_CALL CheckIfMonsAreEqual(struct PartyPokemon *pokemon1, struct PartyPok
     return FALSE;
 }
 
+/**
+ *  @brief check if can use item on mon in party.  subfunction checks everything and is only used here, so we hook this to save space and add what we need.
+ *
+ *  @param party party structure
+ *  @param itemID item index that is being used
+ *  @param partyIdx position in party
+ *  @param moveIdx move position to check if needed
+ *  @param heapID heap to use for allocations
+ *  @return TRUE if can use item, FALSE otherwise
+ */
+BOOL CanUseItemOnMonInParty(struct Party *party, u16 itemID, s32 partyIdx, s32 moveIdx, u32 heapID) {
+    struct PartyPokemon *mon = Party_GetMonByIndex(party, partyIdx);
 
-// top 5 bits are now form bit
-// if the form is nonzero, have to set it to that form.  most mons should keep their forms on evolution, but specifically significant gendered mons will need to not
-#define GET_TARGET_AND_SET_FORM { \
-    if (party != NULL) \
-    { \
-        for (j = 0; j < party->count; j++) \
-        { \
-            ppFromParty = Party_GetMonByIndex(party, j); \
-            if (CheckIfMonsAreEqual(pokemon, ppFromParty)) \
-                break; \
-        } \
-        target = evoTable[i].target & 0x7FF; \
-        form = evoTable[i].target >> 11; \
-        if (form != 0) { \
-            SetMonData(ppFromParty, MON_DATA_FORM, &form); \
-        } \
-    } \
-    else { \
-        target = evoTable[i].target & 0x7FF; \
-        form = evoTable[i].target >> 11; \
-        SetMonData(pokemon, MON_DATA_FORM, &form); \
-    } \
+    if (GetItemData(itemID, ITEM_PARAM_LEVEL_UP, heapID) && GetMonData(mon, MON_DATA_LEVEL, NULL) == 100 && GetMonEvolution(party, mon, EVOCTX_LEVELUP, itemID, NULL))
+    {
+        return TRUE;
+    }
+
+    return CanUseItemOnPokemon(mon, itemID, moveIdx, heapID);
 }
 
 /**
@@ -2004,19 +2044,23 @@ u32 storeShayminForm = 0;
 u32 GrabCryNumSpeciesForm(u32 species, u32 form)
 {
     u32 newSpecies = 0;
-    if (species > SPECIES_ARCEUS && species < SPECIES_VICTINI)
-    {
+
+    // manually map all of the limbo slots to bulbasaur's cry
+    if (species > SPECIES_ARCEUS && species < SPECIES_VICTINI) {
         species = SPECIES_BULBASAUR;
     }
 
-    if (species > MAX_MON_NUM) // battles are fucking stupid and pass in species already adjusted for form.  need to revert to base species
-    {
+    //debug_printf("[GrabCryNumSpeciesForm] species = %d, form = %d\n", species, form)
+
+    // battles are fucking stupid and pass in species already adjusted for form.  need to revert to base species and extract form
+    if (species > MAX_MON_NUM) {
         // if form-adjusted species is passed in, no need to call it to grab it again
         newSpecies = species;
+        form = GetFormBasedOnAdjustedForm(species);
         species = GetOriginalSpeciesBasedOnAdjustedForm(species);
     }
-    else if (species == SPECIES_SHAYMIN) // shaymin has to have some hacks to get this to work proper because of the same battle stuff above
-    {
+    // shaymin has to have some hacks to get this to work proper because of the same battle stuff above
+    else if (species == SPECIES_SHAYMIN) {
         register u32 retAddr asm("lr");
         if (retAddr == 0x020069BF)
             storeShayminForm = form;
@@ -2024,7 +2068,7 @@ u32 GrabCryNumSpeciesForm(u32 species, u32 form)
             if (!storeShayminForm)
                 return species;
     }
-    else if (form == 0)
+    else if (form == 0) // can just return species for the cry if it is base form
     {
         return species;
     }
