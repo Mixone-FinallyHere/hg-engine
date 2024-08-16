@@ -23782,16 +23782,10 @@ levelup SPECIES_FLORAGATO
     learnset MOVE_HONE_CLAWS, 10
     learnset MOVE_MAGICAL_LEAF, 13
     learnset MOVE_QUICK_ATTACK, 15
-<<<<<<< HEAD
     learnset MOVE_THIEF, 17
     learnset MOVE_TRAILBLAZE, 21
     learnset MOVE_LEECH_SEED, 26
     learnset MOVE_U_TURN, 29
-=======
-    learnset MOVE_SEED_BOMB, 20
-    learnset MOVE_U_TURN, 24
-    learnset MOVE_WORRY_SEED, 28
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
     learnset MOVE_SLASH, 33
     learnset MOVE_SEED_BOMB, 35
     learnset MOVE_NIGHT_SLASH, 37
@@ -23815,16 +23809,10 @@ levelup SPECIES_MEOWSCARADA
     learnset MOVE_HONE_CLAWS, 10
     learnset MOVE_MAGICAL_LEAF, 13
     learnset MOVE_QUICK_ATTACK, 15
-<<<<<<< HEAD
     learnset MOVE_THIEF, 17
     learnset MOVE_TRAILBLAZE, 21
     learnset MOVE_LEECH_SEED, 26
     learnset MOVE_U_TURN, 29
-=======
-    learnset MOVE_SEED_BOMB, 20
-    learnset MOVE_U_TURN, 24
-    learnset MOVE_WORRY_SEED, 29
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
     learnset MOVE_SLASH, 33
     learnset MOVE_SEED_BOMB, 35
     learnset MOVE_NIGHT_SLASH, 38
@@ -23833,15 +23821,10 @@ levelup SPECIES_MEOWSCARADA
     learnset MOVE_SUCKER_PUNCH, 48
     learnset MOVE_PLAY_ROUGH, 50
     learnset MOVE_KNOCK_OFF, 52
-<<<<<<< HEAD
     learnset MOVE_TRIPLE_AXEL, 55
     learnset MOVE_POWER_WHIP, 60
 	learnset MOVE_ACROBATICS, 66
     learnset MOVE_LEAF_STORM, 70
-=======
-    learnset MOVE_GRASSY_TERRAIN, 58
-    learnset MOVE_LEAF_STORM, 64
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
     terminatelearnset
 
 levelup SPECIES_FUECOCO
@@ -23920,15 +23903,9 @@ levelup SPECIES_QUAXLY
     learnset MOVE_WATER_GUN, 1
     learnset MOVE_WORK_UP, 7
     learnset MOVE_WING_ATTACK, 10
-<<<<<<< HEAD
     learnset MOVE_AQUA_JET, 14
     learnset MOVE_WATER_PULSE, 18
-    learnset MOVE_FEATHER_DANCE, 20
-=======
-    learnset MOVE_AQUA_JET, 13
-    learnset MOVE_DOUBLE_HIT, 17
-    learnset MOVE_AQUA_CUTTER, 21
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
+    learnset MOVE_FEATHER_DANCE, 21
     learnset MOVE_AIR_SLASH, 24
     learnset MOVE_FOCUS_ENERGY, 27
     learnset MOVE_ROOST, 30
@@ -23940,38 +23917,24 @@ levelup SPECIES_QUAXLY
     terminatelearnset
 
 levelup SPECIES_QUAXWELL
-<<<<<<< HEAD
-=======
     learnset MOVE_DOUBLE_HIT, 1
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
     learnset MOVE_GROWL, 1
     learnset MOVE_POUND, 1
     learnset MOVE_WATER_GUN, 1
     learnset MOVE_WORK_UP, 7
     learnset MOVE_WING_ATTACK, 10
-<<<<<<< HEAD
     learnset MOVE_AQUA_JET, 14
     learnset MOVE_WATER_PULSE, 18
-    learnset MOVE_FEATHER_DANCE, 20
-    learnset MOVE_AIR_SLASH, 25
-    learnset MOVE_FOCUS_ENERGY, 29
-    learnset MOVE_ROOST, 32
+    learnset MOVE_FEATHER_DANCE, 21
+    learnset MOVE_LOW_SWEEP, 25
+    learnset MOVE_AIR_SLASH, 27
+    learnset MOVE_FOCUS_ENERGY, 32
+    learnset MOVE_ROOST, 35
     learnset MOVE_ACROBATICS, 37
     learnset MOVE_LIQUIDATION, 42
     learnset MOVE_RAIN_DANCE, 50
     learnset MOVE_FLIP_TURN, 55
     learnset MOVE_BRAVE_BIRD, 58
-=======
-    learnset MOVE_AQUA_JET, 13
-    learnset MOVE_WATER_PULSE, 17
-    learnset MOVE_LOW_SWEEP, 19
-    learnset MOVE_AQUA_CUTTER, 23
-    learnset MOVE_AIR_SLASH, 27
-    learnset MOVE_FOCUS_ENERGY, 32
-    learnset MOVE_ACROBATICS, 38
-    learnset MOVE_LIQUIDATION, 43
-    learnset MOVE_FEATHER_DANCE, 48
->>>>>>> ee082f150547220c126100739433d60c5f591c5b
     terminatelearnset
 
 levelup SPECIES_QUAQUAVAL
