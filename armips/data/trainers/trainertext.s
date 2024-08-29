@@ -321,14 +321,9 @@ _0218: // Trainer 50
     trainertextentry  50, TEXT_DEFEATED_IN_OVERWORLD, "Even though you’re a rookie Trainer,\nyou’re not bothered by these heights\fat all... You’re really something!\n"
 
 _0224: // Trainer 10
-    trainertextentry  10, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Amy: Hey, are you challenging the\nLeader? No way!\r"
-    trainertextentry  10, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "Amy: Oh, goodness!"
-    trainertextentry  10, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "Amy: You’re really strong!"
-    trainertextentry  10, TEXT_DOUBLE_ONLY_1_POKEMON_1, "Amy: You have only one Pokémon?\nThat’s kind of lonely..."
-    trainertextentry  10, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2, "Mimi: If you insist, we’ll be\nyour opponents.\r"
-    trainertextentry  10, TEXT_DOUBLE_DEFEATED_IN_BATTLE_2, "Mimi: I’m feeling a bit dizzy...\n"
-    trainertextentry  10, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2, "Mimi: Our bug Pokémon lost! Oh, what\na shame.\n"
-    trainertextentry  10, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Mimi: It’s a little unfair to battle\nsomeone who has only one Pokémon.\n"
+    trainertextentry 10, TEXT_LAST_MON_CRITICAL, "Free the Pokemon!\n"
+    trainertextentry 10, TEXT_LAST_MON_SENT_OUT, "...!\n"
+    trainertextentry 10, TEXT_DEFEATED_IN_BATTLE, "Stupid kids!\n"
 
 _0244: // Trainer 67
     trainertextentry  67, TEXT_NOTICE_IN_OVERWORLD, "Bug Pokémon evolve young. So they get\nstronger that much faster.\r"
@@ -1183,10 +1178,10 @@ _0A08: // Trainer 412
     trainertextentry 412, TEXT_DEFEATED_IN_OVERWORLD, "G-982: My dragons were no match!\n"
 
 _0A14: // Trainer 8
-    trainertextentry   8, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Go! Shiny Eevee!\r"
-    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "You killed Eevee. Wtf.\n"
-    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "I knew it--if you don’t have many\nPokémon, battles are harder!\fI need to catch more Pokémon!\n"
-    trainertextentry   8, TEXT_REMATCH_IN_OVERWORLD, "I’ve been waiting!\nLet’s battle now!\r"
+    trainertextentry   8, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Pfft! A new trainer?\nThis should be free.\r"
+    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "MY WIGLETT!!\n"
+    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "Maybe I was the noob...\nMaybe I was free...\n"
+    //trainertextentry   8, TEXT_REMATCH_IN_OVERWORLD, "I’ve been waiting!\nLet’s battle now!\r"
 
 _0A24: // Trainer 47
     trainertextentry  47, TEXT_NOTICE_IN_OVERWORLD, "THIS LAVA IS COOKIN!\r"
@@ -1336,10 +1331,14 @@ _0B60: // Trainer 388
     trainertextentry 388, TEXT_REMATCH_IN_OVERWORLD, "I’ve been practicing breathing fire\nwhile waiting for you!\r"
 
 _0B70: // Trainer 7
-    trainertextentry   7, TEXT_NOTICE_IN_OVERWORLD, "Behold my dexterity and grace!\r"
-    trainertextentry   7, TEXT_DEFEATED_IN_BATTLE, "Whew! That was a jolt!\n"
-    trainertextentry   7, TEXT_DEFEATED_IN_OVERWORLD, "I was going to dazzle you with my prize\nPokémon. But your prowess\felectrified me!\n"
-    trainertextentry   7, TEXT_REMATCH_IN_OVERWORLD, "Yo! I’ve been waiting!\r"
+    trainertextentry 7, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Vulpixes, go!\r"
+    trainertextentry 7, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "My little friends!\n"
+    trainertextentry 7, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "It's ok, Frosty...\nWe win next time.\n"
+    trainertextentry 7, TEXT_DOUBLE_ONLY_1_POKEMON_1, "You’ve only got one Pokémon.\nSo we can’t battle.\n"
+    trainertextentry 7, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2, "Frosty: Pix!\r"
+    trainertextentry 7, TEXT_DOUBLE_DEFEATED_IN_BATTLE_2, "Frosty: oWo\n"
+    trainertextentry 7, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2, "Frosty: Pix...\n"
+    trainertextentry 7, TEXT_DOUBLE_ONLY_1_POKEMON_2, "Frosty: Pix!\r"
 
 _0B80: // Trainer 78
     trainertextentry  78, TEXT_NOTICE_IN_OVERWORLD, "I’ll go anywhere if bug Pokémon\nappear there.\r"
@@ -1452,9 +1451,9 @@ _0C80: // Trainer 86
     trainertextentry  86, TEXT_DEFEATED_IN_OVERWORLD, "Swimming exercises your entire body.\nIt’s healthy.\n"
 
 _0C8C: // Trainer 9
-    trainertextentry   9, TEXT_NOTICE_IN_OVERWORLD, "Are you going to Cianwood?\rHow about a quick battle first?\r"
-    trainertextentry   9, TEXT_DEFEATED_IN_BATTLE, "I lost that one!\n"
-    trainertextentry   9, TEXT_DEFEATED_IN_OVERWORLD, "I’d say I’m a better swimmer than you.\nYeah!\n"
+    trainertextentry   9, TEXT_NOTICE_IN_OVERWORLD, "Muwahahah...\nPrepare to be walled.\r"
+    trainertextentry   9, TEXT_DEFEATED_IN_BATTLE, "Mareanie! My baby!\n"
+    trainertextentry   9, TEXT_DEFEATED_IN_OVERWORLD, "Maybe I should use more\nthan one Pokemon, huh.\n"
 
 _0C98: // Trainer 85
     trainertextentry  85, TEXT_NOTICE_IN_OVERWORLD, "No inflatable tube for me.\nI’m hanging on to a sea Pokémon!\r"
@@ -2060,9 +2059,9 @@ _120C: // Trainer 486
     trainertextentry 486, TEXT_DEFEATED_IN_BATTLE, "Saturn: Delay successful.\n"
 
 _1218: // Trainer 12
-    trainertextentry  12, TEXT_NOTICE_IN_OVERWORLD, "G-101: Man, it's HOT HERE!\r"
-    trainertextentry  12, TEXT_DEFEATED_IN_BATTLE, "Just...\nToo strong...\n"
-    trainertextentry  12, TEXT_DEFEATED_IN_OVERWORLD, "Hey listen, I'm not doing\nanything illegal!\n"
+    trainertextentry 12, TEXT_LAST_MON_CRITICAL, "Chill with the Axew!\n"
+    trainertextentry 12, TEXT_LAST_MON_SENT_OUT, "...!\n"
+    trainertextentry 12, TEXT_DEFEATED_IN_BATTLE, "Oh come on!\n"
 
 _1224: // Trainer 101
     trainertextentry 101, TEXT_NOTICE_IN_OVERWORLD, "G-130: Woah there, slow down!\r"
@@ -2070,9 +2069,9 @@ _1224: // Trainer 101
     trainertextentry 101, TEXT_DEFEATED_IN_OVERWORLD, "G-130: It's hot. I want to leave.\n"
 
 _1230: // Trainer 13
-    trainertextentry  13, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Eat my Woobat, yeah!\r"
-    trainertextentry  13, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "You turkey!\n"
-    trainertextentry  13, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "I don't know why we're here.\n"
+    trainertextentry 13, TEXT_LAST_MON_CRITICAL, "Impossible!\n"
+    trainertextentry 13, TEXT_LAST_MON_SENT_OUT, "With our backs to the wall...\n"
+    trainertextentry 13, TEXT_DEFEATED_IN_BATTLE, "Pity... You earned this.\n"
 
 _123C: // Trainer 73
     trainertextentry  73, TEXT_NOTICE_IN_OVERWORLD, "What are you here for? Just to stand\naround and gawk? I suggest you leave!\r"
