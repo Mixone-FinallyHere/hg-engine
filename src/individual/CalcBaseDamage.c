@@ -226,7 +226,8 @@ int CalcBaseDamage(void *bw, struct BattleStruct *sp, int moveno, u32 side_cond,
     DefendingMon.item_power = BattleItemDataGet(sp, item, 2);
 
     battle_type = BattleTypeGet(bw);
-
+    // get the type
+    movetype = GetAdjustedMoveType(sp, attacker, moveno);
     if (((MoldBreakerAbilityCheck(sp, attacker, defender, ABILITY_DISGUISE) == TRUE || MoldBreakerAbilityCheck(sp, attacker, defender, ABILITY_ICE_FACE) == TRUE) && GetMoveSplit(sp, moveno) == SPLIT_PHYSICAL) && sp->battlemon[defender].form_no == 0)
         return 0;
 
@@ -285,7 +286,18 @@ int CalcBaseDamage(void *bw, struct BattleStruct *sp, int moveno, u32 side_cond,
         }
 
     }
-
+    //handle acrobatics with gems
+    if
+    (
+        moveno == MOVE_ACROBATICS &&
+        (sp->battlemon[sp->attack_client].item == 0 ||
+        // As the current Gem implementation means they are still held during the move,
+        // there's a special code exception here to get the Flying Gem working with Acrobatics.
+        (movetype == TYPE_FLYING && AttackingMon.item_held_effect == HOLD_EFFECT_BOOST_TYPE_ONCE))
+    )
+    {
+        movepower *= 2;
+    }
     // handle sheer force
     if (AttackingMon.ability == ABILITY_SHEER_FORCE && sp->battlemon[attacker].sheer_force_flag == 1)
     {
@@ -299,6 +311,13 @@ int CalcBaseDamage(void *bw, struct BattleStruct *sp, int moveno, u32 side_cond,
 //        break;
 //    }
 
+
+    // Handle the Gem effect (which is still held here). Uses the 30% boost from later generations. */
+    // We're using the item data holdEffectParam property (item_power) to match the move type against the gem type. (thx dray)
+    if ((AttackingMon.item_held_effect == HOLD_EFFECT_BOOST_TYPE_ONCE) && (AttackingMon.item_power == movetype))
+    {
+        movepower = movepower * 130 / 100;
+    }
 
     // type boosting held items
     {

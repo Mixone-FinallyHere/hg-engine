@@ -1461,3 +1461,6 @@ The effects of the {STRVAR_1 8, 0, 0}\nprevent status moves from being used!
 {STRVAR_1 1, 0, 0}’s burn was healed!
 The wild {STRVAR_1 1, 0, 0}’s burn was healed!
 The opposing {STRVAR_1 1, 0, 0}’s burn was healed!
+The {STRVAR_1 5, 1, 0} strengthened\n{STRVAR_1 8, 2, 0}’s power!
+The {STRVAR_1 5, 1, 0} strengthened\n{STRVAR_1 8, 2, 0}’s power!
+The {STRVAR_1 5, 1, 0} strengthened\n{STRVAR_1 8, 2, 0}’s power!
