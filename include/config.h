@@ -102,4 +102,37 @@
 // PROTEAN_GENERATION defines the behavior that protean should exhibit, where it either changes type every move (<=8) or changes type once per appearance in battle (>=9)
 #define PROTEAN_GENERATION 9
 
+// RANDOMIZED_WILD will randomize all wild encounters
+// comment out the line below to disable it
+#define RANDOMIZED_WILD
+
+// RANDOMIZE_PLAYER_PARTY_TRAINERS tells the randomzier wether to randomize player party at start of trainer battles
+// comment out the line below to disable it
+// #define RANDOMIZE_PLAYER_PARTY_TRAINERS
+
+// RANDOMIZE_TRAINER_PARTIES tells the randomzier wether to randomize enemy trainer party at start of trainer battles
+// comment out the line below to disable it
+#define RANDOMIZE_TRAINER_PARTIES_NOT_SMART
+
+// MAX_ID_RANDOMIZED determines the max mon up to which randomize for wild and trainer parties
+// absolutely needed to perform randomizing
+#define MAX_ID_RANDOMIZED MAX_MON_NUM
+
+// RANDOMIZE_WILD_FORMS tells the randomzier wether to randomize forms both for wild and trainer parties
+// comment out the line below to disable it
+#define RANDOMIZE_FORMS
+
+// EXCLUDE_MEGAS_FROM_RANDOMIZER tells the randomzier wether to exclude mega forms
+// set to FALSE to INCLUDE them
+#define EXCLUDE_MEGAS_FROM_RANDOMIZER FALSE
+
+// COPY_ENEMY_PARTY will make player party be the enemy trainers
+// comment out the line below to disable it
+#define COPY_ENEMY_PARTY
+
+// SAVE_OWN_PARTY will make player party be saved if copying enemy party
+// comment out the line below to disable it
+// only used if copying enemy party
+#define SAVE_OWN_PARTY
+
 #endif
