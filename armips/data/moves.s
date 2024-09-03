@@ -273,7 +273,7 @@ movedata MOVE_GUST, "Gust"
     accuracy 100
     pp 10
     effectchance 0
-    target MOVE_TARGET_SELECTED
+    target MOVE_TARGET_BOTH
     priority 0
     flags FLAG_KINGS_ROCK | FLAG_MIRROR_MOVE | FLAG_PROTECT
     appeal 0x05
@@ -782,7 +782,7 @@ movedata MOVE_SUPERSONIC, "Supersonic"
     pss SPLIT_STATUS
     basepower 0
     type TYPE_NORMAL
-    accuracy 55
+    accuracy 75
     pp 10
     effectchance 0
     target MOVE_TARGET_SELECTED
@@ -1337,10 +1337,10 @@ movedata MOVE_DRAGON_RAGE, "Dragon Rage"
     terminatedata
     movedescription MOVE_DRAGON_RAGE, "The foe is stricken\nby a shock wave.\nThis attack always\ninflicts 40 HP\ndamage."
 
-movedata MOVE_FIRE_SPIN, "Fire Vortex"
-    battleeffect MOVE_EFFECT_HIGH_CRITICAL
+movedata MOVE_FIRE_SPIN, "Fire Spin"
+    battleeffect MOVE_EFFECT_BIND_HIT
     pss SPLIT_SPECIAL
-    basepower 50
+    basepower 35
     type TYPE_FIRE
     accuracy 100
     pp 10
@@ -1351,7 +1351,7 @@ movedata MOVE_FIRE_SPIN, "Fire Vortex"
     appeal 0x15
     contesttype CONTEST_BEAUTY
     terminatedata
-    movedescription MOVE_FIRE_SPIN, "A blazing fire\nswirls around\nthe foe. It has a\nhigh critical-hit\nratio."
+    movedescription MOVE_FIRE_SPIN, "A blazing fire\nswirls around\nthe foe. Binds\nthe target.\n"
 
 movedata MOVE_THUNDER_SHOCK, "Thunder Shock"
     battleeffect MOVE_EFFECT_PARALYZE_HIT
@@ -2332,7 +2332,7 @@ movedata MOVE_TRANSFORM, "Transform"
 movedata MOVE_BUBBLE, "Bubble"
     battleeffect MOVE_EFFECT_LOWER_SPEED_HIT
     pss SPLIT_SPECIAL
-    basepower 35
+    basepower 40
     type TYPE_WATER
     accuracy 100
     pp 10
@@ -4011,10 +4011,10 @@ movedata MOVE_ROCK_SMASH, "Rock Smash"
     terminatedata
     movedescription MOVE_ROCK_SMASH, "The user hits with a\npunch that may lower\nthe target’s Defense.\nIt can also smash\ncracked boulders."
 
-movedata MOVE_WHIRLPOOL, "Aqua Vortex"
-    battleeffect MOVE_EFFECT_HIGH_CRITICAL
+movedata MOVE_WHIRLPOOL, "Whirlpool"
+    battleeffect MOVE_EFFECT_BIND_HIT
     pss SPLIT_SPECIAL
-    basepower 50
+    basepower 35
     type TYPE_WATER
     accuracy 100
     pp 10
@@ -4025,7 +4025,7 @@ movedata MOVE_WHIRLPOOL, "Aqua Vortex"
     appeal 0x15
     contesttype CONTEST_BEAUTY
     terminatedata
-    movedescription MOVE_WHIRLPOOL, "A harsh whirlpool\nswirls around\nthe foe. It has a\nhigh critical-hit\nratio."
+    movedescription MOVE_WHIRLPOOL, "A harsh whirlpool\nswirls around\nthe foe. Binds\nthe target.\n"
 
 movedata MOVE_BEAT_UP, "Beat Up"
     battleeffect MOVE_EFFECT_BEAT_UP
@@ -5259,10 +5259,10 @@ movedata MOVE_SKY_UPPERCUT, "Sky Uppercut"
     terminatedata
     movedescription MOVE_SKY_UPPERCUT, "The user attacks the\nfoe with an uppercut\nthrown skyward\nwith force.\n"
 
-movedata MOVE_SAND_TOMB, "Sand Vortex"
-    battleeffect MOVE_EFFECT_HIGH_CRITICAL
+movedata MOVE_SAND_TOMB, "Sand Tomb"
+    battleeffect MOVE_EFFECT_BIND_HIT
     pss SPLIT_PHYSICAL
-    basepower 50
+    basepower 35
     type TYPE_GROUND
     accuracy 100
     pp 10
@@ -5273,7 +5273,7 @@ movedata MOVE_SAND_TOMB, "Sand Vortex"
     appeal 0x15
     contesttype CONTEST_SMART
     terminatedata
-    movedescription MOVE_SAND_TOMB, "A harsh sandstorm\nswirls around\nthe foe. It has a\nhigh critical-hit\nratio."
+    movedescription MOVE_SAND_TOMB, "A harsh sandstorm\nswirls around\nthe foe. Binds\nthe target.\n"
 
 movedata MOVE_SHEER_COLD, "Permafrost"
 	battleeffect 5
@@ -10798,7 +10798,7 @@ movedata MOVE_LEAFAGE, "Leafage"
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
-    movedescription MOVE_LEAFAGE, "---"
+    movedescription MOVE_LEAFAGE, "Slams the foe\nwith a flurry\nof leaves.\nThat's it.\n"
 
 movedata MOVE_SPOTLIGHT, "Spotlight"
     battleeffect MOVE_EFFECT_MAKE_GLOBAL_TARGET
@@ -12915,7 +12915,7 @@ movedata MOVE_MISTY_EXPLOSION, "Misty Explosion"
 movedata MOVE_GRASSY_GLIDE, "Grassy Glide"
     battleeffect MOVE_EFFECT_HIT
     pss SPLIT_PHYSICAL
-    basepower 70
+    basepower 55
     type TYPE_GRASS
     accuracy 100
     pp 10
@@ -12926,7 +12926,7 @@ movedata MOVE_GRASSY_GLIDE, "Grassy Glide"
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
-    movedescription MOVE_GRASSY_GLIDE, "---"
+    movedescription MOVE_GRASSY_GLIDE, "+1 priority on\nGrassy Terrain.\n"
 
 movedata MOVE_RISING_VOLTAGE, "Rising Voltage"
     battleeffect MOVE_EFFECT_HIT

@@ -383,7 +383,7 @@
 #define SUB_SEQ_PREVENT_CHANGING_WEATHER              (373)
 #define SUB_SEQ_HEAL_TARGET_BURN                      (374)
 
-#define SUB_SEQ_REMOVE_ATTACKER_ITEM                  (504) //Used for gems, thx dray
+#define SUB_SEQ_REMOVE_ATTACKER_ITEM                  (375) //Used for gems, thx dray
 
 // add status effect constants--used in battle effect scripts to queue up a subscript through the table in src/moves.c
 

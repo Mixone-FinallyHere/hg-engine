@@ -906,6 +906,17 @@ u8 LONG_CALL CalcSpeed(void *bw, struct BattleStruct *sp, int client1, int clien
                 sp->battlemon[client2].moveeffect.boostedAccuracy = 1;
             }
         }
+        // grassy glide
+        move1 = BattlePokemonParamGet(sp, client1, BATTLE_MON_DATA_MOVE_1 + move_pos1, NULL);
+        if(sp->terrainOverlay.type == GRASSY_TERRAIN && sp->terrainOverlay.numberOfTurnsLeft > 0 && move1 == MOVE_GRASSY_GLIDE){
+            priority1++;
+        }
+        
+        move2 = BattlePokemonParamGet(sp, client2, BATTLE_MON_DATA_MOVE_1 + move_pos2, NULL);
+        if(sp->terrainOverlay.type == GRASSY_TERRAIN && sp->terrainOverlay.numberOfTurnsLeft > 0 && move2 == MOVE_GRASSY_GLIDE){
+            priority2++;
+        }
+
 
         // handle prankster
         if (GetBattlerAbility(sp, client1) == ABILITY_PRANKSTER && GetMoveSplit(sp, move1) == SPLIT_STATUS)

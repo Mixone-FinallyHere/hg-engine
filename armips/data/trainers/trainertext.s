@@ -1178,10 +1178,10 @@ _0A08: // Trainer 412
     trainertextentry 412, TEXT_DEFEATED_IN_OVERWORLD, "G-982: My dragons were no match!\n"
 
 _0A14: // Trainer 8
-    trainertextentry   8, TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1, "Pfft! A new trainer?\nThis should be free.\r"
-    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_BATTLE_1, "MY WIGLETT!!\n"
-    trainertextentry   8, TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1, "Maybe I was the noob...\nMaybe I was free...\n"
-    //trainertextentry   8, TEXT_REMATCH_IN_OVERWORLD, "I’ve been waiting!\nLet’s battle now!\r"
+    trainertextentry   8, TEXT_NOTICE_IN_OVERWORLD, "Pfft! A new trainer?\nThis should be free.\r"
+    trainertextentry   8, TEXT_DEFEATED_IN_BATTLE, "MY WIGLETT!!\n"
+    trainertextentry   8, TEXT_DEFEATED_IN_OVERWORLD, "Maybe I was the noob...\nMaybe I was free...\n"
+    trainertextentry   8, TEXT_REMATCH_IN_OVERWORLD, "I’ve been waiting!\nLet’s battle now!\r"
 
 _0A24: // Trainer 47
     trainertextentry  47, TEXT_NOTICE_IN_OVERWORLD, "THIS LAVA IS COOKIN!\r"
@@ -2211,9 +2211,9 @@ _1364: // Trainer 393
     trainertextentry 393, TEXT_DEFEATED_IN_OVERWORLD, "I know all the different types\nof Pokémon.\fBut I only use one type.\n"
 
 _1370: // Trainer 14
-    trainertextentry  14, TEXT_NOTICE_IN_OVERWORLD, "Fork over your goods!\r"
-    trainertextentry  14, TEXT_DEFEATED_IN_BATTLE, "Mercy!\n"
-    trainertextentry  14, TEXT_DEFEATED_IN_OVERWORLD, "Steal and sell!\nThat’s basic in crime, kid!\n"
+    trainertextentry  14, TEXT_NOTICE_IN_OVERWORLD, "Prepare to be rest stalled!\r"
+    trainertextentry  14, TEXT_DEFEATED_IN_BATTLE, "Maybe I need the rest!\n"
+    trainertextentry  14, TEXT_DEFEATED_IN_OVERWORLD, "Wow, you knew how to beat\na stall team!\n"
 
 _137C: // Trainer 283
     trainertextentry 283, TEXT_NOTICE_IN_OVERWORLD, "They ditched this project before\nthey finished.\fI’m searching for leftover loot.\r"

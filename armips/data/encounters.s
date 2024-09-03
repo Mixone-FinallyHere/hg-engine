@@ -8826,7 +8826,7 @@ rocksmashrate 0
 oldrodrate 100
 goodrodrate 0
 superrodrate 0
-walklevels 42, 44, 42, 44, 43, 43, 42, 41, 45, 20, 45, 15
+walklevels 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
 
 //morning encounter slots
 pokemon SPECIES_SPOINK  

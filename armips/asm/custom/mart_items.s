@@ -17,16 +17,16 @@ EIGHT_BADGES equ 6
 /* General Poké Mart Table */
 .org 0x020FBF22
 
-.halfword ITEM_LONELY_MINT
+.halfword ITEM_PREMIER_BALL
 .halfword ZERO_BADGES
 
-.halfword ITEM_GREAT_BALL
+.halfword ITEM_HONEY
 .halfword ONE_BADGE
 
 .halfword ITEM_ULTRA_BALL
 .halfword THREE_BADGES
 
-.halfword ITEM_ADAMANT_MINT
+.halfword ITEM_HONEY
 .halfword ZERO_BADGES
 
 .halfword ITEM_SUPER_POTION
@@ -41,7 +41,7 @@ EIGHT_BADGES equ 6
 .halfword ITEM_FULL_RESTORE
 .halfword EIGHT_BADGES
 
-.halfword ITEM_ETHER
+.halfword ITEM_ESCAPE_ROPE
 .halfword ZERO_BADGES
 
 .halfword ITEM_MAX_ETHER
@@ -59,7 +59,7 @@ EIGHT_BADGES equ 6
 .halfword ITEM_MAX_REVIVE
 .halfword EIGHT_BADGES
 
-.halfword ITEM_FULL_HEAL
+.halfword ITEM_MAX_REPEL
 .halfword ZERO_BADGES
 
 .halfword ITEM_REPEL
@@ -112,8 +112,8 @@ const u16 *_0210FA3C[] = {
 /* const u16 _020FBA54[] = {ITEM_AIR_MAIL, ITEM_HEAL_BALL, 0xFFFF}; */
 /* Cherrygrove City 2nd Clerk -> Violet City 2nd Clerk */
 .org 0x020FBA54
-.halfword ITEM_HEAL_BALL
-.halfword ITEM_NET_BALL
+.halfword ITEM_DUSK_BALL
+.halfword ITEM_GREAT_BALL
 .halfword 0xFFFF
 
 /* const u16 _020FBA5A[] = {ITEM_AIR_MAIL, ITEM_QUICK_BALL, 0xFFFF}; */

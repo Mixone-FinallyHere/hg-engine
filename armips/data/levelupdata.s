@@ -14499,9 +14499,9 @@ levelup SPECIES_SEWADDLE
     learnset MOVE_TACKLE, 1
     learnset MOVE_STRING_SHOT, 1
     learnset MOVE_STRUGGLE_BUG, 4
-    learnset MOVE_RAZOR_LEAF, 7
+    learnset MOVE_LEAFAGE, 7
     learnset MOVE_BUG_BITE, 10
-    learnset MOVE_ENDURE, 13
+    learnset MOVE_RAZOR_LEAF, 13
     learnset MOVE_STICKY_WEB, 16
     learnset MOVE_BUG_BUZZ, 18
     learnset MOVE_FLAIL, 21
@@ -14514,9 +14514,9 @@ levelup SPECIES_SWADLOON
     learnset MOVE_TACKLE, 1
     learnset MOVE_STRING_SHOT, 1
     learnset MOVE_STRUGGLE_BUG, 4
-    learnset MOVE_RAZOR_LEAF, 7
+    learnset MOVE_LEAFAGE, 7
     learnset MOVE_BUG_BITE, 10
-    learnset MOVE_ENDURE, 13
+    learnset MOVE_RAZOR_LEAF, 13
     learnset MOVE_STICKY_WEB, 16
     learnset MOVE_BUG_BUZZ, 18
     learnset MOVE_FLAIL, 21
@@ -14532,9 +14532,9 @@ levelup SPECIES_LEAVANNY
     learnset MOVE_TACKLE, 1
     learnset MOVE_STRING_SHOT, 1
     learnset MOVE_STRUGGLE_BUG, 4
-    learnset MOVE_RAZOR_LEAF, 7
+    learnset MOVE_LEAFAGE, 7
     learnset MOVE_BUG_BITE, 10
-    learnset MOVE_ENDURE, 13
+    learnset MOVE_RAZOR_LEAF, 13
     learnset MOVE_STICKY_WEB, 16
     learnset MOVE_BUG_BUZZ, 18
     learnset MOVE_FLAIL, 21
