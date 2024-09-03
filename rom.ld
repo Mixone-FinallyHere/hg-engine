@@ -682,3 +682,6 @@ BattleContext_CheckMoveImprisoned = 0x02252C74 | 1;
 BattleContext_CheckMoveUnuseableInGravity = 0x02252DC4 | 1;
 BattleContext_CheckMoveHealBlocked = 0x02252DF8 | 1;
 
+
+
+BagApp_GetSaveRoamers = 0x021F992C | 1;
