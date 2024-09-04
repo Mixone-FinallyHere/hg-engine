@@ -129,6 +129,13 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     #endif
 
     PokeParty_Init(bp->poke_party[num], 6);
+    #ifdef ENEMY_COPY_PLAYER_PARTY
+    for (i = 0; i < bp->poke_party[0]->count; i++)
+    {
+        struct PartyPokemon pp = bp->poke_party[0]->members[i];
+        PokeParty_Add(bp->poke_party[num], &pp);
+    }
+    #else
     #ifdef COPY_ENEMY_PARTY
     PokeParty_Init(bp->poke_party[0], 6);
     #endif
@@ -530,7 +537,7 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         }
         TrainerMonHandleFrustration(mons[i]);
     }
-
+    
     for (i = 0; i < pokecount; i++)
     {
         PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
@@ -543,6 +550,7 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     sys_FreeMemoryEz(buf);
     sys_FreeMemoryEz(nickname);
 
+    #endif
     gf_srand(seed_tmp);
 }
 

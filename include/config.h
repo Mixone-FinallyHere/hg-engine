@@ -89,7 +89,7 @@
 
 // RANDOMIZE_PLAYER_PARTY_TRAINERS tells the randomzier wether to randomize player party at start of trainer battles
 // comment out the line below to disable it
-#define RANDOMIZE_PLAYER_PARTY_TRAINERS
+//#define RANDOMIZE_PLAYER_PARTY_TRAINERS
 
 // RANDOMIZE_TRAINER_PARTIES tells the randomzier wether to randomize enemy trainer party at start of trainer battles
 // comment out the line below to disable it
@@ -132,5 +132,9 @@
 
 // IMPLEMENT_REUSABLE_REPELS defines whether or not a prompt to use another repel automatically appears upon the previous repel being used up
 #define IMPLEMENT_REUSABLE_REPELS
+
+// ENEMY_COPY_PLAYER_PARTY Allows enemy to copy player party
+// comment out the line below to disable it
+#define ENEMY_COPY_PLAYER_PARTY
 
 #endif
