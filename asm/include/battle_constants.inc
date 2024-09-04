@@ -344,7 +344,8 @@
 .equ MOVE_SUBSCRIPT_PTR_QUASH, 0xA1
 .equ MOVE_SUBSCRIPT_PTR_DRAIN_FULL, 0xA2
 
-
+//from drayano's Aurora Crystal move effects
+.equ MOVE_SUBSCRIPT_PTR_STRENGTH_SAP, 211
 
 
 .equ FIELD_CONDITION_RAIN, 0x1

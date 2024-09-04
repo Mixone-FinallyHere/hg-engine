@@ -12932,8 +12932,8 @@ levelup SPECIES_SHAYMIN
 
 
 levelup SPECIES_ARCEUS
-    learnset MOVE_SEISMIC_TOSS, 1
-    learnset MOVE_COSMIC_POWER, 1
+    learnset MOVE_GRASSY_GLIDE, 1
+    learnset MOVE_STRENGTH_SAP, 1
     learnset MOVE_NATURAL_GIFT, 1
     learnset MOVE_PUNISHMENT, 1
     learnset MOVE_GRAVITY, 10

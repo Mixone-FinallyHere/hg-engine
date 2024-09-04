@@ -1373,4 +1373,8 @@
     .long \arg_0
     .endm
 
+    .macro StrengthSapCalc
+    .long 251
+    .endm
+
 .endif

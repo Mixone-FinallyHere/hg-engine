@@ -86,11 +86,8 @@ scrdef scr_seq_0003_068
 scrdef scr_seq_0003_069
 scrdef scr_seq_0003_070
 scrdef scr_seq_0003_071
-<<<<<<< HEAD
 scrdef scr_seq_0003_072
-=======
 scrdef scr_seq_0003_072_repels
->>>>>>> c81294eeb9bde0265b6e795cfb6989ea47fcd26e
 scrdef_end
 
 scr_seq_0003_002:

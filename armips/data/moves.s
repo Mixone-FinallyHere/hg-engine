@@ -10753,7 +10753,7 @@ movedata MOVE_HIGH_HORSEPOWER, "High Horsepower"
     movedescription MOVE_HIGH_HORSEPOWER, "Big ground damage."
 
 movedata MOVE_STRENGTH_SAP, "Strength Sap"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_RESTORE_HALF_HP
     pss SPLIT_STATUS
     basepower 0
     type TYPE_GRASS
@@ -10766,7 +10766,7 @@ movedata MOVE_STRENGTH_SAP, "Strength Sap"
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
-    movedescription MOVE_STRENGTH_SAP, "---"
+    movedescription MOVE_STRENGTH_SAP, "Recovers HP\nequal to foe's\nAttack stat.\nLowers foe's\nAttack one stage.\n"
 
 movedata MOVE_SOLAR_BLADE, "Solar Blade"
     battleeffect MOVE_EFFECT_CHARGE_TURN_SUN_SKIPS

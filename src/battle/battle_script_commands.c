@@ -90,6 +90,10 @@ u32 LoadCaptureSuccessSPA(u32 id);
 u32 LoadCaptureSuccessSPAStarEmitter(u32 id);
 u32 LoadCaptureSuccessSPANumEmitters(u32 id);
 
+/**** AURORA CRYSTAL: Additional commands. ****/
+BOOL btl_scr_cmd_FB_strengthsapcalc(void *bw, struct BattleStruct *sp);
+
+
 #ifdef DEBUG_BATTLE_SCRIPT_COMMANDS
 const u8 *BattleScrCmdNames[] =
 {
@@ -378,6 +382,8 @@ const btl_scr_cmd_func NewBattleScriptCmdTable[] =
     [0xF8 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_F8_clearbindcounter,
     [0xF9 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_F9_canclearprimalweather,
     [0xFA - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_FA_setabilityactivatedflag,
+
+    [0xFB - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_FB_strengthsapcalc,
 };
 
 // entries before 0xFFFE are banned for mimic and metronome--after is just banned for metronome.  table ends with 0xFFFF
@@ -2815,6 +2821,31 @@ BOOL btl_scr_cmd_FA_setabilityactivatedflag(void *bw UNUSED, struct BattleStruct
     client_no = GrabClientFromBattleScriptParam(bw, sp, side);
 
     sp->battlemon[client_no].ability_activated_flag = 1;
+
+    return FALSE;
+}
+
+/**
+ *  @brief script command to calculate Strength Sap healing
+ *
+ *  @param bw battle work structure
+ *  @param sp global battle structure
+ *  @return FALSE
+ */
+BOOL btl_scr_cmd_FB_strengthsapcalc(void *bw UNUSED, struct BattleStruct *sp) {
+    IncrementBattleScriptPtr(sp, 1);
+
+    s32 damage;
+    u16 attack;
+    s8 atkstate;
+
+    attack = BattlePokemonParamGet(sp, sp->defence_client, BATTLE_MON_DATA_ATK, NULL);
+    atkstate = BattlePokemonParamGet(sp, sp->defence_client, BATTLE_MON_DATA_STATE_ATK, NULL);
+
+    damage = attack * StatBoostModifiers[atkstate][0];
+    damage /= StatBoostModifiers[atkstate][1];
+
+    sp->hp_calc_work = -damage;
 
     return FALSE;
 }
