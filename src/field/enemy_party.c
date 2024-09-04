@@ -130,17 +130,21 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     }    
     #endif
 
-    PokeParty_Init(bp->poke_party[num], 6);
+    PokeParty_Init(bp->poke_party[num], 6);    
     #ifdef COPY_ENEMY_PARTY
-    #ifdef SAVE_OWN_PARTY
-    for (int i = 0; i < bp->poke_party[0]->count; i++) {
-        struct BoxPokemon mon = bp->poke_party[0]->members[i].box;
-        PCStorage_PlaceMonInFirstEmptySlotInAnyBox(SaveArray_PCStorage_Get(gFieldSysPtr->savedata), &mon);
-    }
-    #endif
-    PokeParty_Init(bp->poke_party[0], 6);
-    #endif
-
+    // Is it a mirror battle ?
+    if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
+        #ifdef SAVE_OWN_PARTY
+        PokeParty_Init(bp->poke_party[2], 6);
+        for (i = 0; i < bp->poke_party[0]->count; i++)
+        {
+            struct PartyPokemon pp = bp->poke_party[0]->members[i];
+            PokeParty_Add(bp->poke_party[2], &pp);
+        }
+        #endif
+        PokeParty_Init(bp->poke_party[0], 6);
+    }    
+            #endif
     buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
 
     TT_TrainerPokeDataGet(bp->trainer_id[num], buf);
@@ -383,7 +387,7 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
                     nickname[j] = buf[offset] | (buf[offset+1] << 8);
                     offset += 2;
                 }
-            }
+            }            
         }
 
         // ball seal field

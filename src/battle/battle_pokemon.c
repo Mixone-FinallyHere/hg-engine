@@ -901,7 +901,39 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
         for (j = 0; j < 11; j++)
             gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, i)][j] = 0;
     }
+    #if defined(COPY_ENEMY_PARTY) && defined(SAVE_OWN_PARTY)
+    // Is it a mirror battle ?
+    if (bw->trainers[1].aibit & F_MIRROR_BATTLE) {
+        PokeParty_Init(bw->trainerParty[0], 6);        
+        for (i = 0; i < BattleWorkPokeCountGet(bw, 2); i++)
+        {
+            pp = BattleWorkPokemonParamGet(bw, 2, i);
+            monsno = GetMonData(pp, MON_DATA_SPECIES, NULL);
+            form = GetMonData(pp, MON_DATA_FORM, NULL);
 
+            if (RevertFormChange(pp, monsno, form))
+            {
+                ResetPartyPokemonAbility(pp);
+            }
+            RecalcPartyPokemonStats(pp); // always recalc stats at the end of each battle
+            PokeParty_Add(bw->trainerParty[0], pp);
+        }
+    } else {
+        for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
+        {
+            pp = BattleWorkPokemonParamGet(bw, 0, i);
+            monsno = GetMonData(pp, MON_DATA_SPECIES, NULL);
+            form = GetMonData(pp, MON_DATA_FORM, NULL);
+
+            if (RevertFormChange(pp, monsno, form))
+            {
+                ResetPartyPokemonAbility(pp);
+            }
+            RecalcPartyPokemonStats(pp); // always recalc stats at the end of each battle
+        }
+    }
+    
+    #else
     for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
     {
         pp = BattleWorkPokemonParamGet(bw, 0, i);
@@ -914,6 +946,7 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
         }
         RecalcPartyPokemonStats(pp); // always recalc stats at the end of each battle
     }
+    #endif
 
 #ifdef RESTORE_ITEMS_AT_BATTLE_END
     // grab newItems array for use later

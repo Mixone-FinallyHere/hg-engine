@@ -744,6 +744,9 @@ enum
 #define TRAINER_DATA_EXTRA_TYPE_PP_COUNTS 0x100
 #define TRAINER_DATA_EXTRA_TYPE_NICKNAME 0x200
 
+/**Trainer AI (using for Mirror Battles) **/
+#define F_MIRROR_BATTLE (1 << 14)
+
 // kinda weird, specifically tracked in the RAM
 typedef struct WildEncounterWork
 {

@@ -128,12 +128,13 @@
 
 // COPY_ENEMY_PARTY will make player party be the enemy trainers
 // comment out the line below to disable it
-// #define COPY_ENEMY_PARTY
+#define COPY_ENEMY_PARTY
 
 // SAVE_OWN_PARTY will make player party be saved if copying enemy party
 // comment out the line below to disable it
 // only used if copying enemy party
-// #define SAVE_OWN_PARTY
+#define SAVE_OWN_PARTY
+
 // IMPLEMENT_REUSABLE_REPELS defines whether or not a prompt to use another repel automatically appears upon the previous repel being used up
 #define IMPLEMENT_REUSABLE_REPELS
 

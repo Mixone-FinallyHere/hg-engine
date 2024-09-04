@@ -6,6 +6,8 @@
         "item.h": "c",
         "weather_numbers.h": "c",
         "ability.h": "c",
-        "bag.h": "c"
+        "bag.h": "c",
+        "pokemon.h": "c",
+        "battle.h": "c"
     }
 }

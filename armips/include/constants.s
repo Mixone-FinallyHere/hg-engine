@@ -568,6 +568,7 @@
 .equ F_ROAMING_MON, (1 << 11)
 .equ F_SAFARI_ZONE, (1 << 12)
 .equ F_CATCHING_DEMO, (1 << 13)
+.equ F_MIRROR_BATTLE, (1 << 14)
 
 // battle types
 
