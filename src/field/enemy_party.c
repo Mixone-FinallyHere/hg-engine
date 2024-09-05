@@ -547,7 +547,10 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     {
         PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
         #ifdef COPY_ENEMY_PARTY
-        PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+        // Is it a mirror battle ?
+        if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
+            PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+        }
         #endif
         sys_FreeMemoryEz(mons[i]);
     }
