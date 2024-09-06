@@ -918,6 +918,7 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
             RecalcPartyPokemonStats(pp); // always recalc stats at the end of each battle
             PokeParty_Add(bw->trainerParty[0], pp);
         }
+        PokeParty_Init(bw->trainerParty[2], 6);
     } else {
         for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
         {
