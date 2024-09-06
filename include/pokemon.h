@@ -746,6 +746,7 @@ enum
 
 /**Trainer AI (using for Mirror Battles) **/
 #define F_MIRROR_BATTLE (1 << 14)
+#define F_REFLECT_BATTLE (1 << 15)
 
 // kinda weird, specifically tracked in the RAM
 typedef struct WildEncounterWork

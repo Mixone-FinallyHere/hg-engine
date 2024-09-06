@@ -138,4 +138,8 @@
 // IMPLEMENT_REUSABLE_REPELS defines whether or not a prompt to use another repel automatically appears upon the previous repel being used up
 #define IMPLEMENT_REUSABLE_REPELS
 
+// ENEMY_COPY_PLAYER_PARTY Allows enemy to copy player party
+// comment out the line below to disable it
+#define ENEMY_COPY_PLAYER_PARTY
+
 #endif

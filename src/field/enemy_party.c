@@ -131,58 +131,76 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     #endif
 
     PokeParty_Init(bp->poke_party[num], 6);    
-    #ifdef COPY_ENEMY_PARTY
-    // Is it a mirror battle ?
-    if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
-        #ifdef SAVE_OWN_PARTY
-        PokeParty_Init(bp->poke_party[2], 6);
+    #ifdef ENEMY_COPY_PLAYER_PARTY
+    if (bp->trainer_data[num].aibit & F_REFLECT_BATTLE) {
         for (i = 0; i < bp->poke_party[0]->count; i++)
         {
             struct PartyPokemon pp = bp->poke_party[0]->members[i];
-            PokeParty_Add(bp->poke_party[2], &pp);
+            PokeParty_Add(bp->poke_party[num], &pp);
         }
-        #endif
-        PokeParty_Init(bp->poke_party[0], 6);
-    }    
-            #endif
-    buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
-
-    TT_TrainerPokeDataGet(bp->trainer_id[num], buf);
-
-    if (TT_TrainerTypeSexGet(bp->trainer_data[num].tr_type) == 1) // if trainer is female
-    {
-        rnd_tmp = 120;
-    }
-    else
-    {
-        rnd_tmp = 136;
-    }
-
-    u8 pokecount = bp->trainer_data[num].poke_count;
-    u8 randomorder_flag = pokecount & 0x80;
-    pokecount &= 0x7f;
-
-    // goal:  get rid of massive switch statement with each individual byte.  make the trainer type a bitfield
-    u32 id;
-    u16 species = 0, item = 0, ability = 0, level = 0, ball = 0, hp = 0, atk = 0, def = 0, speed = 0, spatk = 0, spdef = 0;
-    u16 offset = 0;
-    u16 moves[4];
-    u8 ivnums[6];
-    u8 evnums[6];
-    u8 types[2];
-    u8 ppcounts[4];
-    u16 *nickname = sys_AllocMemory(heapID, 11*sizeof(u16));
-    u8 form_no = 0, abilityslot = 0, nature = 0, ballseal = 0, shinylock = 0, status = 0, ab1 = 0, ab2 = 0;
-    u32 additionalflags = 0;
-
-    int partyOrder[pokecount];
-    if (randomorder_flag)
-    {
-        if(gf_rand() % 2 == 0)
-        {
-            for(i = 0; i < pokecount; i++)
+    } else {
+        // Not a reflect battle so we can go to rest of code
+    #endif
+        #ifdef COPY_ENEMY_PARTY
+        // Is it a mirror battle ?
+        if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
+            #ifdef SAVE_OWN_PARTY
+            PokeParty_Init(bp->poke_party[2], 6);
+            for (i = 0; i < bp->poke_party[0]->count; i++)
             {
-                partyOrder[i] = pokecount - 1 - i;
+                struct PartyPokemon pp = bp->poke_party[0]->members[i];
+                PokeParty_Add(bp->poke_party[2], &pp);
+            }
+            #endif
+            PokeParty_Init(bp->poke_party[0], 6);
+        }    
+                #endif
+        buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
+
+        TT_TrainerPokeDataGet(bp->trainer_id[num], buf);
+
+        if (TT_TrainerTypeSexGet(bp->trainer_data[num].tr_type) == 1) // if trainer is female
+        {
+            rnd_tmp = 120;
+        }
+        else
+        {
+            rnd_tmp = 136;
+        }
+
+        u8 pokecount = bp->trainer_data[num].poke_count;
+        u8 randomorder_flag = pokecount & 0x80;
+        pokecount &= 0x7f;
+
+        // goal:  get rid of massive switch statement with each individual byte.  make the trainer type a bitfield
+        u32 id;
+        u16 species = 0, item = 0, ability = 0, level = 0, ball = 0, hp = 0, atk = 0, def = 0, speed = 0, spatk = 0, spdef = 0;
+        u16 offset = 0;
+        u16 moves[4];
+        u8 ivnums[6];
+        u8 evnums[6];
+        u8 types[2];
+        u8 ppcounts[4];
+        u16 *nickname = sys_AllocMemory(heapID, 11*sizeof(u16));
+        u8 form_no = 0, abilityslot = 0, nature = 0, ballseal = 0, shinylock = 0, status = 0, ab1 = 0, ab2 = 0;
+        u32 additionalflags = 0;
+
+        int partyOrder[pokecount];
+        if (randomorder_flag)
+        {
+            if(gf_rand() % 2 == 0)
+            {
+                for(i = 0; i < pokecount; i++)
+                {
+                    partyOrder[i] = pokecount - 1 - i;
+                }
+            }
+            else
+            {
+                for(i = 0; i < pokecount; i++)
+                {
+                    partyOrder[i] = i;
+                }
             }
         }
         else
@@ -192,372 +210,368 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
                 partyOrder[i] = i;
             }
         }
-    }
-    else
-    {
-        for(i = 0; i < pokecount; i++)
+
+        if (randomorder_flag && pokecount > 1)
         {
-            partyOrder[i] = i;
-        }
-    }
-
-    if (randomorder_flag && pokecount > 1)
-    {
-        int numtimes = gf_rand() % 6 + 1;
-        for(i = 0; i < numtimes; i++)
-        {
-            randomize(partyOrder, pokecount);
-        }
-    }
-
-    struct PartyPokemon * mons[pokecount];
-
-    for (i = 0; i < pokecount; i++)
-    {
-        mons[i] = AllocMonZeroed(heapID);
-        // ivs field
-        pow = buf[offset];
-        offset++;
-
-        // abilityslot field
-        abilityslot = buf[offset];
-        offset++;
-
-        // level field
-        level = buf[offset] | (buf[offset+1] << 8);
-        gLastPokemonLevelForMoneyCalc = level; // ends up being the last level at the end of the loop that we use for the money calc loop default case
-        offset += 2;
-
-        // species field
-        species = buf[offset] | (buf[offset+1] << 8);
-        offset += 2;
-        form_no = (species & 0xF800) >> 11;
-        species &= 0x07FF;
-
-        #ifdef RANDOMIZE_TRAINER_PARTIES_NOT_SMART
-        species = getValidRandomSpecies();
-        #ifdef RANDOMIZE_FORMS
-        form_no = getValidRandomSpeciesForm(species);
-        #endif       
-        #endif
-
-        // item field - conditional
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ITEMS)
-        {
-            item = buf[offset] | (buf[offset+1] << 8);
-            offset += 2;
-        }
-
-        // moves field - conditional
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_MOVES)
-        {
-            for (j = 0; j < 4; j++)
+            int numtimes = gf_rand() % 6 + 1;
+            for(i = 0; i < numtimes; i++)
             {
-                moves[j] = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
+                randomize(partyOrder, pokecount);
             }
         }
 
-        // ability field
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ABILITY)
-        {
-            ability = buf[offset] | (buf[offset+1] << 8);
-            offset += 2;
-        }
+        struct PartyPokemon * mons[pokecount];
 
-        // custom ball field
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_BALL)
+        for (i = 0; i < pokecount; i++)
         {
-            ball = buf[offset] | (buf[offset+1] << 8);
-            offset += 2;
-        }
-
-        // ivs and evs fields
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_IV_EV_SET)
-        {
-            for(j = 0; j < 6; j++)
-            {
-                ivnums[j] = buf[offset];
-                if(ivnums[j] > 31)
-                    ivnums[j] = 31;
-                offset++;
-            }
-
-            for(j = 0; j < 6; j++)
-            {
-                evnums[j] = buf[offset];
-                offset++;
-            }
-        }
-
-        // nature field
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_NATURE_SET)
-        {
-            nature = buf[offset];
+            mons[i] = AllocMonZeroed(heapID);
+            // ivs field
+            pow = buf[offset];
             offset++;
-        }
 
-        // shiny lock field
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_SHINY_LOCK)
-        {
-            shinylock = buf[offset];
+            // abilityslot field
+            abilityslot = buf[offset];
             offset++;
-        }
 
-        // reads extra flags from the trainer pokemon file
-        if(bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ADDITIONAL_FLAGS)
-        {
-            additionalflags = buf[offset] | (buf[offset+1] << 8) | (buf[offset+2] << 16) | (buf[offset+3] << 24);
-            offset += 4;
+            // level field
+            level = buf[offset] | (buf[offset+1] << 8);
+            gLastPokemonLevelForMoneyCalc = level; // ends up being the last level at the end of the loop that we use for the money calc loop default case
+            offset += 2;
 
-            // status pre-set field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_STATUS)
+            // species field
+            species = buf[offset] | (buf[offset+1] << 8);
+            offset += 2;
+            form_no = (species & 0xF800) >> 11;
+            species &= 0x07FF;
+
+            #ifdef RANDOMIZE_TRAINER_PARTIES_NOT_SMART
+            species = getValidRandomSpecies();
+            #ifdef RANDOMIZE_FORMS
+            form_no = getValidRandomSpeciesForm(species);
+            #endif       
+            #endif
+
+            // item field - conditional
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ITEMS)
             {
-                status = buf[offset] | (buf[offset+1] << 8) | (buf[offset+2] << 16) | (buf[offset+3] << 24);
-                offset += 4;
-            }
-
-            // custom hp stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_HP)
-            {
-                hp = buf[offset] | (buf[offset+1] << 8);
+                item = buf[offset] | (buf[offset+1] << 8);
                 offset += 2;
             }
 
-            // custom atk stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_ATK)
+            // moves field - conditional
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_MOVES)
             {
-                atk = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
-            }
-
-            // custom def stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_DEF)
-            {
-                def = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
-            }
-
-            // custom speed stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SPEED)
-            {
-                speed = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
-            }
-
-            // custom spatk stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_ATK)
-            {
-                spatk = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
-            }
-
-            // custom spdef stat field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_DEF)
-            {
-                spdef = buf[offset] | (buf[offset+1] << 8);
-                offset += 2;
-            }
-
-            // custom types field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_TYPES)
-            {
-                for(j = 0; j < 2; j++)
+                for (j = 0; j < 4; j++)
                 {
-                    types[j] = buf[offset];
-                    offset++;
-                }
-            }
-
-            // move PP counts field
-            if(additionalflags & TRAINER_DATA_EXTRA_TYPE_PP_COUNTS)
-            {
-                for(j = 0; j < 4; j++)
-                {
-                    ppcounts[j] = buf[offset];
-                    offset++;
-                }
-            }
-
-            // nickname field
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_NICKNAME)
-            {
-                for(j = 0; j < 11; j++)
-                {
-                    nickname[j] = buf[offset] | (buf[offset+1] << 8);
+                    moves[j] = buf[offset] | (buf[offset+1] << 8);
                     offset += 2;
                 }
-            }            
-        }
+            }
 
-        // ball seal field
-        ballseal = buf[offset] | (buf[offset+1] << 8);
-        offset += 2;
+            // ability field
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ABILITY)
+            {
+                ability = buf[offset] | (buf[offset+1] << 8);
+                offset += 2;
+            }
 
-        // now set mon data
-        try_force_gender_maybe(species, form_no, abilityslot, &rnd_tmp);
-        rnd = pow + level + species + bp->trainer_id[num];
-        gf_srand(rnd);
-        for (j = 0; j < bp->trainer_data[num].tr_type; j++)
-        {
-            rnd = gf_rand();
-        }
-        rnd = (rnd << 8) + rnd_tmp;
-        pow = pow * 31 / 255;
-        PokeParaSet(mons[i], species, level, pow, 1, rnd, 2, 0);
-        SetMonData(mons[i], MON_DATA_FORM, &form_no);
+            // custom ball field
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_BALL)
+            {
+                ball = buf[offset] | (buf[offset+1] << 8);
+                offset += 2;
+            }
 
-        //set default abilities
-        species = PokeOtherFormMonsNoGet(species, form_no);
-        ab1 = PokePersonalParaGet(species, PERSONAL_ABILITY_1);
-        ab2 = PokePersonalParaGet(species, PERSONAL_ABILITY_2);
-        if (ab2 != 0)
-        {
-            if (abilityslot & 1)
+            // ivs and evs fields
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_IV_EV_SET)
+            {
+                for(j = 0; j < 6; j++)
+                {
+                    ivnums[j] = buf[offset];
+                    if(ivnums[j] > 31)
+                        ivnums[j] = 31;
+                    offset++;
+                }
+
+                for(j = 0; j < 6; j++)
+                {
+                    evnums[j] = buf[offset];
+                    offset++;
+                }
+            }
+
+            // nature field
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_NATURE_SET)
+            {
+                nature = buf[offset];
+                offset++;
+            }
+
+            // shiny lock field
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_SHINY_LOCK)
+            {
+                shinylock = buf[offset];
+                offset++;
+            }
+
+            // reads extra flags from the trainer pokemon file
+            if(bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ADDITIONAL_FLAGS)
+            {
+                additionalflags = buf[offset] | (buf[offset+1] << 8) | (buf[offset+2] << 16) | (buf[offset+3] << 24);
+                offset += 4;
+
+                // status pre-set field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_STATUS)
+                {
+                    status = buf[offset] | (buf[offset+1] << 8) | (buf[offset+2] << 16) | (buf[offset+3] << 24);
+                    offset += 4;
+                }
+
+                // custom hp stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_HP)
+                {
+                    hp = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom atk stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_ATK)
+                {
+                    atk = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom def stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_DEF)
+                {
+                    def = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom speed stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SPEED)
+                {
+                    speed = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom spatk stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_ATK)
+                {
+                    spatk = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom spdef stat field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_DEF)
+                {
+                    spdef = buf[offset] | (buf[offset+1] << 8);
+                    offset += 2;
+                }
+
+                // custom types field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_TYPES)
+                {
+                    for(j = 0; j < 2; j++)
+                    {
+                        types[j] = buf[offset];
+                        offset++;
+                    }
+                }
+
+                // move PP counts field
+                if(additionalflags & TRAINER_DATA_EXTRA_TYPE_PP_COUNTS)
+                {
+                    for(j = 0; j < 4; j++)
+                    {
+                        ppcounts[j] = buf[offset];
+                        offset++;
+                    }
+                }
+
+                // nickname field
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_NICKNAME)
+                {
+                    for(j = 0; j < 11; j++)
+                    {
+                        nickname[j] = buf[offset] | (buf[offset+1] << 8);
+                        offset += 2;
+                    }
+                }            
+            }
+
+            // ball seal field
+            ballseal = buf[offset] | (buf[offset+1] << 8);
+            offset += 2;
+
+            // now set mon data
+            try_force_gender_maybe(species, form_no, abilityslot, &rnd_tmp);
+            rnd = pow + level + species + bp->trainer_id[num];
+            gf_srand(rnd);
+            for (j = 0; j < bp->trainer_data[num].tr_type; j++)
+            {
+                rnd = gf_rand();
+            }
+            rnd = (rnd << 8) + rnd_tmp;
+            pow = pow * 31 / 255;
+            PokeParaSet(mons[i], species, level, pow, 1, rnd, 2, 0);
+            SetMonData(mons[i], MON_DATA_FORM, &form_no);
+
+            //set default abilities
+            species = PokeOtherFormMonsNoGet(species, form_no);
+            ab1 = PokePersonalParaGet(species, PERSONAL_ABILITY_1);
+            ab2 = PokePersonalParaGet(species, PERSONAL_ABILITY_2);
+            if (ab2 != 0)
+            {
+                if (abilityslot & 1)
+                {
+                    SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&ab1);
+                }
+                else{
+                    SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&ab2);
+                }
+            }
+            else
             {
                 SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&ab1);
             }
-            else{
-                SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&ab2);
-            }
-        }
-        else
-        {
-            SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&ab1);
-        }
 
-        // if abilityslot is 2 force hidden ability with the bit set.  this specifically to cover darmanitan with zen mode switching between forms and such.
-        if (abilityslot == 2)
-        {
-            u16 hiddenability = GetMonHiddenAbility(species, form_no);
-            SET_MON_HIDDEN_ABILITY_BIT(mons[i])
-            SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&hiddenability);
-        }
-
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ITEMS)
-        {
-            SetMonData(mons[i], MON_DATA_HELD_ITEM, &item);
-        }
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_MOVES)
-        {
-            for (j = 0; j < 4; j++)
+            // if abilityslot is 2 force hidden ability with the bit set.  this specifically to cover darmanitan with zen mode switching between forms and such.
+            if (abilityslot == 2)
             {
-                SetPartyPokemonMoveAtPos(mons[i], moves[j], j);
-            }
-        }
-        TrainerCBSet(ballseal, mons[i], heapID);
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ABILITY)
-        {
-            SetMonData(mons[i], MON_DATA_ABILITY, &ability);
-        }
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_BALL)
-        {
-            SetMonData(mons[i], MON_DATA_POKEBALL, &ball);
-        }
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_IV_EV_SET)
-        {
-            for(j = 0; j < 6; j++)
-            {
-                SetMonData(mons[i],MON_DATA_HP_IV + j, &ivnums[j]);
+                u16 hiddenability = GetMonHiddenAbility(species, form_no);
+                SET_MON_HIDDEN_ABILITY_BIT(mons[i])
+                SetMonData(mons[i], MON_DATA_ABILITY, (u8 *)&hiddenability);
             }
 
-            for(j = 0; j < 6; j++)
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ITEMS)
             {
-                SetMonData(mons[i],MON_DATA_HP_EV + j, &evnums[j]);
+                SetMonData(mons[i], MON_DATA_HELD_ITEM, &item);
             }
-        }
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_NATURE_SET)
-        {
-            u32 pid = GetMonData(mons[i], MON_DATA_PERSONALITY, NULL);
-            u8 currentNature = pid % 25;
-            pid = pid + nature - currentNature;
-            SetMonData(mons[i], MON_DATA_PERSONALITY, &pid);
-        }
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_SHINY_LOCK)
-        {
-            u32 pid = GetMonData(mons[i], MON_DATA_PERSONALITY, NULL);
-            if (shinylock != 0)
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_MOVES)
             {
-                do {
-                    id = (gf_rand() | (gf_rand() << 16));
-                } while (!SHINY_CHECK(id, pid));
-                SetMonData(mons[i], MON_DATA_OTID, &id);
-            }
-        }
-
-        RecalcPartyPokemonStats(mons[i]); // recalculate stats here
-
-        if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ADDITIONAL_FLAGS)
-        {
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_STATUS)
-            {
-                SetMonData(mons[i],MON_DATA_STATUS, &status);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_HP)
-            {
-                SetMonData(mons[i],MON_DATA_MAXHP, &hp);
-                SetMonData(mons[i],MON_DATA_HP, &hp);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_ATK)
-            {
-                SetMonData(mons[i],MON_DATA_ATTACK, &atk);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_DEF)
-            {
-                SetMonData(mons[i],MON_DATA_DEFENSE, &def);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SPEED)
-            {
-                SetMonData(mons[i],MON_DATA_SPEED, &speed);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_ATK)
-            {
-                SetMonData(mons[i],MON_DATA_SPECIAL_ATTACK, &spatk);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_DEF)
-            {
-                SetMonData(mons[i],MON_DATA_SPECIAL_DEFENSE, &spdef);
-            }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_TYPES)
-            {
-                for(j = 0; j < 2; j++)
+                for (j = 0; j < 4; j++)
                 {
-                    SetMonData(mons[i],MON_DATA_TYPE_1+j, &types[j]);
+                    SetPartyPokemonMoveAtPos(mons[i], moves[j], j);
                 }
             }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_PP_COUNTS)
+            TrainerCBSet(ballseal, mons[i], heapID);
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ABILITY)
             {
-                for(j = 0; j < 4; j++)
+                SetMonData(mons[i], MON_DATA_ABILITY, &ability);
+            }
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_BALL)
+            {
+                SetMonData(mons[i], MON_DATA_POKEBALL, &ball);
+            }
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_IV_EV_SET)
+            {
+                for(j = 0; j < 6; j++)
                 {
-                    SetMonData(mons[i],MON_DATA_MOVE1PP+j, &ppcounts[j]);
+                    SetMonData(mons[i],MON_DATA_HP_IV + j, &ivnums[j]);
+                }
+
+                for(j = 0; j < 6; j++)
+                {
+                    SetMonData(mons[i],MON_DATA_HP_EV + j, &evnums[j]);
                 }
             }
-            if (additionalflags & TRAINER_DATA_EXTRA_TYPE_NICKNAME)
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_NATURE_SET)
             {
-                u32 one = 1;
-
-                SetMonData(mons[i],MON_DATA_HAS_NICKNAME, &one);
-                SetMonData(mons[i],MON_DATA_NICKNAME, nickname);
+                u32 pid = GetMonData(mons[i], MON_DATA_PERSONALITY, NULL);
+                u8 currentNature = pid % 25;
+                pid = pid + nature - currentNature;
+                SetMonData(mons[i], MON_DATA_PERSONALITY, &pid);
             }
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_SHINY_LOCK)
+            {
+                u32 pid = GetMonData(mons[i], MON_DATA_PERSONALITY, NULL);
+                if (shinylock != 0)
+                {
+                    do {
+                        id = (gf_rand() | (gf_rand() << 16));
+                    } while (!SHINY_CHECK(id, pid));
+                    SetMonData(mons[i], MON_DATA_OTID, &id);
+                }
+            }
+
+            RecalcPartyPokemonStats(mons[i]); // recalculate stats here
+
+            if (bp->trainer_data[num].data_type & TRAINER_DATA_TYPE_ADDITIONAL_FLAGS)
+            {
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_STATUS)
+                {
+                    SetMonData(mons[i],MON_DATA_STATUS, &status);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_HP)
+                {
+                    SetMonData(mons[i],MON_DATA_MAXHP, &hp);
+                    SetMonData(mons[i],MON_DATA_HP, &hp);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_ATK)
+                {
+                    SetMonData(mons[i],MON_DATA_ATTACK, &atk);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_DEF)
+                {
+                    SetMonData(mons[i],MON_DATA_DEFENSE, &def);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SPEED)
+                {
+                    SetMonData(mons[i],MON_DATA_SPEED, &speed);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_ATK)
+                {
+                    SetMonData(mons[i],MON_DATA_SPECIAL_ATTACK, &spatk);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_SP_DEF)
+                {
+                    SetMonData(mons[i],MON_DATA_SPECIAL_DEFENSE, &spdef);
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_TYPES)
+                {
+                    for(j = 0; j < 2; j++)
+                    {
+                        SetMonData(mons[i],MON_DATA_TYPE_1+j, &types[j]);
+                    }
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_PP_COUNTS)
+                {
+                    for(j = 0; j < 4; j++)
+                    {
+                        SetMonData(mons[i],MON_DATA_MOVE1PP+j, &ppcounts[j]);
+                    }
+                }
+                if (additionalflags & TRAINER_DATA_EXTRA_TYPE_NICKNAME)
+                {
+                    u32 one = 1;
+
+                    SetMonData(mons[i],MON_DATA_HAS_NICKNAME, &one);
+                    SetMonData(mons[i],MON_DATA_NICKNAME, nickname);
+                }
+            }
+            TrainerMonHandleFrustration(mons[i]);
         }
-        TrainerMonHandleFrustration(mons[i]);
-    }
 
-    for (i = 0; i < pokecount; i++)
-    {
-        PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
-        #ifdef COPY_ENEMY_PARTY
-        // Is it a mirror battle ?
-        if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
-            PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+        for (i = 0; i < pokecount; i++)
+        {
+            PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
+            #ifdef COPY_ENEMY_PARTY
+            // Is it a mirror battle ?
+            if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
+                PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
+            }
+            #endif
+            sys_FreeMemoryEz(mons[i]);
         }
-        #endif
-        sys_FreeMemoryEz(mons[i]);
+
+        sys_FreeMemoryEz(buf);
+        sys_FreeMemoryEz(nickname);
+
+    #ifdef ENEMY_COPY_PLAYER_PARTY 
+    // Close the else
     }
-
-    sys_FreeMemoryEz(buf);
-    sys_FreeMemoryEz(nickname);
-
+    #endif
     gf_srand(seed_tmp);
 }
 
