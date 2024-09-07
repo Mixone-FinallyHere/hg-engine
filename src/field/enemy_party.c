@@ -131,7 +131,6 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     #endif
 
     PokeParty_Init(bp->poke_party[num], 6);    
-    #ifdef ENEMY_COPY_PLAYER_PARTY
     if (bp->trainer_data[num].aibit & F_REFLECT_BATTLE) {
         for (i = 0; i < bp->poke_party[0]->count; i++)
         {
@@ -140,8 +139,6 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         }
     } else {
         // Not a reflect battle so we can go to rest of code
-    #endif
-        #ifdef COPY_ENEMY_PARTY
         // Is it a mirror battle ?
         if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
             #ifdef SAVE_OWN_PARTY
@@ -154,7 +151,6 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
             #endif
             PokeParty_Init(bp->poke_party[0], 6);
         }    
-                #endif
         buf = (u8 *)sys_AllocMemory(heapID, sizeof(struct FULL_TRAINER_MON_DATA_STRUCTURE) * 6);
 
         TT_TrainerPokeDataGet(bp->trainer_id[num], buf);
@@ -556,22 +552,20 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         for (i = 0; i < pokecount; i++)
         {
             PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
-            #ifdef COPY_ENEMY_PARTY
             // Is it a mirror battle ?
             if (bp->trainer_data[num].aibit & F_MIRROR_BATTLE) {
-                PokeParty_Add(bp->poke_party[0], mons[partyOrder[i]]);
-            }
-            #endif
+                PokeParty_Add(bp->poke_party[0], mons[i]);
+            }            
+        }
+        for (i=0; pokecount; i++) {
             sys_FreeMemoryEz(mons[i]);
         }
 
         sys_FreeMemoryEz(buf);
         sys_FreeMemoryEz(nickname);
 
-    #ifdef ENEMY_COPY_PLAYER_PARTY 
     // Close the else
     }
-    #endif
     gf_srand(seed_tmp);
 }
 
