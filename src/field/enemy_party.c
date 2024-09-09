@@ -557,7 +557,7 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
                 PokeParty_Add(bp->poke_party[0], mons[i]);
             }            
         }
-        for (i=0; pokecount; i++) {
+        for (i=0; i < pokecount; i++) {
             sys_FreeMemoryEz(mons[i]);
         }
 
