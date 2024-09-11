@@ -86,8 +86,6 @@ typedef struct BerryPot {
 
 #define MAX_BERRY_POT      4
 
-#define NUM_HEADERS 540
-
 struct SAVE_MISC_DATA
 {
     /* 0x000 */ APRICORN_TREE apricorn_trees[MAX_APRICORN_TREE];
@@ -118,13 +116,6 @@ struct SAVE_MISC_DATA
     u8 isMonStored[NUM_OF_STORED_MONS];
 
 #endif
-
-#ifdef FORCED_NUZLOCKE
-    // Add table to save data for nuzlocke capture state
-    u16 mapIDEncounterSpecies[NUM_HEADERS];
-
-#endif
-
 };
 
 // vars
