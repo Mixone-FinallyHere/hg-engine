@@ -105,4 +105,9 @@
 // IMPLEMENT_REUSABLE_REPELS defines whether or not a prompt to use another repel automatically appears upon the previous repel being used up
 #define IMPLEMENT_REUSABLE_REPELS
 
+// FORCED_NUZLOCKE will enable forced nuzlocke
+// comment out the line below to disable it
+#define FORCED_NUZLOCKE
+#define NUZLOCKE_START_VARIABLE 0x416F
+
 #endif

@@ -486,10 +486,17 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     if (encounterInfo->isEgg == 0 && encounterInfo->ability == ABILITY_COMPOUND_EYES)
     {
         range = 1;
-    }
+    }  
 
     species = GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL);
 
+    #ifdef FORCED_NUZLOCKE
+    void *saveData = SaveBlock2_get();
+    struct SAVE_MISC_DATA *saveMiscData = Sav2_Misc_get(saveData);
+    debug_printf("Encounter area from gFieldSysPtr: %d\n", gFieldSysPtr->location->mapId);
+    saveMiscData->mapIDEncounterSpecies[gFieldSysPtr->location->mapId] = species;
+    #endif
+    
     if (space_for_setmondata != 0)
     {
         change_form = 1;
