@@ -44,6 +44,95 @@ void randomize(int arr[], int n) {
 
 extern u32 gLastPokemonLevelForMoneyCalc;
 
+
+/**
+ *  @brief get which dynamic scaling formula to apply from the script variable defined by SCALING_TYPE_VARIABLE
+ *
+ *  @return scaling type from SCALING_TYPE_VARIABLE script variable
+ */
+u32 GetScalingType(void)
+{
+    return GetScriptVar(SCALING_TYPE_VARIABLE);
+}
+
+/**
+ *  @brief Generate the scaled level to use for a Pokemon based on average level of player party
+ *		-ALL CREDIT TO Mixone-FinallyHere FOR THIS-
+ *  @param bp battle param
+ */
+ 
+u16 GetAvgLevel(struct BATTLE_PARAM *bp)
+ {
+	int i;
+	struct PartyPokemon *pp;
+	struct Party *party = bp->poke_party[0];
+	s32 playerCount = bp->poke_party[0]->count;
+	u16 avgLevel;
+	u16 totalLevel = 0;
+	for (i = 0; i < playerCount; i++) {
+		pp = Party_GetMonByIndex(party, i);
+		u16 currLevel = GetMonData(pp, MON_DATA_LEVEL, NULL);
+		totalLevel += currLevel;
+	}
+	avgLevel = (int)(totalLevel / playerCount);
+	 
+	return avgLevel;
+	
+ }
+ 
+ /**
+ @brief Generate the scaled level to use for a Pokemon based on highest level in player party
+ *		-ALL CREDIT TO Mixone-FinallyHere FOR THIS-
+ *  @param bp battle param
+*/ 
+
+u16 GetHighLevel(struct BATTLE_PARAM *bp)
+ {
+	int i;
+	struct PartyPokemon *pp;
+	struct Party *party = bp->poke_party[0];
+	s32 playerCount = bp->poke_party[0]->count;
+	u16 highLevel;
+	u16 highestLevel = 0;
+	 for (i = 0; i < playerCount; i++) {
+		 pp = Party_GetMonByIndex(party, i);
+		 u16 currLevel = GetMonData(pp, MON_DATA_LEVEL, NULL);
+		 if (currLevel > highestLevel) {
+			 highestLevel = currLevel;
+		 }
+	 }
+	 highLevel = highestLevel;
+	 
+	 return highLevel;
+ }
+ 
+ /**
+ @brief Generate the scaled level to use for a Pokemon based on lowest level in player party
+ *		-ALL CREDIT TO Mixone-FinallyHere FOR THIS-
+ *  @param bp battle param
+*/ 
+
+u16 GetLowLevel(struct BATTLE_PARAM *bp)
+ {
+	int i;
+	struct PartyPokemon *pp;
+	struct Party *party = bp->poke_party[0];
+	s32 playerCount = bp->poke_party[0]->count;
+	u16 lowLevel;
+	u16 lowestLevel = 100;
+	 for (i = 0; i < playerCount; i++) {
+		 pp = Party_GetMonByIndex(party, i);
+		 u16 currLevel = GetMonData(pp, MON_DATA_LEVEL, NULL);
+		 if (currLevel < lowestLevel) {
+			 lowestLevel = currLevel;
+		 }
+	 }
+	 lowLevel = lowestLevel;
+	 
+	 return lowLevel;
+ }
+	 
+
 /**
  *  @brief create the trainer Party from the trainer data file and trainer party file
  *
@@ -57,8 +146,8 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     int i, j;
     u32 rnd_tmp, rnd, seed_tmp;
     u8 pow;
-
-    seed_tmp = gf_get_seed();
+	
+	seed_tmp = gf_get_seed();
 
     PokeParty_Init(bp->poke_party[num], 6);
 
@@ -91,8 +180,15 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     u16 *nickname = sys_AllocMemory(heapID, 11*sizeof(u16));
     u8 form_no = 0, abilityslot = 0, nature = 0, ballseal = 0, shinylock = 0, status = 0, ab1 = 0, ab2 = 0;
     u32 additionalflags = 0;
-
-    int partyOrder[pokecount];
+	
+	#ifdef IMPLEMENT_SCALING
+	u32 DoScaling = GetScalingType();
+	u16 avgLevel = GetAvgLevel(bp);
+	u16 highLevel = GetHighLevel(bp);
+	u16 lowLevel = GetLowLevel(bp);
+	#endif
+	
+	int partyOrder[pokecount];
     if (randomorder_flag)
     {
         if(gf_rand() % 2 == 0)
@@ -141,9 +237,19 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         offset++;
 
         // level field
-        level = buf[offset] | (buf[offset+1] << 8);
+		level = buf[offset] | (buf[offset+1] << 8);
         gLastPokemonLevelForMoneyCalc = level; // ends up being the last level at the end of the loop that we use for the money calc loop default case
         offset += 2;
+		
+		if ((DoScaling == 1) && avgLevel >= level) {
+			level = avgLevel;
+		}
+		if ((DoScaling == 2) && highLevel >= level) {
+			level = highLevel;
+		}
+		if ((DoScaling == 3) && lowLevel >= level) {
+			level = lowLevel;
+		}
 
         // species field
         species = buf[offset] | (buf[offset+1] << 8);
@@ -314,9 +420,9 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
         }
         rnd = (rnd << 8) + rnd_tmp;
         pow = pow * 31 / 255;
-        PokeParaSet(mons[i], species, level, pow, 1, rnd, 2, 0);
+		PokeParaSet(mons[i], species, level, pow, 1, rnd, 2, 0);
         SetMonData(mons[i], MON_DATA_FORM, &form_no);
-
+		
         //set default abilities
         species = PokeOtherFormMonsNoGet(species, form_no);
         ab1 = PokePersonalParaGet(species, PERSONAL_ABILITY_1);
@@ -454,8 +560,8 @@ void MakeTrainerPokemonParty(struct BATTLE_PARAM *bp, int num, int heapID)
     }
 
     for (i = 0; i < pokecount; i++)
-    {
-        PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
+    {		
+		PokeParty_Add(bp->poke_party[num], mons[partyOrder[i]]);
         sys_FreeMemoryEz(mons[i]);
     }
 
@@ -489,6 +595,53 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     }
 
     species = GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL);
+	
+	#ifdef IMPLEMENT_SCALING
+	
+	u16 level;
+	u32 exp;
+	u32 DoScaling = GetScalingType();
+	u16 avgLevel = GetAvgLevel(bp);
+	u16 highLevel = GetHighLevel(bp);
+	u16 lowLevel = GetLowLevel(bp);
+	
+	level = GetMonData(encounterPartyPokemon, MON_DATA_LEVEL, NULL);
+	
+	if (DoScaling == 0) {
+		goto _skipLevelScale;
+	}
+	
+	else {
+		if (DoScaling == 1) {
+			level = avgLevel;
+			exp = PokeLevelExpGet(species,level);
+			SetMonData(encounterPartyPokemon, MON_DATA_LEVEL, &level);
+			SetMonData(encounterPartyPokemon, MON_DATA_EXPERIENCE, (u8 *)&exp);
+			RecalcPartyPokemonStats(encounterPartyPokemon);
+			InitBoxMonMoveset(&encounterPartyPokemon->box);
+		}
+	
+		if (DoScaling == 2) {
+			level = highLevel;
+			exp = PokeLevelExpGet(species,level);
+			SetMonData(encounterPartyPokemon, MON_DATA_LEVEL, &level);
+			SetMonData(encounterPartyPokemon, MON_DATA_EXPERIENCE, (u8 *)&exp);
+			RecalcPartyPokemonStats(encounterPartyPokemon);
+			InitBoxMonMoveset(&encounterPartyPokemon->box);
+		}
+	
+		if (DoScaling == 3) {
+			level = lowLevel;
+			exp = PokeLevelExpGet(species,level);
+			SetMonData(encounterPartyPokemon, MON_DATA_LEVEL, &level);
+			SetMonData(encounterPartyPokemon, MON_DATA_EXPERIENCE, (u8 *)&exp);
+			RecalcPartyPokemonStats(encounterPartyPokemon);
+			InitBoxMonMoveset(&encounterPartyPokemon->box);
+		}
+	}
+	
+_skipLevelScale:
+	#endif
 
     if (space_for_setmondata != 0)
     {
