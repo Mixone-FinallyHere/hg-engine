@@ -49,12 +49,34 @@ void randomize(int arr[], int n) {
  *
  *  @return new species
  */
-u32 getValidRandomSpecies() {
-    u32 new_species;
+u16 getValidRandomSpecies() {
+    u16 new_species;
     new_species = 1 + gf_rand()%MAX_ID_RANDOMIZED;
     if(new_species == 494 || new_species == 495) new_species = SPECIES_SHUCKLE;
     if(new_species > 507 && new_species < 544) new_species += 37 + gf_rand()%(MAX_ID_RANDOMIZED - 506);
     return new_species;
+}
+
+/**
+ *  @brief generates a random valid move
+ *
+ *  @return new move
+ */
+u16 getValidRandomMove() {
+    u16 new_move;
+    new_move = 1 + gf_rand()%NUM_OF_MOVES;
+    return new_move;
+}
+
+/**
+ *  @brief generates a random valid type
+ *
+ *  @return new type
+ */
+u8 getValidRandomType() {
+    u8 new_type;
+    new_type = 1 + gf_rand()%0x12;
+    return new_type;
 }
 
 /**
@@ -582,10 +604,24 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     #endif
     SetMonData(encounterPartyPokemon, MON_DATA_SPECIES, &species);
     GetSpeciesNameIntoArray(GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL), 0, nickname);
-    SetMonData(encounterPartyPokemon, MON_DATA_NICKNAME, nickname);
+    SetMonData(encounterPartyPokemon, MON_DATA_NICKNAME, nickname);    
+    #ifdef RANDOMIZED_WILD_MOVESETS
+    for (int i = 0; i < 4; i++)
+    {
+        u16 new_move = getValidRandomMove();
+        SetPartyPokemonMoveAtPos(encounterPartyPokemon, new_move, i);
+    }    
+    #else
+    InitBoxMonMoveset(&encounterPartyPokemon->box);
+    #endif
+    #ifdef RANDOMIZED_WILD_TYPES
+    u8 new_type_1 = getValidRandomType();
+    u8 new_type_2 = getValidRandomType();
+    SetMonData(encounterPartyPokemon, MON_DATA_TYPE_1, &new_type_1);
+    SetMonData(encounterPartyPokemon, MON_DATA_TYPE_2, &new_type_2);
+    #endif
     RecalcPartyPokemonStats(encounterPartyPokemon);
     ResetPartyPokemonAbility(encounterPartyPokemon);
-    InitBoxMonMoveset(&encounterPartyPokemon->box);
     #endif
 
     if (space_for_setmondata != 0)
