@@ -13,7 +13,6 @@
 #include "../../include/constants/battle_message_constants.h"
 #include "../../include/constants/file.h"
 
-static BOOL MummyAbilityCheck(struct BattleStruct *sp);
 static BOOL CanPickpocketStealClientItem(struct BattleStruct *sp, int client_no);
 
 /**
@@ -46,11 +45,11 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && (BattleRand(bw) % 10 < 3)) {
                 sp->addeffect_type = ADD_STATUS_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_APPLY_PARALYSIS;
                 ret = TRUE;
             }
@@ -75,7 +74,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                     && (BattlePokemonParamGet(sp, sp->defence_client, BATTLE_MON_DATA_TYPE1, NULL) != movetype)
                     && (BattlePokemonParamGet(sp, sp->defence_client, BATTLE_MON_DATA_TYPE2, NULL) != movetype)
                     && (sp->battlemon[sp->defence_client].condition2 & STATUS2_SUBSTITUTE) == 0
-                    && (sp->multi_hit_count <= 1)) // don't activate until the last hit of a multi-hit move
+                    && (sp->multiHitCount <= 1)) // don't activate until the last hit of a multi-hit move
                 {
                     seq_no[0] = SUB_SEQ_COLOR_CHANGE;
                     sp->msg_work = movetype;
@@ -92,9 +91,9 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)) {
+                && (IsContactBeingMade(bw, sp))) {
                 sp->hp_calc_work = BattleDamageDivide(sp->battlemon[sp->attack_client].maxhp * -1, 8);
-                sp->client_work = sp->attack_client;
+                sp->battlerIdTemp = sp->attack_client;
                 seq_no[0] = SUB_SEQ_ROUGH_SKIN;
                 ret = TRUE;
             }
@@ -107,7 +106,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && (BattleRand(bw) % 10 < 3)) {
                 switch (BattleRand(bw) % 3) {
                     case 0:
@@ -123,7 +122,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 }
                 sp->addeffect_type = ADD_STATUS_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 ret = TRUE;
             }
             break;
@@ -135,11 +134,11 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && (BattleRand(bw) % 10 < 3)) {
                 sp->addeffect_type = ADD_STATUS_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_APPLY_POISON;
                 ret = TRUE;
             }
@@ -152,29 +151,29 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && (BattleRand(bw) % 10 < 3)) {
                 sp->addeffect_type = ADD_STATUS_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_APPLY_BURN;
                 ret = TRUE;
             }
             break;
         case ABILITY_CUTE_CHARM:
             if ((sp->battlemon[sp->attack_client].hp)
-                && ((sp->battlemon[sp->attack_client].condition2 & STATUS2_INFATUATION) == 0)
+                && ((sp->battlemon[sp->attack_client].condition2 & STATUS2_ATTRACT) == 0)
                 && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
                 && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage))
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && (sp->battlemon[sp->defence_client].hp)
                 && (BattleRand(bw) % 10 < 3)) {
                 sp->addeffect_type = ADD_STATUS_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_APPLY_ATTRACT;
                 ret = TRUE;
             }
@@ -186,9 +185,9 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
                 && (sp->battlemon[sp->attack_client].hp)
                 && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)) {
+                && (IsContactBeingMade(bw, sp))) {
                 sp->hp_calc_work = BattleDamageDivide(sp->battlemon[sp->attack_client].maxhp * -1, 4);
-                sp->client_work = sp->attack_client;
+                sp->battlerIdTemp = sp->attack_client;
                 seq_no[0] = SUB_SEQ_HANDLE_AFTERMATH;
                 ret = TRUE;
             }
@@ -201,7 +200,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0))
             {
                 sp->hp_calc_work = sp->damage;
-                sp->client_work = sp->attack_client;
+                sp->battlerIdTemp = sp->attack_client;
                 seq_no[0] = SUB_SEQ_HANDLE_INNARDS_OUT_MESSAGE;
                 ret = TRUE;
             }
@@ -222,10 +221,10 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
 
                 if ((movetype == TYPE_DARK) || (movetype == TYPE_GHOST) || (movetype == TYPE_BUG))
                 {
-                    sp->addeffect_param = ADD_STATE_SPEED_UP;
+                    sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_SPEED_UP;
                     sp->addeffect_type = ADD_EFFECT_ABILITY;
                     sp->state_client = sp->defence_client;
-                    sp->client_work = sp->defence_client;
+                    sp->battlerIdTemp = sp->defence_client;
                     seq_no[0] = SUB_SEQ_BOOST_STATS;
                     ret = TRUE;
                 }
@@ -244,7 +243,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 // berserk doesn't activate if the Pokémon gets attacked by a sheer force boosted move
                 && !((GetBattlerAbility(sp, sp->attack_client) == ABILITY_SHEER_FORCE) && (sp->battlemon[sp->attack_client].sheer_force_flag == 1))
                 // berserk doesn't activate until the last hit of a multi-hit move
-                && (sp->multi_hit_count <= 1)
+                && (sp->multiHitCount <= 1)
                 && (sp->battlemon[sp->defence_client].hp <= (s32)(sp->battlemon[sp->defence_client].maxhp / 2))
                 && (
                     // checks if the pokémon has gone below half HP from the current damage instance
@@ -254,10 +253,10 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                    )
             )
             {
-                sp->addeffect_param = ADD_STATE_SP_ATK_UP;
+                sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_SP_ATK_UP;
                 sp->addeffect_type = ADD_EFFECT_ABILITY;
                 sp->state_client = sp->defence_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_BOOST_STATS;
                 ret = TRUE;
             }
@@ -271,10 +270,10 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage)))
             {
-                sp->addeffect_param = ADD_STATE_DEFENSE_UP;
+                sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_DEFENSE_UP;
                 sp->addeffect_type = ADD_EFFECT_ABILITY;
                 sp->state_client = sp->defence_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_BOOST_STATS;
                 ret = TRUE;
             }
@@ -285,30 +284,34 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
                 && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
+                && (IsContactBeingMade(bw, sp))
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage)))
             {
-                sp->addeffect_param = ADD_STATE_SPEED_DOWN;
+                sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_SPEED_DOWN;
                 sp->addeffect_type = ADD_EFFECT_PRINT_WORK_ABILITY;
                 sp->state_client = sp->attack_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 seq_no[0] = SUB_SEQ_BOOST_STATS;
                 ret = TRUE;
             }
             break;
         case ABILITY_MUMMY:
+            FALLTHROUGH;
         case ABILITY_LINGERING_AROMA:
+            if (sp->battlemon[sp->attack_client].ability == sp->battlemon[sp->defence_client].ability) {
+                break;
+            }
             if (((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
                 && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
                 && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0)
-                && (sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT)
-                && (MummyAbilityCheck(sp) == TRUE)
+                && (IsContactBeingMade(bw, sp))
+                && (!AbilityCantSupress(sp->battlemon[sp->attack_client].ability))
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) ||
                     (sp->oneSelfFlag[sp->defence_client].special_damage)))
             {
                 sp->addeffect_type = ADD_EFFECT_ABILITY;
-                sp->client_work = sp->attack_client;
+                sp->battlerIdTemp = sp->attack_client;
                 sp->battlemon[sp->attack_client].ability = GetBattlerAbility(sp, sp->defence_client); // spread defender ability to attacker
                 seq_no[0] = SUB_SEQ_HANDLE_MUMMY_MESSAGE;
                 ret = TRUE;
@@ -331,19 +334,19 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 {
                     if(sp->battlemon[sp->defence_client].states[STAT_DEFENSE] < 11)
                     {
-                        sp->addeffect_param = ADD_STATE_DEFENSE_UP_2;
+                        sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_DEFENSE_UP_2;
                         sp->addeffect_type = ADD_EFFECT_ABILITY;
                         sp->state_client = sp->defence_client;
-                        sp->client_work = sp->defence_client;
+                        sp->battlerIdTemp = sp->defence_client;
                         seq_no[0] = SUB_SEQ_BOOST_STATS;
                         ret = TRUE;
                     }
                     else
                     {
-                        sp->addeffect_param = ADD_STATE_DEFENSE_UP;
+                        sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_DEFENSE_UP;
                         sp->addeffect_type = ADD_EFFECT_ABILITY;
                         sp->state_client = sp->defence_client;
-                        sp->client_work = sp->defence_client;
+                        sp->battlerIdTemp = sp->defence_client;
                         seq_no[0] = SUB_SEQ_BOOST_STATS;
                         ret = TRUE;
                     }
@@ -365,10 +368,10 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
 
                 if (movetype == TYPE_DARK)
                 {
-                    sp->addeffect_param = ADD_STATE_ATTACK_UP;
+                    sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_ATTACK_UP;
                     sp->addeffect_type = ADD_EFFECT_ABILITY;
                     sp->state_client = sp->defence_client;
-                    sp->client_work = sp->defence_client;
+                    sp->battlerIdTemp = sp->defence_client;
                     seq_no[0] = SUB_SEQ_BOOST_STATS;
                     ret = TRUE;
                 }
@@ -383,49 +386,49 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 && (sp->oneSelfFlag[sp->defence_client].physical_damage))
             {
                 sp->state_client = sp->defence_client;
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 sp->addeffect_type = ADD_EFFECT_ABILITY;
                 seq_no[0] = SUB_SEQ_HANDLE_WEAK_ARMOR;
                 ret = TRUE;
             }
             break;
-        case ABILITY_DEFIANT:
-            if ((sp->battlemon[sp->defence_client].hp != 0)
-             && (sp->oneSelfFlag[sp->state_client].defiant_flag)
-             && (sp->battlemon[sp->defence_client].states[STAT_ATTACK] < 12)
-             && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
-             && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
-             && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0))
-            {
-                sp->oneSelfFlag[sp->state_client].defiant_flag = 0;
-                sp->state_client = sp->defence_client;
-                sp->client_work = sp->defence_client;
-                sp->addeffect_type = ADD_EFFECT_ABILITY;
-                seq_no[0] = SUB_SEQ_HANDLE_DEFIANT;
-                ret = TRUE;
-            }
-            break;
-        // handle competitive; copypaste from above with different sub_seq
-        case ABILITY_COMPETITIVE:
-            if ((sp->battlemon[sp->defence_client].hp != 0)
-             && (sp->oneSelfFlag[sp->state_client].defiant_flag)
-             && (sp->battlemon[sp->defence_client].states[STAT_SPATK] < 12)
-             && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
-             && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
-             && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0))
-            {
-                sp->oneSelfFlag[sp->state_client].defiant_flag = 0;
-                sp->state_client = sp->defence_client;
-                sp->client_work = sp->defence_client;
-                sp->addeffect_type = ADD_EFFECT_ABILITY;
-                seq_no[0] = SUB_SEQ_HANDLE_COMPETITIVE;
-                ret = TRUE;
-            }
-            break;
+        // case ABILITY_DEFIANT:
+        //     if ((sp->battlemon[sp->defence_client].hp != 0)
+        //      && (sp->oneSelfFlag[sp->state_client].defiant_flag)
+        //      && (sp->battlemon[sp->defence_client].states[STAT_ATTACK] < 12)
+        //      && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
+        //      && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
+        //      && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0))
+        //     {
+        //         sp->oneSelfFlag[sp->state_client].defiant_flag = 0;
+        //         sp->state_client = sp->defence_client;
+        //         sp->battlerIdTemp = sp->defence_client;
+        //         sp->addeffect_type = ADD_EFFECT_ABILITY;
+        //         seq_no[0] = SUB_SEQ_HANDLE_DEFIANT;
+        //         ret = TRUE;
+        //     }
+        //     break;
+        // // handle competitive; copypaste from above with different sub_seq
+        // case ABILITY_COMPETITIVE:
+        //     if ((sp->battlemon[sp->defence_client].hp != 0)
+        //      && (sp->oneSelfFlag[sp->state_client].defiant_flag)
+        //      && (sp->battlemon[sp->defence_client].states[STAT_SPATK] < 12)
+        //      && ((sp->waza_status_flag & WAZA_STATUS_FLAG_NO_OUT) == 0)
+        //      && ((sp->server_status_flag & SERVER_STATUS_FLAG_x20) == 0)
+        //      && ((sp->server_status_flag2 & SERVER_STATUS_FLAG2_U_TURN) == 0))
+        //     {
+        //         sp->oneSelfFlag[sp->state_client].defiant_flag = 0;
+        //         sp->state_client = sp->defence_client;
+        //         sp->battlerIdTemp = sp->defence_client;
+        //         sp->addeffect_type = ADD_EFFECT_ABILITY;
+        //         seq_no[0] = SUB_SEQ_HANDLE_COMPETITIVE;
+        //         ret = TRUE;
+        //     }
+        //     break;
         //handle pickpocket - steal attacker's item if it can
         case ABILITY_PICKPOCKET:
             if (sp->battlemon[sp->defence_client].hp != 0
-             && sp->moveTbl[sp->current_move_index].flag & FLAG_CONTACT
+             && IsContactBeingMade(bw, sp)
              && sp->moveTbl[sp->current_move_index].power != 0
              && CanPickpocketStealClientItem(sp, sp->attack_client)
              && !(GetBattlerAbility(sp, sp->attack_client) == ABILITY_SHEER_FORCE && sp->battlemon[sp->attack_client].sheer_force_flag == 1)) // pickpocket doesn't activate if attacked by sheer force
@@ -436,7 +439,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
             break;
         // handle cursed body - disable the last used move by the pokemon.  disabling is handled here, script just displays the message
         case ABILITY_CURSED_BODY:
-            move_pos = GetBattlePokemonMovePosFromMove(&sp->battlemon[sp->attack_client], sp->current_move_index);
+            move_pos = BattleMon_GetMoveIndex(&sp->battlemon[sp->attack_client], sp->current_move_index);
             if (sp->battlemon[sp->attack_client].hp != 0
              && sp->battlemon[sp->attack_client].moveeffect.disabledMove == 0
              && move_pos != 4 // is a valid move the mon knows
@@ -462,7 +465,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
             )
             {
                 BattleFormChange(sp->defence_client, 1, bw, sp, TRUE);
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 sp->battlemon[sp->defence_client].form_no = 1;
                 seq_no[0] = SUB_SEQ_HANDLE_DISGUISE_ICE_FACE;
                 ret = TRUE;
@@ -478,7 +481,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
             )
             {
                 BattleFormChange(sp->defence_client, 1, bw, sp, TRUE);
-                sp->client_work = sp->defence_client;
+                sp->battlerIdTemp = sp->defence_client;
                 sp->battlemon[sp->defence_client].form_no = 1;
                 seq_no[0] = SUB_SEQ_HANDLE_DISGUISE_ICE_FACE;
                 ret = TRUE;
@@ -502,10 +505,10 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
                 {
                     if(sp->battlemon[sp->defence_client].states[STAT_ATTACK] < 12)
                     {
-                        sp->addeffect_param = ADD_STATE_ATTACK_UP;
+                        sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_ATTACK_UP;
                         sp->addeffect_type = ADD_EFFECT_ABILITY;
                         sp->state_client = sp->defence_client;
-                        sp->client_work = sp->defence_client;
+                        sp->battlerIdTemp = sp->defence_client;
                         seq_no[0] = SUB_SEQ_BOOST_STATS;
                         ret = TRUE;
                     }
@@ -517,39 +520,6 @@ BOOL MoveHitDefenderAbilityCheckInternal(void *bw, struct BattleStruct *sp, int 
     }
 
     return ret;
-}
-
-/**
- *  @brief check if mummy can overwrite the attacker's ability
- *
- *  @param sp global battle structure
- *  @return TRUE if the ability can be overwritten; FALSE otherwise
- */
-BOOL MummyAbilityCheck(struct BattleStruct *sp)
-{
-    switch(GetBattlerAbility(sp, sp->attack_client))
-    {
-        case ABILITY_MULTITYPE:
-        case ABILITY_MUMMY:
-        case ABILITY_ZEN_MODE:
-        case ABILITY_STANCE_CHANGE:
-        case ABILITY_SHIELDS_DOWN:
-        case ABILITY_SCHOOLING:
-        case ABILITY_DISGUISE:
-        case ABILITY_BATTLE_BOND:
-        case ABILITY_POWER_CONSTRUCT:
-        case ABILITY_COMATOSE:
-        case ABILITY_RKS_SYSTEM:
-        case ABILITY_AS_ONE_GLASTRIER:
-        case ABILITY_AS_ONE_SPECTRIER:
-        // seems to be based on Lingering Aroma from Bulbapedia
-        case ABILITY_LINGERING_AROMA:
-        case ABILITY_ZERO_TO_HERO:
-        case ABILITY_COMMANDER:
-            return FALSE;
-        default:
-            return TRUE;
-    }
 }
 
 /**
