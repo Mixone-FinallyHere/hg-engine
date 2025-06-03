@@ -111,7 +111,7 @@ void __attribute__((section (".init"))) ServerBeforeActInternal(struct BattleSys
                         if (BattleTypeGet(bw) & BATTLE_TYPE_MULTI) {
                             // player requests mega
                             if (!(client_no)) {
-                                if (CheckCanMega(sp, client_no) && (newBS.playerWantMega & No2Bit(client_no)) != 0) {
+                                if (CheckCanMega(bw, sp, client_no) && (newBS.playerWantMega & No2Bit(client_no)) != 0) {
                                     sp->battlemon[client_no].canMega = 1;
                                     newBS.SideMega[0] = TRUE;
                                     if (sp->battlemon[client_no].id_no == sp->battlemon[2].id_no)
@@ -121,7 +121,7 @@ void __attribute__((section (".init"))) ServerBeforeActInternal(struct BattleSys
                             }
                             // ai requests mega
                             else {
-                                if (CheckCanMega(sp, client_no)) {
+                                if (CheckCanMega(bw, sp, client_no)) {
                                     sp->battlemon[client_no].canMega = 1;
                                     newBS.SideMega[client_no] = TRUE;
                                     flag = TRUE;
@@ -130,7 +130,7 @@ void __attribute__((section (".init"))) ServerBeforeActInternal(struct BattleSys
                         } else {
                             // player requests mega
                             if (!(client_no & 1)) {
-                                if (CheckCanMega(sp, client_no) && (newBS.playerWantMega & No2Bit(client_no)) != 0) {
+                                if (CheckCanMega(bw, sp, client_no) && (newBS.playerWantMega & No2Bit(client_no)) != 0) {
                                     sp->battlemon[client_no].canMega = 1;
                                     newBS.SideMega[0] = TRUE;
                                     newBS.SideMega[2] = TRUE;
@@ -139,7 +139,7 @@ void __attribute__((section (".init"))) ServerBeforeActInternal(struct BattleSys
                             }
                             // ai requests mega
                             else {
-                                if (CheckCanMega(sp, client_no)) {
+                                if (CheckCanMega(bw, sp, client_no)) {
                                     sp->battlemon[client_no].canMega = 1;
                                     newBS.SideMega[1] = TRUE;
                                     newBS.SideMega[3] = TRUE;

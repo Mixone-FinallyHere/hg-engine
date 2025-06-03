@@ -275,7 +275,7 @@ const struct MegaStructMove sMegaMoveTable[] =
 
 static BOOL CheckMegaMoveData(u32 mon, u16 *moves);
 
-BOOL CheckCanMega(struct BattleStruct *battle, int client)
+BOOL CheckCanMega(struct BattleSystem *bw, struct BattleStruct *battle, int client)
 {
     u16 mon = battle->battlemon[client].species;
     u16 item = battle->battlemon[client].item;
@@ -292,7 +292,12 @@ BOOL CheckCanMega(struct BattleStruct *battle, int client)
 
     if (battle->playerActions[client][3] != SELECT_FIGHT_COMMAND)
         return FALSE;
-
+    
+    if(client == 0 && (
+        !Bag_HasItem(bw->bag, ITEM_MEGA_RING, 1, HEAPID_BATTLE_HEAP)
+        && !Bag_HasItem(bw->bag, ITEM_KEY_STONE, 1, HEAPID_BATTLE_HEAP)
+    ))
+        return FALSE;    
     return (CheckMegaData(mon, item) || CheckMegaMoveData(mon, battle->battlemon[client].move));
 }
 
