@@ -155,4 +155,10 @@
 // STATIC_HP_BAR updates the HP bar to increase/decrease at a fixed rate like later generations
 #define STATIC_HP_BAR
 
+// HIDDEN_POWER_FAIRY allows for Hidden Power to be Fairy type
+#define HIDDEN_POWER_FAIRY
+
+// HIDDEN_POWER_NORMAL allows for Hidden Power to be Fairy type
+#define HIDDEN_POWER_NORMAL
+
 #endif

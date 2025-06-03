@@ -2680,12 +2680,27 @@ int LONG_CALL GetDynamicMoveType(struct BattleSystem *bsys, struct BattleStruct 
                    ((ctx->battlemon[battlerId].spe_iv & 1) << 3) |
                    ((ctx->battlemon[battlerId].spatk_iv & 1) << 4) |
                    ((ctx->battlemon[battlerId].spdef_iv & 1) << 5);
+            #ifdef HIDDEN_POWER_NORMAL
+            #ifdef HIDDEN_POWER_FAIRY
+            type = (type * 17 / 63);
+            #else
+            type = (type * 15 / 63);
 
+            if (type >= TYPE_MYSTERY) {
+                type++;
+            }
+            #endif
+            #else
+            #ifdef HIDDEN_POWER_FAIRY
+            type = (type * 17 / 63) + 1;
+            #else
             type = (type * 15 / 63) + 1;
 
             if (type >= TYPE_MYSTERY) {
                 type++;
             }
+            #endif
+            #endif
             break;
         case MOVE_WEATHER_BALL:
             if (!CheckSideAbility(bsys, ctx, CHECK_ABILITY_ALL_HP, 0, ABILITY_CLOUD_NINE) && !CheckSideAbility(bsys, ctx, CHECK_ABILITY_ALL_HP, 0, ABILITY_AIR_LOCK)) {
