@@ -62,7 +62,22 @@
 // DEBUG_ENDTURN_LOGIC turns on a number of debug prints related to the end-turn logic
 //#define DEBUG_ENDTURN_LOGIC
 
+// DEBUG_BEFORE_MOVE_LOGIC turns on a number of debug prints related to the before-move logic
+//#define DEBUG_BEFORE_MOVE_LOGIC
+
+// DEBUG_PRINT_HEAP_CREATION allows for debug prints on heap creation/deletion
+//#define DEBUG_PRINT_HEAP_CREATION
+
+// DEBUG_PRINT_HEAP_ALLOCATION allows for debug prints on memory allocation/free
+//#define DEBUG_PRINT_HEAP_ALLOCATION
+
+//DEBUG_SPEED_CALC shows debug information related to calculating speed. It is very slow and laggy.
+// #define DEBUG_SPEED_CALC
+
+// FANCY_PRINT_NICKNAME defines in progress implementations that may not necessarily function.
+// #define FANCY_PRINT_NICKNAME
+
 // NOCASH_GBA_PRINT swaps from desmume prints with the syscall to NO$GBA-style prints for use with i.e. melonDS
-//#define NOCASH_GBA_PRINT
+#define NOCASH_GBA_PRINT
 
 #endif // DEBUG_H
