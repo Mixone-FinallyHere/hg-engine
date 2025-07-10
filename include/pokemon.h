@@ -4,6 +4,10 @@
 #include "config.h"
 //#include "save.h"
 #include "types.h"
+#include "trainer_data.h"
+
+#define _PARTY_MENU_WINDOW_ID_MAX 40
+#define _PARTY_MENU_SPRITE_ID_MAX 29
 
 #define POKEMON_GENDER_MALE 0
 #define POKEMON_GENDER_FEMALE 1
@@ -97,8 +101,40 @@
 #define GET_BOX_MON_NATURE_OVERRIDE(boxmon) (((GetBoxMonData(boxmon, MON_DATA_RESERVED_114, 0) & DUMMY_P2_2_NATURE_OVERRIDE) >> 1) & 0x1F)
 
 
+// https://www.smogon.com/forums/threads/scarlet-violet-battle-mechanics-research.3709545/post-9900134
+#define IS_SPECIES_LEGENDARY(species) ((species == SPECIES_MEWTWO) || (species == SPECIES_LUGIA) || (species == SPECIES_HO_OH) \
+    || (species == SPECIES_KYOGRE) || (species == SPECIES_GROUDON) || (species == SPECIES_RAYQUAZA) || (species == SPECIES_DIALGA) \
+    || (species == SPECIES_PALKIA) || (species == SPECIES_GIRATINA) || (species == SPECIES_RESHIRAM) || (species == SPECIES_ZEKROM) \
+    || (species == SPECIES_KYUREM) || (species == SPECIES_XERNEAS) || (species == SPECIES_YVELTAL) || (species == SPECIES_ZYGARDE) \
+    || (species == SPECIES_COSMOG) || (species == SPECIES_COSMOEM) || (species == SPECIES_SOLGALEO) || (species == SPECIES_LUNALA) \
+    || (species == SPECIES_NECROZMA) || (species == SPECIES_ZACIAN) || (species == SPECIES_ZAMAZENTA) || (species == SPECIES_ETERNATUS) \
+    || (species == SPECIES_CALYREX) || (species == SPECIES_KORAIDON) || (species == SPECIES_MIRAIDON) || (species == SPECIES_TERAPAGOS))
+
+#define IS_SPECIES_MYTHICAL(species) ((species == SPECIES_MEW) || (species == SPECIES_CELEBI) || (species == SPECIES_JIRACHI) \
+    || (species == SPECIES_DEOXYS) || (species == SPECIES_PHIONE) || (species == SPECIES_MANAPHY) || (species == SPECIES_DARKRAI) \
+    || (species == SPECIES_SHAYMIN) || (species == SPECIES_ARCEUS) || (species == SPECIES_VICTINI) || (species == SPECIES_KELDEO) \
+    || (species == SPECIES_MELOETTA) || (species == SPECIES_GENESECT) || (species == SPECIES_DIANCIE) || (species == SPECIES_HOOPA) \
+    || (species == SPECIES_VOLCANION) || (species == SPECIES_SHIINOTIC) /* || (species == SPECIES_MARSHADOW) */ || (species == SPECIES_MAGEARNA) \
+    || (species == SPECIES_ZERAORA) || (species == SPECIES_MELTAN) || (species == SPECIES_MELMETAL) || (species == SPECIES_ZARUDE) \
+    || (species == SPECIES_PECHARUNT))
+
+#define IS_SPECIES_SUBLEGEND(species) ((species == SPECIES_ARTICUNO) || (species == SPECIES_ZAPDOS) || (species == SPECIES_MOLTRES) \
+    || (species == SPECIES_RAIKOU) || (species == SPECIES_ENTEI) || (species == SPECIES_SUICUNE) || (species == SPECIES_REGIROCK) \
+    || (species == SPECIES_REGICE) || (species == SPECIES_REGISTEEL) || (species == SPECIES_LATIAS) || (species == SPECIES_LATIOS) \
+    || (species == SPECIES_UXIE) || (species == SPECIES_MESPRIT) || (species == SPECIES_AZELF) || (species == SPECIES_HEATRAN) \
+    || (species == SPECIES_REGIGIGAS) || (species == SPECIES_CRESSELIA) || (species == SPECIES_COBALION) || (species == SPECIES_TERRAKION) \
+    || (species == SPECIES_VIRIZION) || (species == SPECIES_TORNADUS) || (species == SPECIES_THUNDURUS) || (species == SPECIES_LANDORUS) \
+    || (species == SPECIES_TYPE_NULL) || (species == SPECIES_SILVALLY) || (species == SPECIES_TAPU_KOKO) || (species == SPECIES_TAPU_LELE) \
+    || (species == SPECIES_TAPU_BULU) || (species == SPECIES_TAPU_FINI) || (species == SPECIES_KUBFU) || (species == SPECIES_URSHIFU) \
+    || (species == SPECIES_REGIELEKI) || (species == SPECIES_REGIDRAGO) || (species == SPECIES_GLASTRIER) || (species == SPECIES_SPECTRIER) \
+    || (species == SPECIES_ENAMORUS) || (species == SPECIES_TING_LU) || (species == SPECIES_CHIEN_PAO) || (species == SPECIES_WO_CHIEN) \
+    || (species == SPECIES_CHI_YU) || (species == SPECIES_OGERPON) || (species == SPECIES_OKIDOGI) || (species == SPECIES_MUNKIDORI) \
+    || (species == SPECIES_FEZANDIPITI))
+
+#define IS_SPECIES_ULTRA_BEAST(species) ((species >= SPECIES_NIHILEGO && species <= SPECIES_BLACEPHALON))
+
 #define IS_SPECIES_PARADOX_FORM(species) ((species >= SPECIES_GREAT_TUSK && species <= SPECIES_IRON_THORNS) || (species == SPECIES_ROARING_MOON) || (species == SPECIES_IRON_VALIANT) || (species == SPECIES_WALKING_WAKE) \
-    || (species == SPECIES_IRON_LEAVES) || (species >= SPECIES_GOUGING_FIRE && species <= SPECIES_IRON_CROWN))
+    || (species == SPECIES_IRON_LEAVES) /*|| (species >= SPECIES_GOUGING_FIRE && species <= SPECIES_IRON_CROWN)*/)
 
 
 // personal narc fields
@@ -537,12 +573,44 @@ struct PLIST_DATA
     /* 0x3C+4 */ s32 shinka_cond;
 };
 
+struct Window
+{
+    void* /* BgConfig **/ bgConfig;
+    u8 bgId;
+    u8 tilemapLeft;
+    u8 tilemapTop;
+    u8 width;
+    u8 height;
+    u8 paletteNum;
+    u16 baseTile  : 15;
+    u16 colorMode : 1;
+    void *pixelBuffer;
+}; //size 0x10
+
+
 struct PLIST_WORK
 {
-    u8 padding_x0[0x654];
-    struct PLIST_DATA *dat;
-    u8 padding_x658[0xC65-0x658];
+    /* 0x0 */ void* /* BgConfig **/ bgConfig;
+    /* 0x4 */ struct Window windows[_PARTY_MENU_WINDOW_ID_MAX];
+    /* 0x284 */ struct Window levelUpStatsWindow[1];       // 0x284
+    /* 0x294 */ struct Window contextMenuButtonWindows[8]; // 0x294
+    /* 0x314 */ u8 padding_x0[0x654-0x314];
+    /* 0x654 */ struct PLIST_DATA *dat;
+    /* 0x658 */ void* /*SpriteRenderer **/ spriteRenderer;
+    /* 0x65C */ void* /*SpriteGfxHandler **/ spriteGfxHandler;
+    /* 0x660 */ void* /*Sprite **/ sprites[_PARTY_MENU_SPRITE_ID_MAX]; // 0x660
+    /* 0x6D4 */ u8 padding_x6D4[0xC65-0x660-0x74];
     u8 pos;
+};
+
+struct IconFormChangeData {
+    int state;
+    int effectTimer;
+    int duration;
+    int species;
+    int fileId;
+    int partyMonIndex;
+    void *particleSystem; // SPLEmitter from pokeheartgold
 };
 
 
@@ -618,15 +686,7 @@ typedef struct
     u32 personal_rnd;
 } MON_PIC;
 
-struct FormData
-{
-    u16 species;
-
-    u16 form_no:15;
-    u16 need_rev:1;
-
-    u16 file;
-};
+#define NEEDS_REVERSION 0x8000
 
 typedef struct EncounterInfo
 {
@@ -737,9 +797,8 @@ enum
 #define TRAINER_DATA_EXTRA_TYPE_SPEED 0x10
 #define TRAINER_DATA_EXTRA_TYPE_SP_ATK 0x20
 #define TRAINER_DATA_EXTRA_TYPE_SP_DEF 0x40
-#define TRAINER_DATA_EXTRA_TYPE_TYPES 0x80
-#define TRAINER_DATA_EXTRA_TYPE_PP_COUNTS 0x100
-#define TRAINER_DATA_EXTRA_TYPE_NICKNAME 0x200
+#define TRAINER_DATA_EXTRA_TYPE_PP_COUNTS 0x80
+#define TRAINER_DATA_EXTRA_TYPE_NICKNAME 0x100
 
 // kinda weird, specifically tracked in the RAM
 typedef struct WildEncounterWork
@@ -1018,14 +1077,6 @@ void LONG_CALL BoxMonInit(struct BoxPokemon *boxmon);
 void LONG_CALL GiratinaBoxPokemonFormChange(struct BoxPokemon *bp);
 
 /**
- *  @brief check if the gracidea flower can be used on a PartyPokemon
- *
- *  @param pp PartyPokemon to check for gracidea validity
- *  @return TRUE if the gracidea can be used on the PartyPokemon
- */
-BOOL LONG_CALL GrashideaFeasibleCheck(struct PartyPokemon *pp);
-
-/**
  *  @brief load in the party overlay
  *
  *  @param wk poke list work
@@ -1099,14 +1150,6 @@ BOOL LONG_CALL MonHasMove(struct PartyPokemon *mon, u16 move);
  *  @return TRUE if the species has sexual dimorphism visible in the overworld; FALSE otherwise
  */
 BOOL LONG_CALL does_species_have_dimorphism(u32 species);
-
-/**
- *  @brief grab the base overworld data file number for a species
- *
- *  @param species species index
- *  @return requested base overworld data file number
- */
-u32 LONG_CALL get_ow_data_file_num(u32 species);
 
 /**
  *  @brief intialize various values to a PartyPokemon (location caught, caught ball, etc.)
@@ -1195,7 +1238,7 @@ void LONG_CALL TT_TrainerPokeDataGet(int tr_id, void *tpd);
  *  @param trtype trainer class
  *  @return trainer sex; 1 if female, 0 if male
  */
-u8 LONG_CALL TT_TrainerTypeSexGet(int trtype);
+TrainerGender LONG_CALL TT_TrainerTypeSexGet(int trtype);
 
 /**
  *  @brief set ball seal on a trainer PartyPokemon
@@ -1421,7 +1464,7 @@ u16 LONG_CALL GetSpeciesBasedOnForm(int mons_no, int form_no);
  *  @param mons_no species that has already been adjusted by form number by GetSpeciesBasedOnForm
  *  @return base species
  */
-u16 LONG_CALL GetOriginalSpeciesBasedOnAdjustedForm(u32 mons_no);
+u16 LONG_CALL GetBaseSpeciesFromAdjustedForm(u32 mons_no);
 
 /**
  *  @brief pass adjusted species and return form of the base species it applies to
@@ -1429,7 +1472,7 @@ u16 LONG_CALL GetOriginalSpeciesBasedOnAdjustedForm(u32 mons_no);
  *  @param mons_no species that has already been adjusted by form number by GetSpeciesBasedOnForm
  *  @return form of adjusted species
  */
-u16 LONG_CALL GetFormBasedOnAdjustedForm(u32 mons_no);
+u16 LONG_CALL GetFormFromAdjustedForm(u32 mons_no);
 
 /**
  *  @brief grab index in ARC_POKEICON from original species, egg status, and form number
@@ -1731,6 +1774,21 @@ bool8 LONG_CALL RevertFormChange(struct PartyPokemon *pp, u16 species, u8 form_n
 void LONG_CALL ClearMonMoves(struct PartyPokemon *pokemon);
 
 /**
+ *  @brief get level cap from the script variable defined by LEVEL_CAP_VARIABLE
+ *
+ *  @return level cap from LEVEL_CAP_VARIABLE script variable
+ */
+u32 LONG_CALL GetLevelCap(void);
+
+/**
+ *  @brief check if the level is at or above the level cap defined in LEVEL_CAP_VARIABLE
+ *
+ *  @param level level to check
+ *  @return TRUE if level >= level cap; FALSE otherwise
+ */
+u32 LONG_CALL IsLevelAtLevelCap(u32 level);
+
+/**
  *  @brief grab the nature of a BoxPokemon factoring in the nature mint override field
  *
  *  @param boxMon BoxPokemon whose nature to grab
@@ -1773,5 +1831,9 @@ void LONG_CALL Mon_UpdateShayminForm(struct PartyPokemon *mon, int form);
 void LONG_CALL Daycare_GetBothBoxMonsPtr(Daycare *dayCare, struct BoxPokemon **boxmons);
 
 BOOL LONG_CALL CanUseItemOnPokemon(struct PartyPokemon *mon, u16 itemID, s32 moveIdx, u32 heapID);
+
+void LONG_CALL correct_zacian_zamazenta_kyurem_moves_for_form(struct PartyPokemon *param, unsigned int expected_form, int *a3);
+
+void LONG_CALL ChangeToBattleForm(struct PartyPokemon *pp);
 
 #endif

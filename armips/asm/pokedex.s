@@ -1,3 +1,5 @@
+.include "asm/include/debug.inc"
+
 .nds
 .thumb
 
@@ -1143,13 +1145,13 @@ PokedexInit: // rewrite the beginning for new struct size
     mov r1, #0
 
 
-// edits to GetCaughtMonCount
+// edits to Pokedex_CountDexOwned
 
 .org 0x02029E0C
 
 .area 0x3C, 0xFF
 
-GetCaughtMonCount:
+Pokedex_CountDexOwned:
     push {r3-r7, lr}
     mov r6, r0
     mov r5, #0
@@ -1261,8 +1263,13 @@ GetSeenMonCount:
 .area 0x0202A044-., 0xFF
 
 GetCaughtFlag: // 0x02029FF8
+.ifdef DEBUG_DISPLAY_DEX_ENTRIES
+    mov r0, #1
+    bx lr
+.else
     push {r3-r5, lr}
     add r5, r0, #0
+.endif
     add r4, r1, #0
     ldr r1, [r5]
     ldr r0, =0xBEEFCAFE
@@ -1322,8 +1329,13 @@ GetCaughtFlag: // 0x02029FF8
 .area 0x0202A088-., 0xFF
 
 GetSeenFlag: // 0x0202A044
+.ifdef DEBUG_DISPLAY_DEX_ENTRIES
+    mov r0, #1
+    bx lr
+.else
     push {r3-r5, lr}
     add r5, r0, #0
+.endif
     add r4, r1, #0
     ldr r1, [r5]
     ldr r0, =0xBEEFCAFE

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "io_reg.h"
+#include "debug.h"
 #include "constants/buttons.h"
 
 typedef uint8_t   u8;
@@ -77,7 +78,17 @@ VecFx32;
 #define FALLTHROUGH __attribute__ ((fallthrough))
 #define PACKED __attribute__((packed))
 
+#ifdef NOCASH_GBA_PRINT
+#define NOCASHGBAIDADDR 0x04FFFA00
+#define NOCASHGBAPRINTADDR1 0x04FFFA14 // does not automatically add the newline
+#define NOCASHGBAPRINTADDR2 0x04FFFA18 // does automatically add the newline
+
+extern u8 DebugTextBuf[0xAC];
+
+#define debug_printf(...) { sprintf(DebugTextBuf, __VA_ARGS__); *(volatile u32 *)NOCASHGBAPRINTADDR1 = (u32)DebugTextBuf; }
+#else
 #define debug_printf(...) { u8 buf_assumeunuasedfasdf[128]; sprintf(buf_assumeunuasedfasdf, __VA_ARGS__); debugsyscall(buf_assumeunuasedfasdf); }
+#endif
 
 // Extracts the upper 16 bits of a 32-bit number
 #define HIHALF(n) (((n) & 0xFFFF0000) >> 16)
@@ -92,6 +103,23 @@ VecFx32;
 
 #define GF_ASSERT(cond) if (!(cond)) { }
 //#define GF_ASSERT(cond) (cond) ? 0 : GF_ASSERT_INTERNAL()
+
+struct HeapInfo {
+    void **heapHandles;
+    void *parentHeapHandles;
+    void **subHeapRawPtrs;
+    u16 *numMemBlocks;
+    u8 *heapIdxs;
+    u16 totalNumHeaps;
+    u16 nTemplates;
+    u16 maxHeaps;
+    u16 unallocatedHeapId;
+};
+
+u32 LONG_CALL OS_DisableInterrupts(void);
+void *LONG_CALL NNS_FndAllocFromExpHeapEx(void *heap, u32 size, u32 align);
+void LONG_CALL OS_RestoreInterrupts(u32);
+extern struct HeapInfo sHeapInfo;
 
 void LONG_CALL GF_ASSERT_INTERNAL();
 u16 LONG_CALL gf_rand(void);

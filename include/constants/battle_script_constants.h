@@ -143,7 +143,7 @@
 #define SUB_SEQ_ROLE_PLAY                       (135)
 #define SUB_SEQ_WISH_HEAL                       (136)
 #define SUB_SEQ_INGRAIN_HEAL                    (137)
-#define SUB_SEQ_SUPERPOWER_DEBUFF               (138)
+#define SUB_SEQ_USER_ATK_AND_DEF_DOWN_HIT       (138)
 #define SUB_SEQ_MAGIC_COAT                      (139)
 #define SUB_SEQ_BREAK_SCREENS                   (140)
 #define SUB_SEQ_YAWN                            (141)
@@ -166,7 +166,7 @@
 #define SUB_SEQ_MIRACLE_EYE                     (158)
 #define SUB_SEQ_HEALING_WISH                    (159)
 #define SUB_SEQ_APPLY_TAILWIND                  (160)
-#define SUB_SEQ_CLOSE_COMBAT_DEBUFF             (161)
+#define SUB_SEQ_USER_DEF_AND_SP_DEF_DOWN_HIT    (161)
 #define SUB_SEQ_POWER_TRICK                     (162)
 #define SUB_SEQ_GASTRO_ACID                     (163)
 #define SUB_SEQ_APPLY_LUCKY_CHANT               (164)
@@ -269,7 +269,7 @@
 #define SUB_SEQ_LUNAR_DANCE                     (261)
 #define SUB_SEQ_FORM_CHANGE                     (262) // not just used for transform
 #define SUB_SEQ_BAD_DREAMS                      (263)
-#define SUB_SEQ_TYPE_RESIST_BERRIES             (264)
+#define SUB_SEQ_TYPE_RESIST_BERRIES_DAMAGE      (264)
 #define SUB_SEQ_ITEM_ACC_UP_ONCE                (265)
 #define SUB_SEQ_ITEM_DAMAGE_BACK                (266)
 #define SUB_SEQ_BAG_HP_RESTORE                  (267)
@@ -297,7 +297,7 @@
 #define SUB_SEQ_FULL_RESTORE                    (289)
 #define SUB_SEQ_PLUCK_CHECK                     (290)
 #define SUB_SEQ_WAIT_FOR_UNPLAYED_ANIMATION     (291) // null subscript; doesn't disable animations; just waits for animation
-#define SUB_SEQ_ITEM_POWER_HERB_VANISH          (292)
+#define SUB_SEQ_ITEM_POWER_HERB_SKULL_BASH      (292)
 #define SUB_SEQ_SHAYMIN_FORM_CHECK              (293)
 #define SUB_SEQ_OVERWORLD_SUN                   (294)
 #define SUB_SEQ_OVERWORLD_TRICK_ROOM            (295)
@@ -321,12 +321,12 @@
 #define SUB_SEQ_RAISE_ATTACK_AND_ACCURACY             (311)
 #define SUB_SEQ_GUARD_SPLIT                           (312)
 #define SUB_SEQ_POWER_SPLIT                           (313)
-#define SUB_SEQ_QUIVER_DANCE                          (314)
+#define SUB_SEQ_SP_ATK_SP_DEF_SPEED_UP                (314)
 #define SUB_SEQ_CHANGE_TARGET_TO_WATER_TYPE           (315)
-#define SUB_SEQ_COIL                                  (316)
+#define SUB_SEQ_ATK_DEF_ACC_UP                        (316)
 #define SUB_SEQ_SHIFT_GEAR                            (317)
-#define SUB_SEQ_SHELL_SMASH                           (318)
-#define SUB_SEQ_V_CREATE                              (319)
+#define SUB_SEQ_ATK_SP_ATK_SPEED_UP_2_DEF_SP_DEF_DOWN (318)
+#define SUB_SEQ_USER_DEF_SP_DEF_SPEED_DOWN_HIT        (319)
 #define SUB_SEQ_AUTOTOMIZE                            (320)
 #define SUB_SEQ_HANDLE_HARVEST                        (321)
 #define SUB_SEQ_HANDLE_MOODY                          (322)
@@ -355,11 +355,11 @@
 #define SUB_SEQ_HANDLE_FIELD_EFFECTS_INITIAL_MSG      (345)
 #define SUB_SEQ_HANDLE_FIELD_EFFECTS_END_OF_TURN      (346)
 #define SUB_SEQ_HANDLE_TERRAIN_END                    (347)
-#define SUB_SEQ_HANDLE_JUST_FAIL                      (348)
+#define SUB_SEQ_HANDLE_PSYCHIC_TERRAIN_PROTECTION     (348)
 #define SUB_SEQ_HANDLE_TERRAIN_SEEDS                  (349)
-#define SUB_SEQ_WORK_UP                               (350)
+#define SUB_SEQ_ATK_SP_ATK_UP                         (350)
 #define SUB_SEQ_SPICY_EXTRACT                         (351)
-#define SUB_SEQ_FILLET_AWAY                           (352)
+#define SUB_SEQ_ATK_SP_ATK_SPEED_UP_2_LOSE_HALF_MAX_HP (352)
 #define SUB_SEQ_HANDLE_PARENTAL_BOND                  (353)
 #define SUB_SEQ_CREATE_TERRAIN_OVERLAY                (354)
 #define SUB_SEQ_HANDLE_SHED_TAIL                      (355)
@@ -382,6 +382,86 @@
 #define SUB_SEQ_WEAKEN_MOVES_STRONG_WINDS             (372)
 #define SUB_SEQ_PREVENT_CHANGING_WEATHER              (373)
 #define SUB_SEQ_HEAL_TARGET_BURN                      (374)
+#define SUB_SEQ_SWITCH_IN_ABILITY_CHECK               (375)
+#define SUB_SEQ_HANDLE_CLOUD_NINE_MESSAGE             (376)
+#define SUB_SEQ_GIVE_TARGET_SIMPLE                    (377)
+#define SUB_SEQ_ABSORB_AND_DEF_UP_2_STAGE             (378)
+#define SUB_SEQ_CANNOT_USE_MOVE                       (379)
+#define SUB_SEQ_POWER_HERB_METEOR_BEAM                (380)
+#define SUB_SEQ_SP_ATK_UP_RAIN_SKIP                   (381)
+#define SUB_SEQ_SAFETY_GOGGLES                        (382)
+#define SUB_SEQ_FORCE_SWITCH_FAIL_DYNAMAX             (383)
+#define SUB_SEQ_FORCE_SWITCH_FAIL_SUCTION_CUPS        (384)
+#define SUB_SEQ_FORCE_SWITCH_FAIL_INGRAIN             (385)
+#define SUB_SEQ_CANT_USE_MOVE                         (386)
+#define SUB_SEQ_CANT_USE_MOVE_HOOPA_CONFINED          (387)
+#define SUB_SEQ_CANT_USE_MOVE_DYNAMAX_TARGET          (388)
+#define SUB_SEQ_RESTORE_HP_FULL_FAIL                  (389)
+#define SUB_SEQ_STAYED_AWAKE                          (390)
+#define SUB_SEQ_ELECTRIC_TERRAIN_PROTECTION           (391)
+#define SUB_SEQ_MISTY_TERRAIN_PROTECTION              (392)
+#define SUB_SEQ_STATS_NOT_LOWERED                     (393)
+#define SUB_SEQ_ATTACK_NOT_LOWERED                    (394)
+#define SUB_SEQ_DEFENSE_NOT_LOWERED                   (395)
+#define SUB_SEQ_ACCURACY_NOT_LOWERED                  (396)
+#define SUB_SEQ_FLOWER_VEIL_FAIL                      (397)
+#define SUB_SEQ_SUBSTITUTE_FAIL                       (398)
+#define SUB_SEQ_ALREADY_HAS_SAME_STATUS               (399)
+#define SUB_SEQ_UPROAR_STOPPING_SLEEP_MOVES           (400)
+#define SUB_SEQ_UPROAR_STOPPING_REST                  (401)
+#define SUB_SEQ_PROTECTED                             (402)
+#define SUB_SEQ_DOESNT_AFFECT                         (403)
+#define SUB_SEQ_LEVITATE_FAIL                         (404)
+#define SUB_SEQ_UNAFFECTED                            (405)
+#define SUB_SEQ_BUT_IT_FAILED_SPREAD                  (406)
+#define SUB_SEQ_ATTACK_MISSED                         (407)
+#define SUB_SEQ_MIST_END                              (408)
+#define SUB_SEQ_LOST_FOCUS                            (409)
+#define SUB_SEQ_PROTECTED_BY_SAFEGUARD                (410)
+#define SUB_SEQ_PLAY_EAT_BERRY_ANIMATION              (411)
+#define SUB_SEQ_TYPE_RESIST_BERRIES_MESSAGE           (412)
+#define SUB_SEQ_DOESNT_AFFECT_ABILITY                 (413)
+#define SUB_SEQ_OWN_TEMPO_FAIL                        (414)
+#define SUB_SEQ_FLY_CHARGE_TURN                       (415)
+#define SUB_SEQ_ITEM_SKIP_CHARGE_TURN_NEW             (416)
+#define SUB_SEQ_HIGH_CRIT_CHARGE_TURN                 (417)
+#define SUB_SEQ_SKY_ATTACK_CHARGE_TURN                (418)
+#define SUB_SEQ_FREEZE_SHOCK_CHARGE_TURN              (419)
+#define SUB_SEQ_ICE_BURN_CHARGE_TURN                  (420)
+#define SUB_SEQ_DEF_UP_CHARGE_TURN                    (421)
+#define SUB_SEQ_SUN_SKIPS_CHARGE_TURN                 (422)
+#define SUB_SEQ_DIVE_CHARGE_TURN                      (423)
+#define SUB_SEQ_DIG_CHARGE_TURN                       (424)
+#define SUB_SEQ_BOUNCE_CHARGE_TURN                    (425)
+#define SUB_SEQ_SHADOW_FORCE_CHARGE_TURN              (426)
+#define SUB_SEQ_METEOR_BEAM_CHARGE_TURN               (427)
+#define SUB_SEQ_ELECTRO_SHOT_CHARGE_TURN              (428)
+#define SUB_SEQ_GEOMANCY_CHARGE_TURN                  (429)
+#define SUB_SEQ_HEAL_TARGET_HP_FULL_FAIL              (430)
+#define SUB_SEQ_USE_WEATHER_MOVE_FAIL                 (431)
+#define SUB_SEQ_FAILED_TO_AFFECT                      (432)
+#define SUB_SEQ_USER_DEF_DOWN_HIT                     (433)
+#define SUB_SEQ_ATK_DEF_SPEED_UP                      (434)
+#define SUB_SEQ_HYPERSPACE_FURY                       (435)
+#define SUB_SEQ_RAISE_ALL_STATS_LOSE_THIRD_MAX_HP     (436)
+#define SUB_SEQ_DRAIN_THREE_QUARTERS                  (437)
+#define SUB_SEQ_JAW_LOCK                              (438)
+#define SUB_SEQ_TOXIC_THREAD                          (439)
+#define SUB_SEQ_MAKE_IT_RAIN                          (440)
+#define SUB_SEQ_ATK_SP_ATK_SPEED_DOWN                 (441)
+#define SUB_SEQ_ATK_SP_ATK_DOWN                       (442)
+#define SUB_SEQ_TAKE_HEART                            (443)
+#define SUB_SEQ_MORTAL_SPIN                           (444)
+#define SUB_SEQ_TIDY_UP                               (445)
+#define SUB_SEQ_BURN_AND_DRAIN_HEALTH                 (446)
+#define SUB_SEQ_HANDLE_TELEPATHY                      (447)
+#define SUB_SEQ_HANDLE_WIND_RIDER                     (448)
+#define SUB_SEQ_HANDLE_CHARGE_BOOST                   (449)
+
+#define MAX_BASE_SUBSCRIPT_NUM 449
+
+// define your custom subscripts below like this
+// #define MOVE_SUBSCRIPT_PTR_CUSTOM_1 (MAX_BASE_SUBSCRIPT_NUM + 1)
 
 
 
@@ -550,7 +630,35 @@
 #define ADD_STATUS_EFF_AFTER_YOU                       (160)
 #define ADD_STATUS_EFF_QUASH                           (161)
 #define ADD_STATUS_EFF_DRAIN_FULL                      (162)
-
+#define ADD_STATUS_EFF_SIMPLE_BEAM                     (163)
+#define ADD_STATUS_EFF_BOOST_STATS_ATTACK_UP_3         (164)
+#define ADD_STATUS_EFF_BOOST_STATS_DEFENSE_UP_3        (165)
+#define ADD_STATUS_EFF_BOOST_STATS_SPEED_UP_3          (166)
+#define ADD_STATUS_EFF_BOOST_STATS_SP_ATK_UP_3         (167)
+#define ADD_STATUS_EFF_BOOST_STATS_SP_DEF_UP_3         (168)
+#define ADD_STATUS_EFF_BOOST_STATS_ACCURACY_UP_3       (169)
+#define ADD_STATUS_EFF_BOOST_STATS_EVASION_UP_3        (170)
+#define ADD_STATUS_EFF_BOOST_STATS_ATTACK_DOWN_3       (171)
+#define ADD_STATUS_EFF_BOOST_STATS_DEFENSE_DOWN_3      (172)
+#define ADD_STATUS_EFF_BOOST_STATS_SPEED_DOWN_3        (173)
+#define ADD_STATUS_EFF_BOOST_STATS_SP_ATK_DOWN_3       (174)
+#define ADD_STATUS_EFF_BOOST_STATS_SP_DEF_DOWN_3       (175)
+#define ADD_STATUS_EFF_BOOST_STATS_ACCURACY_DOWN_3     (176)
+#define ADD_STATUS_EFF_BOOST_STATS_EVASION_DOWN_3      (177)
+#define ADD_STATUS_EFF_USER_DEF_DOWN_HIT               (178)
+#define ADD_STATUS_EFF_ATK_DEF_SPEED_UP                (179)
+#define ADD_STATUS_EFF_HYPERSPACE_FURY                 (180)
+#define ADD_STATUS_EFF_CLANGOROUS_SOUL                 (181)
+#define ADD_STATUS_EFF_DRAIN_THREE_QUARTERS            (182)
+#define ADD_STATUS_EFF_JAW_LOCK                        (183)
+#define ADD_STATUS_EFF_TOXIC_THREAD                    (184)
+#define ADD_STATUS_EFF_MAKE_IT_RAIN	                   (185)
+#define ADD_STATUS_EFF_ATK_SP_ATK_SPEED_DOWN           (186)
+#define ADD_STATUS_EFF_ATK_SP_ATK_DOWN                 (187)
+#define ADD_STATUS_EFF_TAKE_HEART                      (188)
+#define ADD_STATUS_EFF_MORTAL_SPIN                     (189)
+#define ADD_STATUS_EFF_TIDY_UP                         (190)
+#define ADD_STATUS_EFF_BURN_AND_DRAIN_HEALTH           (191)
 
 
 // additional effect constants
@@ -562,9 +670,6 @@
 #define ADD_STATUS_SOUBIITEM (5)
 #define ADD_STATUS_DOKUBISI (6)
 #define ADD_STATUS_IGNORE (7)
-
-#define ADD_STAGE_ATTACK_UP (15)
-#define ADD_STAGE_SP_ATK_UP (18)
 
 #define BATTLE_ANIMATION_NONE               0
 #define BATTLE_ANIMATION_ASLEEP             1
@@ -589,5 +694,18 @@
 #define BATTLE_ANIMATION_WEATHER_HAIL       20
 #define BATTLE_ANIMATION_WEATHER_SAND       21
 #define BATTLE_ANIMATION_WEATHER_SUN        22
+
+#define MOVE_SIDE_EFFECT_BREAK_SCREENS 0x800000
+#define MOVE_SIDE_EFFECT_CHECK_SUBSTITUTE 0x1000000
+#define MOVE_SIDE_EFFECT_CHECK_HP_AND_SUBSTITUTE 0x2000000
+#define MOVE_SIDE_EFFECT_PROBABILISTIC 0x4000000
+#define MOVE_SIDE_EFFECT_CANNOT_PREVENT 0x8000000
+#define MOVE_SIDE_EFFECT_CHECK_HP 0x10000000
+#define MOVE_SIDE_EFFECT_ON_HIT 0x20000000
+#define MOVE_SIDE_EFFECT_TO_ATTACKER 0x40000000
+#define MOVE_SIDE_EFFECT_TO_DEFENDER 0x80000000
+#define MOVE_SIDE_EFFECT_FLAGS 0xFF800000
+#define MOVE_SIDE_EFFECT_SUBSCRIPT 0xFF800001
+
 
 #endif
