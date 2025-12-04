@@ -1428,7 +1428,42 @@
     CheckAbility CHECK_OPCODE_HAVE, \battlerCategory, ABILITY_COMPETITIVE, \label
     .endm
 
-    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 255
+    .macro CheckProtectContactMoves
+    .long 259
+    .endm
+
+    .macro TryIncinerate arg_0
+    .long 260
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro AddThirdType arg_0
+    .long 261
+    .long \arg_0
+    .endm
+
+    .macro TryAuroraVeil
+    .long 262
+    .endm
+
+    .macro ClearAuroraVeil
+    .long 263
+    .endm
+
+    .macro StrengthSapCalc
+    .long 264
+    .endm
+
+    .macro CheckTargetIsPartner arg_0
+    .long 265
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro ClearSmog
+    .long 266
+    .endm
+
+    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 266
 
     // .macro YourCustomCommand
     // .long (BASE_ENGINE_BTL_SCR_CMDS_MAX + 1)

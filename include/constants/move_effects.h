@@ -133,7 +133,7 @@
 #define MOVE_EFFECT_REMOVE_HAZARDS_AND_BINDING              129
 #define MOVE_EFFECT_10_DAMAGE_FLAT                          130
 #define MOVE_EFFECT_UNUSED_131                              131
-#define MOVE_EFFECT_HEAL_HALF_MORE_IN_SUN                   132
+#define MOVE_EFFECT_HEAL_HALF_DIFFERENT_IN_WEATHER          132
 #define MOVE_EFFECT_UNUSED_133                              133
 #define MOVE_EFFECT_UNUSED_134                              134
 #define MOVE_EFFECT_RANDOM_TYPE_BASED_ON_IVS                135
@@ -374,8 +374,28 @@
 #define MOVE_EFFECT_HIGH_CRITICAL_RAISE_SPEED_HIT           368
 #define MOVE_EFFECT_MORTAL_SPIN                             369
 #define MOVE_EFFECT_TIDY_UP                                 370
+#define MOVE_EFFECT_PROTECT_USER_SIDE                       371
+#define MOVE_EFFECT_INCINERATE                              372
+#define MOVE_EFFECT_FIRST_TURN_ONLY                         373
+#define MOVE_EFFECT_ADD_THIRD_TYPE_GRASS                    374
+#define MOVE_EFFECT_ADD_THIRD_TYPE_GHOST                    375
+#define MOVE_EFFECT_CHANGE_TO_PSYCHIC_TYPE                  376
+#define MOVE_EFFECT_SET_AURORA_VEIL                         377
+#define MOVE_EFFECT_STRENGTH_SAP							378
+#define MOVE_EFFECT_HEAL_TARGET								379
+#define MOVE_EFFECT_POLLEN_PUFF								380
+#define MOVE_EFFECT_COACHING								381
+#define MOVE_EFFECT_DOUBLE_POWER_IF_FASTER					382
+#define MOVE_EFFECT_LIFE_DEW								383
+#define MOVE_EFFECT_ENTRAINMENT								384
+#define MOVE_EFFECT_HOWL							      	385
+#define MOVE_EFFECT_DECORATE								386
+#define MOVE_EFFECT_END_TERRAIN                             387
+#define MOVE_EFFECT_FELL_STINGER                            388
+#define MOVE_EFFECT_PARTING_SHOT                            389
+#define MOVE_EFFECT_CLEAR_SMOG                              390
 
-#define MAX_BASE_MOVE_EFFECT_NUM                            370
+#define MAX_BASE_MOVE_EFFECT_NUM                            390
 
 // define your custom move effects below like this
 // #define MOVE_EFFECT_CUSTOM_1 (MAX_BASE_MOVE_EFFECT_NUM + 1)
