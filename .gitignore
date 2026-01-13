@@ -98,3 +98,9 @@ changelog
 /data/generated/
 /armips/include/generated/
 /include/constants/generated/
+
+# ui editor versioning data 
+/scripts/editors/snapshots/*
+!/scripts/editors/snapshots/.gitkeep
+/scripts/editors/vanilla/*
+!/scripts/editors/vanilla/.gitkeep
