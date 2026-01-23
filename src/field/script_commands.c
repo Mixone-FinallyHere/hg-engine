@@ -58,7 +58,17 @@ BOOL ScrCmd_GiveEgg(SCRIPTCONTEXT *ctx)
             ResetPartyPokemonAbility(pokemon);
             ClearScriptFlag(HIDDEN_ABILITIES_FLAG);
         }
-
+        BAG_DATA *bag = Sav2_Bag_get(fsys->savedata);
+        int rerolls = SHINY_CHARM_REROLLS;
+        u32 otid = GetMonData(pokemon, MON_DATA_OTID, 0);
+        if (Bag_HasItem(bag, ITEM_SHINY_CHARM, 1, HEAPID_WORLD))
+        {
+            while(((rerolls--) > 0) && !MonIsShiny(pokemon))
+            {
+                u32 pid = gf_rand() | (gf_rand() << 16);           
+                SetMonData(pokemon, MON_DATA_PERSONALITY, &pid);
+            }
+        }
         PokeParty_Add(party, pokemon);
         sys_FreeMemoryEz(pokemon);
     }
@@ -121,7 +131,18 @@ BOOL ScrCmd_GiveTogepiEgg(SCRIPTCONTEXT *ctx) {
         ClearScriptFlag(HIDDEN_ABILITIES_FLAG);
     }
 
-
+    BAG_DATA *bag = Sav2_Bag_get(fsys->savedata);
+    int rerolls = SHINY_CHARM_REROLLS;
+    u32 otid = GetMonData(togepi, MON_DATA_OTID, 0);
+    if (Bag_HasItem(bag, ITEM_SHINY_CHARM, 1, HEAPID_WORLD))
+    {
+        while(((rerolls--) > 0) && !MonIsShiny(togepi))
+        {
+            u32 pid = gf_rand() | (gf_rand() << 16);           
+            SetMonData(togepi, MON_DATA_PERSONALITY, &pid);
+        }
+    }
+    
     PokeParty_Add(party, togepi);
 
     sys_FreeMemoryEz(togepi);
