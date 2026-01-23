@@ -194,7 +194,13 @@
 // based on the move having FLAG_UNUSABLE_UNIMPLEMENTED
 #define BLOCK_LEARNING_UNIMPLEMENTED_MOVES
 
-// SHINY_CHARM_REROLLS indicates how many rerolls to try for shiny
-#define SHINY_CHARM_REROLLS 3
+// SHINY_CHARM_WILD_REROLLS indicates how many rerolls to try for shiny
+#define SHINY_CHARM_WILD_REROLLS 3
+
+// SHINY_CHARM_AFFECTS_EGGS indicates whether or not the shiny charm affects eggs
+#define SHINY_CHARM_AFFECTS_EGGS
+
+// SHINY_CHARM_EGG_REROLLS indicates how many rerolls to try for shiny when receiving an egg
+#define SHINY_CHARM_EGG_REROLLS 3
 
 #endif

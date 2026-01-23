@@ -486,8 +486,9 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     {
         range = 1;
     }
+    
     BAG_DATA *bag = Sav2_Bag_get(encounterBattleParam->savedata);
-    int rerolls = SHINY_CHARM_REROLLS;
+    int rerolls = SHINY_CHARM_WILD_REROLLS;
     if (Bag_HasItem(bag, ITEM_SHINY_CHARM, 1, HEAPID_BATTLE_HEAP))
     {
         while(((rerolls--) > 0) && !MonIsShiny(encounterPartyPokemon))
