@@ -194,4 +194,7 @@
 // based on the move having FLAG_UNUSABLE_UNIMPLEMENTED
 #define BLOCK_LEARNING_UNIMPLEMENTED_MOVES
 
+// SHINY_CHARM_REROLLS indicates how many rerolls to try for shiny
+#define SHINY_CHARM_REROLLS 3
+
 #endif

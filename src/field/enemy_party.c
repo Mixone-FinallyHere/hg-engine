@@ -486,6 +486,18 @@ BOOL LONG_CALL AddWildPartyPokemon(int inTarget, EncounterInfo *encounterInfo, s
     {
         range = 1;
     }
+    BAG_DATA *bag = Sav2_Bag_get(encounterBattleParam->savedata);
+    int rerolls = SHINY_CHARM_REROLLS;
+    if (Bag_HasItem(bag, ITEM_SHINY_CHARM, 1, HEAPID_BATTLE_HEAP))
+    {
+        while(((rerolls--) > 0) && !MonIsShiny(encounterPartyPokemon))
+        {
+            u32 pid = gf_rand() | (gf_rand() << 16);
+            u32 otid = gf_rand() | (gf_rand() << 16);
+            SetMonData(encounterPartyPokemon, MON_DATA_PERSONALITY, &pid);
+            SetMonData(encounterPartyPokemon, MON_DATA_OTID, &otid);
+        }
+    }
 
     species = GetMonData(encounterPartyPokemon, MON_DATA_SPECIES, NULL);
 
