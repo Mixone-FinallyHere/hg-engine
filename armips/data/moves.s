@@ -8204,7 +8204,7 @@ movedata MOVE_SHIFT_GEAR, "Shift Gear"
     movedescription MOVE_SHIFT_GEAR, "Rotating its gears,\nthe user raises its\nAttack and sharply\nraises its Speed."
 
 movedata MOVE_CIRCLE_THROW, "Circle Throw"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_FORCE_SWITCH_HIT
     pss SPLIT_PHYSICAL
     basepower 60
     type TYPE_FIGHTING
@@ -8213,7 +8213,7 @@ movedata MOVE_CIRCLE_THROW, "Circle Throw"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority -6
-    flags FLAG_KEEP_HP_BAR | FLAG_CONTACT | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_CONTACT | FLAG_PROTECT | FLAG_MIRROR_MOVE
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
@@ -8460,7 +8460,7 @@ movedata MOVE_FROST_BREATH, "Frost Breath"
     movedescription MOVE_FROST_BREATH, "The user blows\ncold air at the foe.\nIt always results in\na critical hit."
 
 movedata MOVE_DRAGON_TAIL, "Dragon Tail"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_FORCE_SWITCH_HIT
     pss SPLIT_PHYSICAL
     basepower 60
     type TYPE_DRAGON
@@ -8469,7 +8469,7 @@ movedata MOVE_DRAGON_TAIL, "Dragon Tail"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority -6
-    flags FLAG_CONTACT | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_CONTACT | FLAG_PROTECT | FLAG_MIRROR_MOVE
     appeal 0x00
     contesttype CONTEST_TOUGH
     terminatedata
@@ -9052,7 +9052,7 @@ movedata MOVE_MAT_BLOCK, "Mat Block"
     movedescription MOVE_MAT_BLOCK, "Using a pulled-up mat\nas a shield, the user\nprotects itself and\nits allies from\ndamaging moves."
 
 movedata MOVE_BELCH, "Belch"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_BELCH
     pss SPLIT_SPECIAL
     basepower 120
     type TYPE_POISON
@@ -9061,7 +9061,7 @@ movedata MOVE_BELCH, "Belch"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority 0
-    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE
     appeal 0x00
     contesttype CONTEST_TOUGH
     terminatedata
@@ -10974,7 +10974,7 @@ movedata MOVE_POWER_TRIP, "Power Trip"
     movedescription MOVE_POWER_TRIP, "The user flaunts its\nstrength. The more the\nuser's stats are\nboosted, the greater\nthe move's power."
 
 movedata MOVE_BURN_UP, "Burn Up"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_REMOVE_USER_FIRE_TYPE_HIT
     pss SPLIT_SPECIAL
     basepower 130
     type TYPE_FIRE
@@ -10983,7 +10983,7 @@ movedata MOVE_BURN_UP, "Burn Up"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority 0
-    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
@@ -11455,7 +11455,7 @@ movedata MOVE_PRISMATIC_LASER, "Prismatic Laser"
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
-    movedescription MOVE_PRISMATIC_LASER, "The user shoots\npowerful lasers using\rthe power of a prism.\nThe user can't move on\rthe next turn."
+    movedescription MOVE_PRISMATIC_LASER, "The user shoots\npowerful lasers using\nthe power of a prism.\nThe user can't move on\nthe next turn."
 
 movedata MOVE_SPECTRAL_THIEF, "Spectral Thief"
     battleeffect MOVE_EFFECT_HIT
@@ -12140,7 +12140,7 @@ movedata MOVE_BOLT_BEAK, "Bolt Beak"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority 0
-    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
@@ -12156,7 +12156,7 @@ movedata MOVE_FISHIOUS_REND, "Fishious Rend"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority 0
-    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
@@ -14342,7 +14342,7 @@ movedata MOVE_BITTER_BLADE, "Bitter Blade"
     movedescription MOVE_BITTER_BLADE, "The user focuses its\nbitter feelings into a\nslash. The user's HP\nis restored by up to\nhalf the damage taken."
 
 movedata MOVE_DOUBLE_SHOCK, "Double Shock"
-    battleeffect MOVE_EFFECT_HIT
+    battleeffect MOVE_EFFECT_REMOVE_USER_ELECTRIC_TYPE_HIT
     pss SPLIT_PHYSICAL
     basepower 120
     type TYPE_ELECTRIC
@@ -14351,7 +14351,7 @@ movedata MOVE_DOUBLE_SHOCK, "Double Shock"
     effectchance 0
     target RANGE_SINGLE_TARGET
     priority 0
-    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT | FLAG_UNUSABLE_UNIMPLEMENTED
+    flags FLAG_KEEP_HP_BAR | FLAG_PROTECT | FLAG_MIRROR_MOVE | FLAG_CONTACT
     appeal 0x00
     contesttype CONTEST_COOL
     terminatedata
