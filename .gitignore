@@ -81,6 +81,9 @@ armips/asm/offset.s
 .vscode/
 rom_gen*.ld
 .idea/
+.zed
+compile_commands.json
+CLAUDE.md
 
 sdat/*
 *.swav
@@ -104,3 +107,4 @@ changelog
 !/scripts/editors/snapshots/.gitkeep
 /scripts/editors/vanilla/*
 !/scripts/editors/vanilla/.gitkeep
+test_logs.txt
