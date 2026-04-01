@@ -3,9 +3,13 @@
 #include "../../include/config.h"
 #include "../../include/debug.h"
 #include "../../include/mega.h"
+#include "../../include/nitro.h"
 #include "../../include/overlay.h"
 #include "../../include/pokemon.h"
 #include "../../include/save.h"
+#include "../../include/system.h"
+#include "../../include/window.h"
+#include "../../include/message.h"
 #include "../../include/constants/ability.h"
 #include "../../include/constants/battle_script_constants.h"
 #include "../../include/constants/battle_message_constants.h"
@@ -113,6 +117,7 @@ BOOL btl_scr_cmd_112_HandleBurnUp(void* bsys UNUSED, struct BattleStruct* ctx);
 BOOL btl_scr_cmd_113_HandleDoubleShock(void* bsys UNUSED, struct BattleStruct* ctx);
 BOOL btl_scr_cmd_114_stuffCheeks(void *bsys, struct BattleStruct *ctx);
 BOOL btl_scr_cmd_115_setMoveConditionFlag(void *bsys, struct BattleStruct *ctx);
+BOOL btl_scr_cmd_116_abilitypopup(void* bsys, struct BattleStruct* sp);
 BOOL BtlCmd_GoToMoveScript(struct BattleSystem *bsys, struct BattleStruct *ctx);
 BOOL BtlCmd_WeatherHPRecovery(void *bw, struct BattleStruct *sp);
 BOOL BtlCmd_CalcWeatherBallParams(void *bw, struct BattleStruct *sp);
@@ -132,12 +137,6 @@ BOOL BtlCmd_TryBreakScreens(struct BattleSystem *bsys, struct BattleStruct *ctx)
 BOOL BtlCmd_ResetAllStatChanges(struct BattleSystem *bsys, struct BattleStruct *ctx);
 BOOL BtlCmd_CheckToxicSpikes(struct BattleSystem *bsys, struct BattleStruct *ctx);
 BOOL BtlCmd_CopyStatStages(struct BattleSystem *bsys UNUSED, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_PrintMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_PrintAttackMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_PrintGlobalMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_PrintBufferedMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_BufferMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
-BOOL LONG_CALL BtlCmd_BufferLocalMessage(struct BattleSystem *bsys, struct BattleStruct *ctx);
 u32 CalculateBallShakes(void *bw, struct BattleStruct *sp);
 u32 DealWithCriticalCaptureShakes(struct EXP_CALCULATOR *expcalc, u32 shakes);
 u32 LoadCaptureSuccessSPA(u32 id);
@@ -427,6 +426,7 @@ const u8 *BattleScrCmdNames[] =
     "HandleDoubleShock",
     "StuffCheeks",
     "SetMoveConditionFlag",
+    "AbilityPopup",
     // "YourCustomCommand",
 };
 
@@ -491,6 +491,7 @@ const btl_scr_cmd_func NewBattleScriptCmdTable[] =
     [0x113 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_113_HandleDoubleShock,
     [0x114 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_114_stuffCheeks,
     [0x115 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_115_setMoveConditionFlag,
+    [0x116 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_116_abilitypopup,
     // [BASE_ENGINE_BTL_SCR_CMDS_MAX - START_OF_NEW_BTL_SCR_CMDS + 1] = btl_scr_cmd_custom_01_your_custom_command,
 };
 
@@ -2043,17 +2044,17 @@ BOOL btl_scr_cmd_87_tryknockoff(void *bw UNUSED, struct BattleStruct *sp)
     // If the Pokémon is knocked out by the attack, Sticky Hold does not protect the held item.
     if (sp->battlemon[sp->defence_client].item && MoldBreakerAbilityCheck(sp, sp->attack_client, sp->defence_client, ABILITY_STICKY_HOLD) == TRUE && sp->battlemon[sp->defence_client].hp)
     {
-        sp->mp.msg_id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
-        sp->mp.msg_tag = TAG_NICKNAME;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->defence_client);
+        sp->mp.id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
+        sp->mp.tag = TAG_NICKNAME;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->defence_client);
     }
     else if (CanKnockOffApply(sp, sp->attack_client, sp->defence_client))
     {
-        sp->mp.msg_id = BATTLE_MSG_MON_KNOCKED_OFF_ITEM;
-        sp->mp.msg_tag = TAG_NICKNAME_NICKNAME_ITEM;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->attack_client);
-        sp->mp.msg_para[1] = CreateNicknameTag(sp, sp->defence_client);
-        sp->mp.msg_para[2] = item;
+        sp->mp.id = BATTLE_MSG_MON_KNOCKED_OFF_ITEM;
+        sp->mp.tag = TAG_NICKNAME_NICKNAME_ITEM;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->attack_client);
+        sp->mp.param[1] = CreateNicknameTag(sp, sp->defence_client);
+        sp->mp.param[2] = item;
         sp->battlemon[sp->defence_client].item = 0;
         // update:  no longer render further items unusable--just set the item to 0 here
         //sp->scw[side].knockoff_item |= No2Bit(sp->sel_mons_no[sp->defence_client]);
@@ -3665,9 +3666,9 @@ BOOL BtlCmd_TryProtection(void *bsys UNUSED, struct BattleStruct *ctx) {
         ctx->oneTurnFlag[ctx->attack_client].protectFlag = TRUE;
         // Own protect moves should keep this flag off - incase protect user is slower than side protect user.
         ctx->oneTurnFlag[ctx->attack_client].gainedProtectFlagFromAlly = FALSE;
-        ctx->mp.msg_id = BATTLE_MSG_PROTECT_ITSELF; // "{0} protected itself!"
-        ctx->mp.msg_tag = TAG_NICKNAME;
-        ctx->mp.msg_para[0] = CreateNicknameTag(ctx, ctx->attack_client);
+        ctx->mp.id = BATTLE_MSG_PROTECT_ITSELF; // "{0} protected itself!"
+        ctx->mp.tag = TAG_NICKNAME;
+        ctx->mp.param[0] = CreateNicknameTag(ctx, ctx->attack_client);
     }
 
     if (ctx->moveTbl[ctx->current_move_index].effect == MOVE_EFFECT_PROTECT_USER_SIDE) {
@@ -3679,17 +3680,17 @@ BOOL BtlCmd_TryProtection(void *bsys UNUSED, struct BattleStruct *ctx) {
             ctx->oneTurnFlag[BATTLER_ALLY(ctx->attack_client)].gainedProtectFlagFromAlly = TRUE;
         }
 
-        ctx->mp.msg_id = BATTLE_MSG_PROTECT_USER_SIDE; // "{0} protected [your/the opposing] team"
-        ctx->mp.msg_tag = TAG_MOVE_SIDE;
-        ctx->mp.msg_para[0] = ctx->current_move_index;
-        ctx->mp.msg_para[1] = IsClientEnemy(bsys, ctx->attack_client);
+        ctx->mp.id = BATTLE_MSG_PROTECT_USER_SIDE; // "{0} protected [your/the opposing] team"
+        ctx->mp.tag = TAG_MOVE_SIDE;
+        ctx->mp.param[0] = ctx->current_move_index;
+        ctx->mp.param[1] = IsClientEnemy(bsys, ctx->attack_client);
     }
 
     if (ctx->moveTbl[ctx->current_move_index].effect == MOVE_EFFECT_SURVIVE_WITH_1_HP) {
         ctx->oneTurnFlag[ctx->attack_client].prevent_one_hit_ko_ability = TRUE;
-        ctx->mp.msg_id = BATTLE_MSG_BRACED_ITSELF; // "{0} braced itself!"
-        ctx->mp.msg_tag = TAG_NICKNAME;
-        ctx->mp.msg_para[0] = CreateNicknameTag(ctx, ctx->attack_client);
+        ctx->mp.id = BATTLE_MSG_BRACED_ITSELF; // "{0} braced itself!"
+        ctx->mp.tag = TAG_NICKNAME;
+        ctx->mp.param[0] = CreateNicknameTag(ctx, ctx->attack_client);
     }
 
     // Don't increase protectSuccessTurns at max
@@ -4042,15 +4043,15 @@ BOOL BtlCmd_GenerateEndOfBattleItem(struct BattleSystem *bw, struct BattleStruct
 
     if (quantityPickedUp > 1)
     {
-        sp->mp.msg_id = BATTLE_MSG_GENERIC_PICKED_UP_ITEM;
-        sp->mp.msg_tag = TAG_NONE;
+        sp->mp.id = BATTLE_MSG_GENERIC_PICKED_UP_ITEM;
+        sp->mp.tag = TAG_NONE;
     }
     else if (quantityPickedUp > 0) // aka == 1
     {
-        sp->mp.msg_id = BATTLE_MSG_PICKED_UP_ITEM;
-        sp->mp.msg_tag = TAG_NICKNAME_ITEM;
-        sp->mp.msg_para[0] = (partyIndex << 8) | 0;
-        sp->mp.msg_para[1] = itemPickedUp;
+        sp->mp.id = BATTLE_MSG_PICKED_UP_ITEM;
+        sp->mp.tag = TAG_NICKNAME_ITEM;
+        sp->mp.param[0] = (partyIndex << 8) | 0;
+        sp->mp.param[1] = itemPickedUp;
     }
 
     return FALSE;
@@ -4159,16 +4160,16 @@ BOOL btl_scr_cmd_104_tryincinerate(void* bw UNUSED, struct BattleStruct* sp)
     // If the Pokémon is knocked out by the attack, Sticky Hold does not protect the held item.
     if (isItemGemOrBerry && MoldBreakerAbilityCheck(sp, sp->attack_client, sp->defence_client, ABILITY_STICKY_HOLD) == TRUE && sp->battlemon[sp->defence_client].hp)
     {
-        sp->mp.msg_id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
-        sp->mp.msg_tag = TAG_NICKNAME;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->defence_client);
+        sp->mp.id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
+        sp->mp.tag = TAG_NICKNAME;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->defence_client);
     }
     else if (isItemGemOrBerry)
     {
-        sp->mp.msg_id = BATTLE_MSG_ITEM_INCINERATED;
-        sp->mp.msg_tag = TAG_NICKNAME_ITEM;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->defence_client);
-        sp->mp.msg_para[1] = item;
+        sp->mp.id = BATTLE_MSG_ITEM_INCINERATED;
+        sp->mp.tag = TAG_NICKNAME_ITEM;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->defence_client);
+        sp->mp.param[1] = item;
         sp->battlemon[sp->defence_client].item = 0; //no recycle
     }
     else
@@ -4216,10 +4217,10 @@ BOOL btl_scr_cmd_106_tryauroraveil(void* bw, struct BattleStruct* sp)
 
     // TODO: Check if there is any difference in message between single and double battles.
     // I don't think there is.
-    sp->mp.msg_id = BATTLE_MSG_AURORA_VEIL;
-    sp->mp.msg_tag = TAG_MOVE_SIDE;
-    sp->mp.msg_para[0] = sp->current_move_index;
-    sp->mp.msg_para[1] = sp->attack_client;
+    sp->mp.id = BATTLE_MSG_AURORA_VEIL;
+    sp->mp.tag = TAG_MOVE_SIDE;
+    sp->mp.param[0] = sp->current_move_index;
+    sp->mp.param[1] = sp->attack_client;
 
     return FALSE;
 }
@@ -4269,16 +4270,16 @@ BOOL BtlCmd_TryPluck(void* bw, struct BattleStruct* sp)
     // If the Pokémon is knocked out by the attack, Sticky Hold does not protect the held item.
     if (isBerry && MoldBreakerAbilityCheck(sp, sp->attack_client, sp->defence_client, ABILITY_STICKY_HOLD) == TRUE && sp->battlemon[sp->defence_client].hp)
     {
-        sp->mp.msg_id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
-        sp->mp.msg_tag = TAG_NICKNAME;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->defence_client);
+        sp->mp.id = BATTLE_MSG_ITEM_CANNOT_BE_REMOVED;
+        sp->mp.tag = TAG_NICKNAME;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->defence_client);
     }
     else if (isBerry && TryEatOpponentBerry(bw, sp, sp->defence_client)) //TODO: needs expansion/wrapper for newer berries
     {
-        sp->mp.msg_id = BATTLE_MSG_STOLE_BERRY;
-        sp->mp.msg_tag = TAG_NICKNAME_ITEM;
-        sp->mp.msg_para[0] = CreateNicknameTag(sp, sp->attack_client);
-        sp->mp.msg_para[1] = item;
+        sp->mp.id = BATTLE_MSG_STOLE_BERRY;
+        sp->mp.tag = TAG_NICKNAME_ITEM;
+        sp->mp.param[0] = CreateNicknameTag(sp, sp->attack_client);
+        sp->mp.param[1] = item;
         sp->battlemon[sp->defence_client].item = 0; //no recycle
 
         if (GetItemData(item, ITEM_PARAM_HOLD_EFFECT, 5) != 0) {
@@ -4349,6 +4350,7 @@ BOOL BtlCmd_PlayFaintAnimation(struct BattleSystem* bsys, struct BattleStruct* s
     InitFaintedWork(bsys, sp, sp->fainting_client);
     return FALSE;
 }
+
 
 BOOL BtlCmd_TryBreakScreens(struct BattleSystem *bsys, struct BattleStruct *ctx) {
     IncrementBattleScriptPtr(ctx, 1);
@@ -4550,167 +4552,164 @@ BOOL BtlCmd_CheckToxicSpikes(struct BattleSystem *bsys, struct BattleStruct *ctx
     return FALSE;
 }
 
-BOOL LONG_CALL BtlCmd_PrintMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
+enum {
+    ABILITY_POPUP_INIT_PALETTE = 0,
+    ABILITY_POPUP_INIT,
+    ABILITY_POPUP_SLIDE_IN,
+    ABILITY_POPUP_WAIT,
+    ABILITY_POPUP_SLIDE_OUT,
+    ABILITY_POPUP_DESTROY
+};
+
+// originally wrote this to be like some kind of task but it was best done through the script command itself
+
+// in tiles
+#define ABILITY_POPUP_TEXTBOX_WIDTH 10
+#define ABILITY_POPUP_TEXTBOX_HEIGHT 4
+
+#define ABILITY_POPUP_TEXTBOX_WIDTH_PIXELS (8*(ABILITY_POPUP_TEXTBOX_WIDTH))
+#define ABILITY_POPUP_TEXTBOX_FINAL_DESTINATION (ABILITY_POPUP_TEXTBOX_WIDTH_PIXELS+16)
+
+#define ABILITY_POPUP_TEXTBOX_PLAYER_SHIFT (-256 + ABILITY_POPUP_TEXTBOX_FINAL_DESTINATION)
+
+#define ABILITY_POPUP_FRAMES_TO_SHIFT 4
+#define ABILITY_POPUP_PIXELS_PER_FRAME (ABILITY_POPUP_TEXTBOX_FINAL_DESTINATION / ABILITY_POPUP_FRAMES_TO_SHIFT)
+
+#define ABILITY_POPUP_Y_COORD_PLAYER 8
+#define ABILITY_POPUP_Y_COORD_ENEMY 1
+
+//void AbilityPopup_DrawWindowAtCoordinates(struct Window *window, )
+
+void AbilityPopup_SlideIn(void *data)
 {
-    BattleMessageData msgdata;
-    MESSAGE_PARAM msg;
-    IncrementBattleScriptPtr(ctx, 1);
+    struct ABILITY_POPUP_WORK *work = (struct ABILITY_POPUP_WORK *)data;
+    struct BattleSystem* bsys = work->bsys;
+    struct BattleStruct* sp = bsys->sp;
+    struct Window* window = &bsys->window[1];
+    void* bgConfig = bsys->bgConfig;
+    void* palette = bsys->palette;
+    int side = work->side;
 
-    InitBattleMsgData(ctx, &msgdata);
-    InitBattleMsg(bsys, ctx, &msgdata, &msg);
-    BattleController_EmitPrintMessage(bsys, ctx, &msg);
+    switch (work->step)
+    {
+    case ABILITY_POPUP_INIT_PALETTE:
+        PaletteData_LoadNarc(palette, 38/*NARC_a_0_3_8*/, sub_0200E3D8(), HEAPID_BATTLE_HEAP, 0 /*PLTTBUF_MAIN_BG*/, 0x20, 8 * 0x10);
+        work->step++;
+        break;
+    case ABILITY_POPUP_INIT:
+        G2_SetBG0Priority(2);
+        SetBgPriority(1, 1);
+        SetBgPriority(2, 0);
 
-#ifdef DEBUG_BATTLE_SCENARIOS
-#ifdef DEBUG_AUTO_TEST_PRINTS
-    debug_printf("PrintMessage: msg_id %d, attacker %d, defender %d\n", msg.msg_id, ctx->attack_client, ctx->defence_client);
-#endif
-    struct TestBattleScenario *scenario = TestBattle_GetCurrentScenario();
-    if (scenario != NULL && TestBattle_HasMoreExpectations()) {
-        // debug_printf("Has more expectations\n")
-        if (scenario->expectations[scenario->expectationPassCount].expectationType == EXPECTATION_TYPE_MESSAGE) {
-            if (scenario->expectations[scenario->expectationPassCount].expectationValue.messageID == msg.msg_id) {
-                scenario->expectationPassCount++;
-            }
-            // debug_printf("\n");
+        sub_0200E398(bgConfig, 2, 1, 0, HEAPID_BATTLE_HEAP);
+
+        AddWindowParameterized(bgConfig, window,
+            2, 33 /*x*/,
+            (side & 1) ? ABILITY_POPUP_Y_COORD_ENEMY : ABILITY_POPUP_Y_COORD_PLAYER /*y*/,
+            ABILITY_POPUP_TEXTBOX_WIDTH/*width*/, ABILITY_POPUP_TEXTBOX_HEIGHT/*height*/,
+            11, 9 + 1); // we initially print to the right of the screen where it is not visible at all
+
+        FillWindowPixelBuffer(window, 0xFF);
+        DrawFrameAndWindow1(window, FALSE, 1, 8);
+        BattleMessage mp;
+        mp.id = BATTLE_MSG_ABILITY_POPUP;
+        mp.tag = TAG_NICKNAME_ABILITY;
+        mp.param[0] = CreateNicknameTag(sp, work->battler);
+        mp.param[1] = work->ability;
+        mp.battlerId = work->battler;
+
+        BattleSystem_BufferMessage(bsys, &mp);
+        BattleMessage_ExpandPlaceholders(bsys, bsys->msgData, &mp);
+        AddTextPrinterParameterized(window, 0, bsys->msgBuffer, (side != 0) ? 0 : 2, 0, 0, 0);
+        DrawFrameAndWindow1(window, FALSE, 1, 8);
+        G2_SetBG2Offset(0, 0);
+        work->step++;
+        break;
+    case ABILITY_POPUP_SLIDE_IN: {
+        int negative = (side == 0 ? -1 : 1);
+        int sideShift = (side == 0 ? ABILITY_POPUP_TEXTBOX_PLAYER_SHIFT : 0);
+        if (work->frames++ >= ABILITY_POPUP_FRAMES_TO_SHIFT)
+        {
+            work->step++;
+            work->frames = 0;
+        } else {
+            G2_SetBG2Offset(sideShift + negative * (work->frames * ABILITY_POPUP_PIXELS_PER_FRAME), 0);
         }
-    }
-#endif // DEBUG_BATTLE_SCENARIOS
-
-    return FALSE;
-}
-
-BOOL LONG_CALL BtlCmd_PrintAttackMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
-{
-    IncrementBattleScriptPtr(ctx, 1);
-
-    if (!(ctx->server_status_flag & BATTLE_STATUS_NO_ATTACK_MESSAGE)) {
-        BattleController_EmitPrintAttackMessage(bsys, ctx);
-
-// #ifdef DEBUG_BATTLE_SCENARIOS
-// #ifdef DEBUG_AUTO_TEST_PRINTS
-//     debug_printf("PrintAttackMessage: msg_id %d, attacker %d, defender %d\n", ctx->mp.msg_id, ctx->attack_client, ctx->defence_client);
-// #endif
-//     struct TestBattleScenario *scenario = TestBattle_GetCurrentScenario();
-//     if (scenario != NULL && TestBattle_HasMoreExpectations()) {
-//         // debug_printf("Has more expectations\n")
-//         if (scenario->expectations[scenario->expectationPassCount].expectationType == EXPECTATION_TYPE_ATTACK_MESSAGE) {
-//             if (scenario->expectations[scenario->expectationPassCount].expectationValue.messageID == ctx->mp.msg_id) {
-//                 scenario->expectationPassCount++;
-//             }
-//             // debug_printf("\n");
-//         }
-//     }
-// #endif // DEBUG_BATTLE_SCENARIOS
-
-    }
-
-    ctx->server_status_flag |= BATTLE_STATUS_NO_ATTACK_MESSAGE;
-    ctx->server_status_flag2 |= BATTLE_STATUS2_DISPLAY_ATTACK_MESSAGE;
-
-    return FALSE;
-}
-
-BOOL LONG_CALL BtlCmd_PrintGlobalMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
-{
-    BattleMessageData msgdata;
-    MESSAGE_PARAM msg;
-
-    IncrementBattleScriptPtr(ctx, 1);
-
-    InitBattleMsgData(ctx, &msgdata);
-    InitBattleMsg(bsys, ctx, &msgdata, &msg);
-
-    msg.msg_tag |= 128;
-
-    BattleController_EmitPrintMessage(bsys, ctx, &msg);
-
-#ifdef DEBUG_BATTLE_SCENARIOS
-#ifdef DEBUG_AUTO_TEST_PRINTS
-    debug_printf("PrintGlobalMessage: msg_id %d, attacker %d, defender %d\n", msg.msg_id, ctx->attack_client, ctx->defence_client);
-#endif
-    struct TestBattleScenario *scenario = TestBattle_GetCurrentScenario();
-    if (scenario != NULL && TestBattle_HasMoreExpectations()) {
-        // debug_printf("Has more expectations\n")
-        if (scenario->expectations[scenario->expectationPassCount].expectationType == EXPECTATION_TYPE_MESSAGE) {
-            if (scenario->expectations[scenario->expectationPassCount].expectationValue.messageID == msg.msg_id) {
-                scenario->expectationPassCount++;
-            }
-            // debug_printf("\n");
         }
-    }
-#endif // DEBUG_BATTLE_SCENARIOS
-
-    return FALSE;
-}
-
-BOOL LONG_CALL BtlCmd_PrintBufferedMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
-{
-    IncrementBattleScriptPtr(ctx, 1);
-    BattleController_EmitPrintMessage(bsys, ctx, &ctx->mp);
-
-#ifdef DEBUG_BATTLE_SCENARIOS
-#ifdef DEBUG_AUTO_TEST_PRINTS
-    debug_printf("PrintBufferedMessage: msg_id %d, attacker %d, defender %d\n", ctx->mp.msg_id, ctx->attack_client, ctx->defence_client);
-#endif
-    struct TestBattleScenario *scenario = TestBattle_GetCurrentScenario();
-    if (scenario != NULL && TestBattle_HasMoreExpectations()) {
-        // debug_printf("Has more expectations\n")
-        if (scenario->expectations[scenario->expectationPassCount].expectationType == EXPECTATION_TYPE_MESSAGE) {
-            if (scenario->expectations[scenario->expectationPassCount].expectationValue.messageID == ctx->mp.msg_id) {
-                scenario->expectationPassCount++;
-            }
-            // debug_printf("\n");
+        break;
+    case ABILITY_POPUP_WAIT: {
+        if (work->frames++ > 60)
+        {
+            work->frames = 0;
+            work->step++;
         }
-    }
-#endif // DEBUG_BATTLE_SCENARIOS
-
-    return FALSE;
-}
-
-BOOL LONG_CALL BtlCmd_BufferMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
-{
-    BattleMessageData msgdata;
-
-    IncrementBattleScriptPtr(ctx, 1);
-
-    InitBattleMsgData(ctx, &msgdata);
-    InitBattleMsg(bsys, ctx, &msgdata, &ctx->mp);
-
-    return FALSE;
-}
-
-BOOL LONG_CALL BtlCmd_BufferLocalMessage(struct BattleSystem *bsys, struct BattleStruct *ctx)
-{
-    BattleMessageData msgdata;
-    MESSAGE_PARAM msg;
-
-    IncrementBattleScriptPtr(ctx, 1);
-
-    u32 side = read_battle_script_param(ctx);
-
-    InitBattleMsgData(ctx, &msgdata);
-    InitBattleMsg(bsys, ctx, &msgdata, &msg);
-
-    msg.msg_tag |= 64;
-    msg.msg_client = GrabClientFromBattleScriptParam(bsys, ctx, side);
-
-    BattleController_EmitPrintMessage(bsys, ctx, &msg);
-
-#ifdef DEBUG_BATTLE_SCENARIOS
-#ifdef DEBUG_AUTO_TEST_PRINTS
-    debug_printf("BufferLocalMessage: msg_id %d, attacker %d, defender %d\n", msg.msg_id, ctx->attack_client, ctx->defence_client);
-#endif
-    struct TestBattleScenario *scenario = TestBattle_GetCurrentScenario();
-    if (scenario != NULL && TestBattle_HasMoreExpectations()) {
-        // debug_printf("Has more expectations\n")
-        if (scenario->expectations[scenario->expectationPassCount].expectationType == EXPECTATION_TYPE_MESSAGE) {
-            if (scenario->expectations[scenario->expectationPassCount].expectationValue.messageID == msg.msg_id) {
-                scenario->expectationPassCount++;
-            }
-            // debug_printf("\n");
         }
+        break;
+    case ABILITY_POPUP_SLIDE_OUT: {
+        int negative = (side == 0 ? -1 : 1);
+        int sideShift = (side == 0 ? ABILITY_POPUP_TEXTBOX_PLAYER_SHIFT : 0);
+        if (work->frames++ >= ABILITY_POPUP_FRAMES_TO_SHIFT)
+        {
+            work->step++;
+            work->frames = 0;
+        } else {
+            G2_SetBG2Offset(sideShift + negative * ((ABILITY_POPUP_FRAMES_TO_SHIFT - work->frames) * ABILITY_POPUP_PIXELS_PER_FRAME), 0);
+        }
+        }
+        break;
+    case ABILITY_POPUP_DESTROY:
+        sub_0200E5D4(window, 0);
+        RemoveWindow(window);
+
+        G2_SetBG0Priority(1);
+        SetBgPriority(1, 0);
+        SetBgPriority(2, 1);
+        break;
     }
-#endif // DEBUG_BATTLE_SCENARIOS
+
+}
+
+BOOL btl_scr_cmd_116_abilitypopup(void* bw, struct BattleStruct* sp)
+{
+#ifdef DEBUG_ABILITY_POPUP
+    debug_printf("btl_scr_cmd abilitypopup %d\n", sp->battle_progress_flag);
+#endif
+
+    if (sp->abilityPopupWork == NULL) {
+        IncrementBattleScriptPtr(sp, 1);
+        {
+        struct ABILITY_POPUP_WORK *work = sys_AllocMemory(HEAPID_BATTLE_HEAP, sizeof(struct ABILITY_POPUP_WORK));
+        int battler = GrabClientFromBattleScriptParam(bw, sp, read_battle_script_param(sp));
+        int side = IsClientEnemy(bw, battler);
+        int ability = read_battle_script_param(sp);
+
+        sp->skill_seq_no -= 3; // reset position to current command so script does not continue
+
+        if (ability == -1)
+            ability = sp->battlemon[sp->battlerIdTemp].ability;
+
+        sp->abilityPopupWork = work;
+        work->bsys = bw;
+        work->ability = ability;
+        work->battler = battler;
+        work->side = side;
+        work->frames = 0;
+        work->step = ABILITY_POPUP_INIT_PALETTE;
+        sp->battle_progress_flag = 1;
+        }
+    } else if (sp->abilityPopupWork != NULL && sp->abilityPopupWork->step >= ABILITY_POPUP_DESTROY) {
+        sys_FreeMemoryEz(sp->abilityPopupWork);
+        sp->abilityPopupWork = NULL;
+        IncrementBattleScriptPtr(sp, 3);
+        sp->battle_progress_flag = 0;
+
+#ifdef DEBUG_ABILITY_POPUP
+        debug_printf("btl_scr_cmd abilitypopup end\n");
+#endif
+    } else {
+        AbilityPopup_SlideIn(sp->abilityPopupWork);
+        sp->battle_progress_flag = 1;
+    }
 
     return FALSE;
 }
