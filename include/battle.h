@@ -3719,7 +3719,7 @@ typedef enum Terrain {
 // For setting a Bitmask to flag trainer position on enemy/player side
 #define TRAINER_1     1 //0b01
 #define TRAINER_2     2 //0b10
-#define TRAINER_BOTH  (TRAINER_1 & TRAINER_2)
+#define TRAINER_BOTH  (TRAINER_1 | TRAINER_2)
 
 
 struct BattleSetupSub_138 {
