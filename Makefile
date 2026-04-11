@@ -77,9 +77,9 @@ PYTHON = $(PYTHON_NO_VENV)
 VENV_ACTIVATE =
 endif
 
-.PHONY: clean all dumprom move_narc
+.PHONY: clean all dumprom move_narc format format-check format-fix
 
-move_narc clean restore: NOSCAN = 1
+move_narc clean restore format format-check format-fix: NOSCAN = 1
 
 NOSCAN ?= 0
 
@@ -531,6 +531,12 @@ dumprom: $(VENV_ACTIVATE) $(TOOLS)
 update_machine_moves: $(VENV_ACTIVATE)
 	$(PYTHON) scripts/update_machine_moves.py --descriptions --sprites
 	@echo "Updated item descriptions and sprites. Double check formatting"
+
+format-check:
+	bash scripts/clang_format_check.sh
+
+format-fix:
+	bash scripts/clang_format_check.sh --fix
 
 
 # needed to keep the $(SDAT_OBJ_DIR)/WAVE_ARC_PV%/00.swav from being detected as an intermediate file
