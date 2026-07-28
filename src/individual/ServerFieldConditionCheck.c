@@ -1658,6 +1658,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp) {
                                         sp->item_work = sp->recycle_item[battlerId];
                                         sp->recycle_item[battlerId] = 0;
                                         sp->battlemon[battlerId].item = sp->item_work;
+                                        sp->battlerIdTemp = battlerId;
                                         seq_no = SUB_SEQ_HANDLE_HARVEST;
                                         ret = TRUE;
                                     }
@@ -1922,6 +1923,8 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp) {
                         sp->moveConditionsFlags[i].throatChopTimer--;
                     }
                     sp->moveConditionsFlags[i].dragonDartsStatus = 0;
+                    sp->moveConditionsFlags[i].endure = 0;
+                    sp->moveProtect[i] = 0;
                 }
 
                 sp->playerSideHasFaintedTeammateLastTurn = sp->playerSideHasFaintedTeammateThisTurn;

@@ -232,7 +232,7 @@ u16 move_effect_to_subscripts[] =
 
 void GetMoveDataTable(void *dest)
 {
-    ArchiveDataLoadOfs(dest, ARC_MOVE_DATA, 0, 0, sizeof(struct BattleMove)*(NUM_OF_MOVES+1));
+    ReadFromNarcMemberByIdPair(dest, ARC_MOVE_DATA, 0, 0, sizeof(struct BattleMove)*(NUM_OF_MOVES+1));
 }
 
 
@@ -246,7 +246,7 @@ void GetMoveDataTable(void *dest)
 u32 LONG_CALL GetMoveData(u16 id, u32 field)
 {
     struct BattleMove *bm = sys_AllocMemory(0, sizeof(struct BattleMove));
-    ArchiveDataLoad(bm, ARC_MOVE_DATA, id);
+    ReadWholeNarcMemberByIdPair(bm, ARC_MOVE_DATA, id);
     u32 ret = 0;
 
     switch (field)

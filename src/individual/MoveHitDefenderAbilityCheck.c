@@ -228,7 +228,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(struct BattleSystem *bw, struct BattleS
                 && ((sp->oneSelfFlag[sp->defence_client].physical_damage) || (sp->oneSelfFlag[sp->defence_client].special_damage))) {
                 sp->addeffect_type = ADD_EFFECT_ABILITY;
                 sp->battlerIdTemp = sp->attack_client;
-                sp->battlemon[sp->attack_client].ability = GetBattlerAbility(sp, sp->defence_client); // spread defender ability to attacker
+                //sp->battlemon[sp->attack_client].ability = GetBattlerAbility(sp, sp->defence_client); // moved to subscript to handle popup
                 seq_no[0] = SUB_SEQ_HANDLE_MUMMY_MESSAGE;
                 ret = TRUE;
             }
@@ -376,6 +376,7 @@ BOOL MoveHitDefenderAbilityCheckInternal(struct BattleSystem *bw, struct BattleS
         }
 
     } else if (IS_CLIENT_IN_ILLUSION_NO_ABILITY(bw, sp->defence_client)
+            && gIllusionStruct.dontRemoveIllusion == FALSE
             && ((sp->oneSelfFlag[sp->defence_client].physical_damage || sp->oneSelfFlag[sp->defence_client].special_damage)
                 || GetBattlerAbility(sp, sp->defence_client) != ABILITY_ILLUSION)) { // illusion has already activated, but it can be taken away without needing to have the ability
             // handle illusion here so it takes priority over fainting.  notably
@@ -386,6 +387,22 @@ BOOL MoveHitDefenderAbilityCheckInternal(struct BattleSystem *bw, struct BattleS
             sp->battlerIdTemp = sp->defence_client;
             seq_no[0] = SUB_SEQ_HANDLE_ILLUSION_FADED;
             ret = TRUE;
+    } else if (GetBattlerAbility(sp, sp->defence_client) == ABILITY_COTTON_DOWN) { //not breakable
+        if (sp->oneSelfFlag[sp->defence_client].physical_damage || sp->oneSelfFlag[sp->defence_client].special_damage) {
+            sp->addeffect_param = ADD_STATUS_EFF_BOOST_STATS_SPEED_DOWN;
+            sp->addeffect_type = ADD_EFFECT_PRINT_WORK_ABILITY;
+            sp->battlerIdTemp = sp->defence_client;
+            seq_no[0] = SUB_SEQ_COTTON_DOWN;
+            ret = TRUE;
+        }
+    } else if (GetBattlerAbility(sp, sp->defence_client) == ABILITY_PERISH_BODY) { // not breakable
+        //defender does not need to be alive
+        if ((sp->oneSelfFlag[sp->defence_client].physical_damage || sp->oneSelfFlag[sp->defence_client].special_damage)
+            && (IsContactBeingMade(GetBattlerAbility(sp, sp->attack_client), HeldItemHoldEffectGet(sp, sp->attack_client), HeldItemHoldEffectGet(sp, sp->defence_client), sp->current_move_index, sp->moveTbl[sp->current_move_index].flag))){
+            sp->addeffect_type = ADD_EFFECT_PRINT_WORK_ABILITY;
+            seq_no[0] = SUB_SEQ_PERISH_BODY;
+            ret = TRUE;
+        }
     }
 
     return ret;

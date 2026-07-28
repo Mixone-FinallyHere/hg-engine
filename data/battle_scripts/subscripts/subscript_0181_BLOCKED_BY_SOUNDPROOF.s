@@ -2,7 +2,7 @@
 
 .data
 
-// TODO: modernise message
+// unused
 
 _000:
     PrintAttackMessage 
