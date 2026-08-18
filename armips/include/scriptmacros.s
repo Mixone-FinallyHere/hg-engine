@@ -397,13 +397,18 @@ DIR_EAST equ 3
 .endmacro
 
 // Waits for A or B button
-.macro wait_button
+.macro wait_ab_press
 .halfword 49
 .endmacro
 
 // Waits for A,B,or dpad. On pressing dpad,does a turn frame.
-.macro wait_button_or_walk_away
+.macro wait_button
 .halfword 50
+.endmacro
+
+// old compatibility for the moment
+.macro wait_button_or_walk_away
+wait_button
 .endmacro
 
 // Waits for A,B,or dpad. No turn frame.
@@ -1147,7 +1152,7 @@ PHONE_CONTACT_KAY_AND_TIA         equ   71
 PHONE_CONTACT_REESE               equ   72
 PHONE_CONTACT_AIDEN               equ   73
 PHONE_CONTACT_ERNEST              equ   74
-NUM_PHONE_CONTACTS                equ   75 
+NUM_PHONE_CONTACTS                equ   75
 
 .macro check_registered_phone_number,arg0,arg1
 .halfword 147
@@ -3841,7 +3846,7 @@ RIBBON_MAX                    equ 80
 .halfword arg0
 .endmacro
 
-.macro scrcmd_603
+.macro wait_following_pokemon_movement
 .halfword 603
 .endmacro
 

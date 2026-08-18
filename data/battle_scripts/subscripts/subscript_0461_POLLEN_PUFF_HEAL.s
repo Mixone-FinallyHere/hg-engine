@@ -1,0 +1,14 @@
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
+
+.data
+
+_000:
+    UpdateVar OPCODE_FLAG_SET, BSCRIPT_VAR_BATTLE_STATUS, BATTLE_STATUS_IGNORE_TYPE_EFFECTIVENESS
+    PrintAttackMessage 
+    Wait 
+    UpdateMonDataFromVar OPCODE_GET, BATTLER_CATEGORY_DEFENDER, BMON_DATA_MAXHP, BSCRIPT_VAR_HP_CALC
+    DivideVarByValueRoundUp BSCRIPT_VAR_HP_CALC, 2
+    UpdateVarFromVar OPCODE_SET, BSCRIPT_VAR_MSG_BATTLER_TEMP, BSCRIPT_VAR_BATTLER_TARGET
+    Call BATTLE_SUBSCRIPT_RECOVER_HP
+    End 

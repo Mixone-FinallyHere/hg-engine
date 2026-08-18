@@ -17,6 +17,9 @@ b.c
 dump.py
 dumpitem.py
 *_DSPRE_contents/*
+/tools/*.s
+/tools/dumped_armips/*
+/tools/dumped_c/*
 
 # pycache files
 *.pyc
@@ -30,6 +33,7 @@ dumpitem.py
 /tools/genbabymondata
 /tools/gendexsortlists
 /tools/btx0topng
+/tools/btx
 /tools/gentutormovedata
 /tools/gengfxicons.exe
 /tools/genevodatatxt
@@ -48,6 +52,10 @@ dumpitem.py
 /tools/replacehexwithdec
 /tools/sortmonareadexdata
 /tools/msgenc
+/tools/movedatagen
+/tools/pokedexdatagen
+/tools/speciesdatagen
+/tools/trainerdatagen
 /tools/genleveldatatxt.exe
 /tools/genbabymondata.exe
 /tools/gendexsortlists.exe
@@ -78,6 +86,10 @@ armips/asm/offset.s
 .vs/
 .vscode/
 rom_gen*.ld
+.idea/
+.zed
+compile_commands.json
+CLAUDE.md
 
 sdat/*
 *.swav
@@ -91,3 +103,12 @@ tools/swav2swar.exe
 *.gbapal
 *.4bpp
 changelog
+
+/data/generated/
+/armips/include/generated/
+/include/constants/generated/
+test_logs.txt
+.scratch/
+dumped_armips/
+dumped_c/
+test_filter.txt

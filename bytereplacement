@@ -47,6 +47,9 @@ arm9 020CA054 60 00 2D E9
 # expand move tutor heap
 arm9 0203DFF4 8A 02
 
+# allow for 255 moves in move tutor
+0001 02202C12 FF 29
+
 # pokewalker species limiters
 0112 021ED63C FF 7F 00 00
 0112 021ED668 FF 7F 00 00
@@ -60,6 +63,7 @@ arm9 0203DFF4 8A 02
 0002 02247424 00 B5 83 B0 00 20 00 90
 0002 022474E0 18 B5 83 B0 07 9C 00 2C 09 D0 01 23
 0002 02248284 0B 20 00 21 09 F6 26 FB
+0002 02246E0E 28 1C 08 AA 01 F0 17 FA 04 E0
 0012 022607BC 4A 28 0C D1 38 1C 02 21
 0012 0226328E 00 21 04 A8 41 70 81 70 C1 70
 0008 02222CBC 22 30 00 78 01 28 0C D1
@@ -69,6 +73,10 @@ arm9 0203DFF4 8A 02
 # restore the original code to the initial hook for ClearBattleMonFlags_hook
 # since we moved it
 0012 0224E998 B9 19 0A 54 40 1C 0A 54
+
+# restore the original code for the hook for the bufferitem script command
+# since we no longer hook it
+arm9 02048510 70 B5 05 1C 80 30 00 68
 
 #ifndef IMPLEMENT_CAPTURE_EXPERIENCE
 
@@ -401,6 +409,7 @@ arm9 0204B94C FC
 0012 0224655C FC
 0012 02246560 FC
 
+#ifdef EXPAND_MUSIC_TABLES
 # MainMusicComboTable combo range
 arm9 080517AA 2D
 arm9 080517D4 2D
@@ -414,10 +423,48 @@ arm9 080518CA 0B
 # sTrainerEncounterMusicParam table range
 arm9 080550D4 2C
 
+#else
+
+# Restore MainMusicComboTable
+arm9 080517AA 2D
+arm9 080517D4 2D
+arm9 080517C8 0A C4 0F 02
+arm9 080517E4 0C C4 0F 02
+
+# Restore TrainerClassToMusicCombo
+arm9 08051886 20
+arm9 08051890 CA C3 0F 02
+
+# Restore PokemonBattleMusic
+arm9 080518CA 0B
+arm9 080518D4 B4 C3 0F 02
+
+# Restore sTrainerEncounterMusicParam
+arm9 080550D4 2C
+arm9 020550E0 1C C6 0F 02
+
+#endif
+
+
+#ifdef EXPAND_TRAINER_PRIZE_MONEY
+
 # PrizeMoney table range
 0012 0223FBD0 81
 0012 0223FBD4 81
 0012 0223FBDC 81
+
+#else
+
+# Restore vanilla PrizeMoney table ranges
+0012 0223FBD0 81
+0012 0223FBD4 81
+0012 0223FBDC 81
+
+# Restore vanilla PrizeMoney table pointers
+0012 08008380 C4 C4 26 02
+0012 08008384 C6 C4 26 02
+
+#endif
 
 #ifdef STATIC_HP_BAR
 
@@ -450,3 +497,69 @@ arm9 080550D4 2C
 
 # change the string displayed when a mon learns a tm without having to overwrite a move
 arm9 020821B0 DB
+
+# nop out heal bell soundproof check on the user
+# notably not on the ally
+0012 02241172 00 00
+# nop out heal bell check for healing mons in the party using heal bell
+0012 022593A4 00 00 00 00
+
+# nop out selection of cancel when the item won't have an effect
+arm9 0207C3AC 00 00 00 00
+
+# expand heap 6 to 384 KB
+0015 021F93B6 65 22
+
+# Bag_RenderItemSlotIcon fix SEL icons
+0015 021FF608 25 22
+0015 021FF626 25 22
+0015 021FE99A 11 46
+0015 021FE9B8 10 24
+0015 021FE9F8 10 24
+
+# skip the yes/no prompt for tm usage
+0015 021FB918 11 E0 C0 46 C0 46 C0 46 C0 46 C0 46 C0 46
+# skip the boot up tm messages
+0015 021FB850 75 E0
+0015 021FB8AC 47 E0
+# skip the tm teach confirmation on the mon screen
+arm9 0208222A 20 1C 24 4B 98 47 70 BD
+arm9 02082420 01 22
+
+#ifdef DEBUG_AUTO_CONTINUE_GAME
+# automatically starts the game.  does not care if there is a save or not
+arm9 02000E54 24 00 00 00 04 5C 1E 02
+#endif
+
+# show 6 digits for mart prices
+0031 0225DE46 06 23
+
+#ifndef DISABLE_CRITICAL_HP_WARNING
+0012 0223BD2C 02 49 40 5C C0 06 80 0F
+0012 0223BD3C 18 B4 05 4B 89 07 C4 5C
+#endif
+
+# honestly will not have any way to revert this because this is so much less intrusive and Just Works
+#ifdef APPLY_ANTIPIRACY
+
+# card checks return TRUE
+0001 021E662C 01 20 70 47
+# neuter dsprotect
+0123 0225F0CC E0 FC FF FF
+0123 0225F184 E0 FC FF FF
+
+#endif
+
+# make sure that the original antipiracy method is patched to vanilla
+arm9 02000A18 1E FF 2F E1
+
+# restore original sItemFieldUseFunc pointers since we no longer repoint the whole thing
+arm9 020649AC 64 E2 0F 02
+arm9 020649B0 64 E2 0F 02
+arm9 020649B4 64 E2 0F 02
+
+#ifdef SKIP_TUTORIAL_INFO
+0053 080016BA D4 05
+#else
+0053 080016BA FC 00
+#endif

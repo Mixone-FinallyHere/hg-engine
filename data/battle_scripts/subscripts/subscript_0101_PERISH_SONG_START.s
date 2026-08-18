@@ -1,8 +1,10 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
 _000:
+    UpdateVar OPCODE_SET, BSCRIPT_VAR_SIDE_EFFECT_TYPE, SIDE_EFFECT_TYPE_MOVE_EFFECT
     TryPerishSong _045
     Call BATTLE_SUBSCRIPT_ATTACK_MESSAGE_AND_ANIMATION
     // All Pokémon hearing the song will faint in three turns!
@@ -15,13 +17,15 @@ _000:
 
 _021:
     GetMonBySpeedOrder BSCRIPT_VAR_MSG_BATTLER_TEMP
-    CheckIgnorableAbility CHECK_OPCODE_NOT_HAVE, BATTLER_CATEGORY_MSG_TEMP, ABILITY_SOUNDPROOF, _037
+    CheckIgnorableAbility CHECK_OPCODE_NOT_HAVE, BATTLER_CATEGORY_MSG_TEMP, ABILITY_SOUNDPROOF, _CheckIfLoopShouldContinue
+     // Generation VIII: Soundproof does not take effect for the move's user.
+    CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_MSG_BATTLER_TEMP, BATTLER_CATEGORY_ATTACKER, _CheckIfLoopShouldContinue
     // {0}’s {1} blocks {2}!
     PrintMessage 689, TAG_NICKNAME_ABILITY_MOVE, BATTLER_CATEGORY_MSG_TEMP, BATTLER_CATEGORY_MSG_TEMP, BATTLER_CATEGORY_MSG_TEMP
     Wait 
     WaitButtonABTime 30
 
-_037:
+_CheckIfLoopShouldContinue:
     UpdateVar OPCODE_ADD, BSCRIPT_VAR_BATTLER_SPEED_TEMP, 1
     GoToIfValidMon BSCRIPT_VAR_BATTLER_SPEED_TEMP, _021
     End 

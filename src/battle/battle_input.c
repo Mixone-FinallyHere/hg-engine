@@ -1,15 +1,16 @@
-#include "../../include/types.h"
-#include "../../include/battle.h"
-#include "../../include/config.h"
-#include "../../include/pokemon.h"
-#include "../../include/sprite.h"
-#include "../../include/mega.h"
-#include "../../include/constants/ability.h"
-#include "../../include/constants/battle_script_constants.h"
-#include "../../include/constants/item.h"
-#include "../../include/constants/file.h"
+#include "config.h"
+#include "types.h"
 
+#include "constants/ability.h"
+#include "constants/battle_script_constants.h"
+#include "constants/file.h"
+#include "constants/item.h"
+#include "constants/weather_numbers.h"
 
+#include "battle.h"
+#include "mega.h"
+#include "pokemon.h"
+#include "sprite.h"
 
 // function declarations for this file
 void Sub_PokeIconResourceLoad(struct BI_PARAM *bip);
@@ -22,23 +23,21 @@ void BGCallback_Waza_Extend(struct BI_PARAM *bip, int select_bg, int force_put);
 u32 GrabCancelXValue(void);
 void SwapOutBottomScreen(struct BI_PARAM *bip);
 
-void __attribute__((long_call)) BGCallback_Waza(struct BI_PARAM *bip, int select_bg, int force_put);
-
-
+void LONG_CALL BGCallback_Waza(struct BI_PARAM *bip, int select_bg, int force_put);
 
 // new battle structure with a few overlay 12 global things that can be accessed.
-struct newBattleStruct __attribute__((section (".data"))) newBS = {0};
+struct newBattleStruct __attribute__((section(".data"))) newBS = { 0 };
 
 // icon sprite tags to keep track of things
-#define MEGA_ICON_SPRITE_TAG 22050
-#define MEGA_ICON_PAL_TAG 22051
-#define MEGA_ICON_CELL_TAG 22052
-#define MEGA_ICON_CELL_ANIM_TAG 22053
-#define MEGA_BUTTON_SPRITE_TAG 22054
-#define MEGA_BUTTON_PAL_TAG 22055
-#define WEATHER_ICON_SPRITE_TAG 22056
-#define WEATHER_ICON_PAL_TAG 22057
-#define WEATHER_ICON_CELL_TAG 22058
+#define MEGA_ICON_SPRITE_TAG       22050
+#define MEGA_ICON_PAL_TAG          22051
+#define MEGA_ICON_CELL_TAG         22052
+#define MEGA_ICON_CELL_ANIM_TAG    22053
+#define MEGA_BUTTON_SPRITE_TAG     22054
+#define MEGA_BUTTON_PAL_TAG        22055
+#define WEATHER_ICON_SPRITE_TAG    22056
+#define WEATHER_ICON_PAL_TAG       22057
+#define WEATHER_ICON_CELL_TAG      22058
 #define WEATHER_ICON_CELL_ANIM_TAG 22059
 
 // values to return when rectangle is touched
@@ -50,31 +49,28 @@ struct newBattleStruct __attribute__((section (".data"))) newBS = {0};
 #define TOUCH_DATA_MEGA   5
 #define TOUCH_DATA_TOTAL  6
 
-
 // should just need to swap between touch data mega and non-mega when accessing things?  perhaps?
 // also need to swap out the nscr -> BINPUT_SystemInit -> ScrnArcDataNo, should be able to swap out the result using asm?
 // swap out this touch data at the same time, no way that it loads touch data before rendering the screen.
-const ButtonTBL SkillMenuTouchData[] =
-{
-    //UP DOWN LEFT RIGHT
-    [TOUCH_DATA_CANCEL] = {0x13 * 8, 0x18 * 8, 1 * 8, 0x16 * 8},
-    [TOUCH_DATA_MOVE_1] = {3 * 8, 0xA * 8, 0 * 8, 0x10 * 8},
-    [TOUCH_DATA_MOVE_2] = {3 * 8, 0xA * 8, 0x10 * 8, 255},
-    [TOUCH_DATA_MOVE_3] = {0xB * 8, 0x12 * 8, 0 * 8, 0x10 * 8},
-    [TOUCH_DATA_MOVE_4] = {0xB * 8, 0x12 * 8, 0x10 * 8, 255},
-    [TOUCH_DATA_MEGA  ] = {0x13 * 8, 0x18 * 8, 0x16 * 8, 0x1F * 8},
-    [TOUCH_DATA_TOTAL ] = {RECT_HIT_END, 0, 0, 0},
+const ButtonTBL SkillMenuTouchData[] = {
+    // UP DOWN LEFT RIGHT
+    [TOUCH_DATA_CANCEL] = { 0x13 * 8, 0x18 * 8, 1 * 8, 0x16 * 8 },
+    [TOUCH_DATA_MOVE_1] = { 3 * 8, 0xA * 8, 0 * 8, 0x10 * 8 },
+    [TOUCH_DATA_MOVE_2] = { 3 * 8, 0xA * 8, 0x10 * 8, 255 },
+    [TOUCH_DATA_MOVE_3] = { 0xB * 8, 0x12 * 8, 0 * 8, 0x10 * 8 },
+    [TOUCH_DATA_MOVE_4] = { 0xB * 8, 0x12 * 8, 0x10 * 8, 255 },
+    [TOUCH_DATA_MEGA] = { 0x13 * 8, 0x18 * 8, 0x16 * 8, 0x1F * 8 },
+    [TOUCH_DATA_TOTAL] = { RECT_HIT_END, 0, 0, 0 },
 };
 
-const ButtonTBL SkillMenuTouchDataNoMega[] =
-{
-    //UP DOWN LEFT RIGHT
-    [TOUCH_DATA_CANCEL] = {0x13 * 8, 0x18 * 8, 1 * 8, 0x1F * 8},
-    [TOUCH_DATA_MOVE_1] = {3 * 8, 0xA * 8, 0 * 8, 0x10 * 8},
-    [TOUCH_DATA_MOVE_2] = {3 * 8, 0xA * 8, 0x10 * 8, 255},
-    [TOUCH_DATA_MOVE_3] = {0xB * 8, 0x12 * 8, 0 * 8, 0x10 * 8},
-    [TOUCH_DATA_MOVE_4] = {0xB * 8, 0x12 * 8, 0x10 * 8, 255},
-    [TOUCH_DATA_MEGA  ] = {RECT_HIT_END, 0, 0, 0},
+const ButtonTBL SkillMenuTouchDataNoMega[] = {
+    // UP DOWN LEFT RIGHT
+    [TOUCH_DATA_CANCEL] = { 0x13 * 8, 0x18 * 8, 1 * 8, 0x1F * 8 },
+    [TOUCH_DATA_MOVE_1] = { 3 * 8, 0xA * 8, 0 * 8, 0x10 * 8 },
+    [TOUCH_DATA_MOVE_2] = { 3 * 8, 0xA * 8, 0x10 * 8, 255 },
+    [TOUCH_DATA_MOVE_3] = { 0xB * 8, 0x12 * 8, 0 * 8, 0x10 * 8 },
+    [TOUCH_DATA_MOVE_4] = { 0xB * 8, 0x12 * 8, 0x10 * 8, 255 },
+    [TOUCH_DATA_MEGA] = { RECT_HIT_END, 0, 0, 0 },
 };
 
 const int SkillMenuTouchRet[NELEMS(SkillMenuTouchData) - 1] = {
@@ -83,7 +79,7 @@ const int SkillMenuTouchRet[NELEMS(SkillMenuTouchData) - 1] = {
     [TOUCH_DATA_MOVE_2] = 2,
     [TOUCH_DATA_MOVE_3] = 3,
     [TOUCH_DATA_MOVE_4] = 4,
-    [TOUCH_DATA_MEGA  ] = 5,
+    [TOUCH_DATA_MEGA] = 5,
 };
 
 ALIGN4 const u8 SkillMenuPaletteNo[NELEMS(SkillMenuTouchData) - 1] = {
@@ -92,19 +88,23 @@ ALIGN4 const u8 SkillMenuPaletteNo[NELEMS(SkillMenuTouchData) - 1] = {
     [TOUCH_DATA_MOVE_2] = 9,
     [TOUCH_DATA_MOVE_3] = 10,
     [TOUCH_DATA_MOVE_4] = 11,
-    [TOUCH_DATA_MEGA  ] = 4,
+    [TOUCH_DATA_MEGA] = 4,
 };
 
-const u8 DPadSelectTouchDataIndex[] = { // dpad touch data index
-    1, 2,
-    3, 4,
-    0, 5,
+const u8 DPadSelectTouchDataIndex[] = {
+    // dpad touch data index
+    1,
+    2,
+    3,
+    4,
+    0,
+    5,
 };
 
 static const OAMSpriteTemplate MegaIconObjParam = {
     155,
     161,
-    0, //x, y, z
+    0, // x, y, z
     0,
     100,
     0,
@@ -124,7 +124,7 @@ static const OAMSpriteTemplate MegaIconObjParam = {
 static const OAMSpriteTemplate MegaButtonTemplate = {
     213,
     253,
-    0, //x, y, z
+    0, // x, y, z
     0,
     100,
     0,
@@ -144,7 +144,7 @@ static const OAMSpriteTemplate MegaButtonTemplate = {
 static const OAMSpriteTemplate WeatherIconObjParam = {
     197,
     198,
-    0, //x, y, z
+    0, // x, y, z
     2,
     100,
     0,
@@ -185,17 +185,12 @@ void Sub_PokeIconResourceLoad(struct BI_PARAM *bip)
 
     if (bip->client_no < CLIENT_MAX) // when in the fight screen, the client_no gets set to a crazy value.  do not load a different palette until the next mon is selected and client_no has returned to a sane value
     {
-        if (CheckIsPrimalGroudon(bip))
-        {
-            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_ITEM_GFX_DATA, PRIMAL_REVERSION_OMEGA_GFX+1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
-        }
-        else if (CheckIsPrimalKyogre(bip))
-        {
-            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_ITEM_GFX_DATA, PRIMAL_REVERSION_ALPHA_GFX+1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
-        }
-        else if (CheckIsMega(bip))
-        {
-            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_ITEM_GFX_DATA, MEGA_ICON_FIGHT_GFX+1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
+        if (CheckIsPrimalGroudon(bip)) {
+            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, PRIMAL_REVERSION_OMEGA_GFX + 1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
+        } else if (CheckIsPrimalKyogre(bip)) {
+            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, PRIMAL_REVERSION_ALPHA_GFX + 1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
+        } else if (CheckIsMega(bip)) {
+            OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, MEGA_ICON_FIGHT_GFX + 1, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_PAL_TAG);
         }
     }
 
@@ -203,35 +198,25 @@ void Sub_PokeIconResourceLoad(struct BI_PARAM *bip)
 
     OAM_LoadResourceCellAnmArc(csp, crp, ARC_ITEM_GFX_DATA, 0, 0, MEGA_ICON_CELL_ANIM_TAG);
 
-
     // weather
-    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS)
-    {
-        if (bip->bw->sp->field_condition & WEATHER_SUNNY_ANY)
-        {
+    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS) {
+        if (bip->bw->sp->field_condition & FIELD_CONDITION_SUN_ALL) {
             nclr = BATTLE_GFX_SUN_NCLR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_RAIN_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_RAIN_ALL) {
             nclr = BATTLE_GFX_RAIN_NCLR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_SANDSTORM_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_SANDSTORM_ALL) {
             nclr = BATTLE_GFX_SANDSTORM_NCLR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_HAIL_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_HAIL_ALL) {
             nclr = BATTLE_GFX_HAIL_NCLR;
-        }
-        else // fog
+        } else // fog
         {
             nclr = BATTLE_GFX_FOG_NCLR;
         }
         OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, nclr, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, WEATHER_ICON_PAL_TAG);
 
-        OAM_LoadResourceCellArc(csp, crp, ARC_BATTLE_GFX, BATTLE_GFX_NCER, 0, WEATHER_ICON_CELL_TAG); //NCER
+        OAM_LoadResourceCellArc(csp, crp, ARC_BATTLE_GFX, BATTLE_GFX_NCER, 0, WEATHER_ICON_CELL_TAG); // NCER
 
-        OAM_LoadResourceCellAnmArc(csp, crp, ARC_POKEICON, 3, 0, WEATHER_ICON_CELL_ANIM_TAG); //NANR
+        OAM_LoadResourceCellAnmArc(csp, crp, ARC_POKEICON, 3, 0, WEATHER_ICON_CELL_ANIM_TAG); // NANR
     }
 }
 
@@ -252,8 +237,7 @@ void Sub_PokeIconResourceFree(struct BI_PARAM *bip)
     OAM_FreeResourceCellAnm(crp, 20021);
     OAM_FreeResourcePltt(crp, 20022);
 
-    if (newBS.MegaOAM)
-    {
+    if (newBS.MegaOAM) {
         OAM_FreeResourceChar(crp, MEGA_ICON_SPRITE_TAG);
         OAM_FreeResourceCell(crp, MEGA_ICON_CELL_TAG);
         OAM_FreeResourceCellAnm(crp, MEGA_ICON_CELL_ANIM_TAG);
@@ -262,8 +246,7 @@ void Sub_PokeIconResourceFree(struct BI_PARAM *bip)
         CATS_ActorPointerDelete_S(newBS.MegaOAM);
         newBS.MegaOAM = NULL;
     }
-    if (newBS.MegaButton)
-    {
+    if (newBS.MegaButton) {
         OAM_FreeResourceChar(crp, MEGA_BUTTON_SPRITE_TAG);
         OAM_FreeResourceCell(crp, MEGA_ICON_CELL_TAG);
         OAM_FreeResourceCellAnm(crp, MEGA_ICON_CELL_ANIM_TAG);
@@ -271,21 +254,16 @@ void Sub_PokeIconResourceFree(struct BI_PARAM *bip)
 
         CATS_ActorPointerDelete_S(newBS.MegaButton);
         newBS.MegaButton = NULL;
-        if (newBS.MegaIconLight)
-        {
+        if (newBS.MegaIconLight) {
             newBS.playerWantMega = No2Bit(bip->client_no_fight_screen); // determine which party pos queued up the mega for cases where the player is in control of 2 clients
-        }
-        else
+        } else {
             newBS.playerWantMega = FALSE;
+        }
         newBS.MegaIconLight = 0;
     }
 
-
-
-    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS)
-    {
-        if (newBS.WeatherOAM)
-        {
+    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS) {
+        if (newBS.WeatherOAM) {
             OAM_FreeResourceChar(crp, WEATHER_ICON_SPRITE_TAG);
             OAM_FreeResourceCell(crp, WEATHER_ICON_CELL_TAG);
             OAM_FreeResourceCellAnm(crp, WEATHER_ICON_CELL_ANIM_TAG);
@@ -312,63 +290,52 @@ void LoadMegaIcon(struct BI_PARAM *bip)
     OAMSpriteTemplate template = MegaIconObjParam; // memcpy should handle this
 
     newBS.CanMega = CheckCanDrawMegaButton(bip);
-    if (!newBS.MegaOAM && CheckIsMega(bip))
-    {
+    if (!newBS.MegaOAM && CheckIsMega(bip)) {
         csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
         crp = BattleWorkCATS_RES_PTRGet(bip->bw);
 
-        OAM_LoadResourceCharArc(csp, crp, ARC_ITEM_GFX_DATA, MEGA_ICON_FIGHT_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
-        if (bip->client_no != 0)
+        OAM_LoadResourceCharArc(csp, crp, ARC_BATTLE_GFX, MEGA_ICON_FIGHT_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
+        if (bip->client_no != 0) {
             template.x = 103;
+        }
         newBS.MegaOAM = OAM_ObjectAdd_S(csp, crp, &template);
         OAM_ObjectUpdate(newBS.MegaOAM->act);
-    }
-    else if (!newBS.MegaOAM && CheckIsPrimalGroudon(bip))
-    {
+    } else if (!newBS.MegaOAM && CheckIsPrimalGroudon(bip)) {
         csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
         crp = BattleWorkCATS_RES_PTRGet(bip->bw);
 
-        OAM_LoadResourceCharArc(csp, crp, ARC_ITEM_GFX_DATA, PRIMAL_REVERSION_OMEGA_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
-        if (bip->client_no != 0)
+        OAM_LoadResourceCharArc(csp, crp, ARC_BATTLE_GFX, PRIMAL_REVERSION_OMEGA_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
+        if (bip->client_no != 0) {
             template.x = 101;
+        }
         newBS.MegaOAM = OAM_ObjectAdd_S(csp, crp, &template);
         OAM_ObjectUpdate(newBS.MegaOAM->act);
-    }
-    else if (!newBS.MegaOAM && CheckIsPrimalKyogre(bip))
-    {
+    } else if (!newBS.MegaOAM && CheckIsPrimalKyogre(bip)) {
         csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
         crp = BattleWorkCATS_RES_PTRGet(bip->bw);
 
-        OAM_LoadResourceCharArc(csp, crp, ARC_ITEM_GFX_DATA, PRIMAL_REVERSION_ALPHA_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
-        if (bip->client_no != 0)
+        OAM_LoadResourceCharArc(csp, crp, ARC_BATTLE_GFX, PRIMAL_REVERSION_ALPHA_GFX, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_ICON_SPRITE_TAG);
+        if (bip->client_no != 0) {
             template.x = 101;
+        }
         newBS.MegaOAM = OAM_ObjectAdd_S(csp, crp, &template);
         OAM_ObjectUpdate(newBS.MegaOAM->act);
     }
 
-    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS)
-    {
+    if (bip->bw->sp->field_condition & WEATHER_ANY_ICONS) {
         u32 ncgr;
         csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
         crp = BattleWorkCATS_RES_PTRGet(bip->bw);
 
-        if (bip->bw->sp->field_condition & WEATHER_SUNNY_ANY)
-        {
+        if (bip->bw->sp->field_condition & FIELD_CONDITION_SUN_ALL) {
             ncgr = BATTLE_GFX_SUN_NCGR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_RAIN_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_RAIN_ALL) {
             ncgr = BATTLE_GFX_RAIN_NCGR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_SANDSTORM_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_SANDSTORM_ALL) {
             ncgr = BATTLE_GFX_SANDSTORM_NCGR;
-        }
-        else if (bip->bw->sp->field_condition & WEATHER_HAIL_ANY)
-        {
+        } else if (bip->bw->sp->field_condition & FIELD_CONDITION_HAIL_ALL) {
             ncgr = BATTLE_GFX_HAIL_NCGR;
-        }
-        else // fog
+        } else // fog
         {
             ncgr = BATTLE_GFX_FOG_NCGR;
         }
@@ -392,21 +359,20 @@ void LoadMegaButton(struct BI_PARAM *bip)
     void *crp;
     void *pfd = BattleWorkPfdGet(bip->bw);
     int iconindex = MEGA_ICON_BLANK_GFX; // indices of new sprites added to item narc
-    int palindex = MEGA_ICON_BLANK_GFX+1;
+    int palindex = MEGA_ICON_BLANK_GFX + 1;
 
-    if (newBS.PlayerMegaed)
+    if (newBS.PlayerMegaed) {
         return;
-    if (!newBS.MegaButton && newBS.CanMega)
-    {
+    }
+    if (!newBS.MegaButton && newBS.CanMega) {
         csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
         crp = BattleWorkCATS_RES_PTRGet(bip->bw);
-        if (newBS.MegaIconLight)
-        {
+        if (newBS.MegaIconLight) {
             iconindex = MEGA_ICON_SELECTED_GFX;
-            palindex = MEGA_ICON_SELECTED_GFX+1;
+            palindex = MEGA_ICON_SELECTED_GFX + 1;
         }
-        OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_ITEM_GFX_DATA, palindex, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_PAL_TAG);
-        OAM_LoadResourceCharArc(csp, crp, ARC_ITEM_GFX_DATA, iconindex, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_SPRITE_TAG);
+        OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, palindex, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_PAL_TAG);
+        OAM_LoadResourceCharArc(csp, crp, ARC_BATTLE_GFX, iconindex, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_SPRITE_TAG);
 
         OAM_LoadResourceCellArc(csp, crp, ARC_ITEM_GFX_DATA, 1, 0, MEGA_ICON_CELL_TAG);
         OAM_LoadResourceCellAnmArc(csp, crp, ARC_ITEM_GFX_DATA, 0, 0, MEGA_ICON_CELL_ANIM_TAG);
@@ -415,14 +381,14 @@ void LoadMegaButton(struct BI_PARAM *bip)
     }
 }
 
-#define RECT_HIT_NONE (0xffffffff)
+#define RECT_HIT_NONE   (0xffffffff)
 #define SCREEN_CANCEL_0 (0x1d)
 #define SCREEN_CANCEL_1 (0xdd)
 #define SCREEN_CANCEL_2 (0x19d)
 
 ALIGN4 static const s16 MoveSelectScreenOffsets[][3] = {
     {
-        //SELECT_CANCEL
+        // SELECT_CANCEL
         SCREEN_CANCEL_0 - SCREEN_CANCEL_0,
         SCREEN_CANCEL_1 - SCREEN_CANCEL_0,
         SCREEN_CANCEL_2 - SCREEN_CANCEL_0,
@@ -430,11 +396,11 @@ ALIGN4 static const s16 MoveSelectScreenOffsets[][3] = {
 };
 
 ALIGN4 static const ButtonTBL MoveSelectButtonScreenRectangle[] = {
-    {0x12, 0x17, 0x16, 0x1e},
+    { 0x12, 0x17, 0x16, 0x1e },
 };
 
 ALIGN4 static const ButtonTBL MoveSelectMegaButtonScreenRectangle[] = {
-    {0x12, 0x17, 0x1, 0x1e},
+    { 0x12, 0x17, 0x1, 0x1e },
 };
 
 /**
@@ -450,35 +416,38 @@ BOOL CheckMegaButton(struct BI_PARAM *bip, int tp_ret)
     void *crp;
     void *pfd;
     int iconindex = MEGA_ICON_SELECTED_GFX;
-    int palindex = MEGA_ICON_SELECTED_GFX+1;
+    int palindex = MEGA_ICON_SELECTED_GFX + 1;
 
-    if (tp_ret != 5)
+    if (tp_ret != 5) {
         return 0;
-    if (newBS.ChangeBgFlag)
+    }
+    if (newBS.ChangeBgFlag) {
         return 0;
-    if (!newBS.CanMega)
+    }
+    if (!newBS.CanMega) {
         return 0;
-    if (newBS.PlayerMegaed)
+    }
+    if (newBS.PlayerMegaed) {
         return 0;
+    }
     csp = BattleWorkCATS_SYS_PTRGet(bip->bw);
     crp = BattleWorkCATS_RES_PTRGet(bip->bw);
     pfd = BattleWorkPfdGet(bip->bw);
     OAM_FreeResourcePltt(crp, MEGA_BUTTON_PAL_TAG);
     OAM_FreeResourceChar(crp, MEGA_BUTTON_SPRITE_TAG);
 
-    if (newBS.MegaIconLight)
-    {
+    if (newBS.MegaIconLight) {
         iconindex = MEGA_ICON_BLANK_GFX;
-        palindex = MEGA_ICON_BLANK_GFX+1;
+        palindex = MEGA_ICON_BLANK_GFX + 1;
         newBS.MegaIconLight = 0;
-    }
-    else
+    } else {
         newBS.MegaIconLight = 1;
-    OAM_LoadResourceCharArc(csp, crp, ARC_ITEM_GFX_DATA, iconindex, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_SPRITE_TAG);
-    OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_ITEM_GFX_DATA, palindex, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_PAL_TAG);
+    }
+    OAM_LoadResourceCharArc(csp, crp, ARC_BATTLE_GFX, iconindex, 0, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_SPRITE_TAG);
+    OAM_LoadResourcePlttWorkArc(pfd, FADE_SUB_OBJ, csp, crp, ARC_BATTLE_GFX, palindex, 0, 1, NNS_G2D_VRAM_TYPE_2DSUB, MEGA_BUTTON_PAL_TAG);
     OAM_ObjectUpdate(newBS.MegaButton->act);
     Snd_SePlay(1501);
-    EffectTCB_Add(EFFECT_MegaTouch, bip); //315c4
+    EffectTCB_Add(EFFECT_MegaTouch, bip); // 315c4
     bip->scrn_offset = MoveSelectScreenOffsets[0];
     bip->scrn_range = &MoveSelectButtonScreenRectangle[0];
     bip->scrnbuf_no = 3;
@@ -498,29 +467,26 @@ void EFFECT_MegaTouch(void *tcb UNUSED, void *work)
 {
     struct BI_PARAM *bip = work;
 
-    switch (bip->seq)
-    { //69c
+    switch (bip->seq) { // 69c
     case 0:
-        Sub_ScrnOffsetRewrite(bip, bip->scrn_offset, bip->scrn_range, bip->scrnbuf_no, 2); //31624
+        Sub_ScrnOffsetRewrite(bip, bip->scrn_offset, bip->scrn_range, bip->scrnbuf_no, 2); // 31624
         bip->seq++;
         break;
     case 1:
         bip->wait++;
-        if (bip->wait <= 0)
-        {
+        if (bip->wait <= 0) {
             break;
         }
         bip->wait = 0;
         bip->seq++;
         break;
     case 2:
-        Sub_ScrnOffsetRewrite(bip, bip->scrn_offset, bip->scrn_range, bip->scrnbuf_no, 1); //31624
+        Sub_ScrnOffsetRewrite(bip, bip->scrn_offset, bip->scrn_range, bip->scrnbuf_no, 1); // 31624
         bip->seq++;
         break;
     case 3:
         bip->wait++;
-        if (bip->wait <= 1)
-        {
+        if (bip->wait <= 1) {
             break;
         }
         bip->wait = 0;
@@ -532,8 +498,7 @@ void EFFECT_MegaTouch(void *tcb UNUSED, void *work)
         break;
     default:
         bip->wait++;
-        if (bip->wait > 1)
-        {
+        if (bip->wait > 1) {
             EffectTCB_Delete(bip);
             newBS.ChangeBgFlag = 0;
             return;
@@ -561,16 +526,13 @@ void BGCallback_Waza_Extend(struct BI_PARAM *bip, int select_bg, int force_put)
     bip->scrn_buf[3] = sys_AllocMemory(5, 0x800);
 
     // me when i commit crimes that transfer to low-level really nicely
-    if (newBS.CanMega && !newBS.PlayerMegaed)
-    {
+    if (newBS.CanMega && !newBS.PlayerMegaed) {
         scrn_data_id = 353; // new button layout nscr in a007
         *(u16 *)(0x0226E29E) = 353;
         // swap out touch data ptr
         *(u32 *)(0x0226E930) = (u32)&SkillMenuTouchData; // something like this
         *(u32 *)(0x02269F4C) = (u32)&DPadSelectTouchDataIndex; // new map x/y grid array for dpad movement callback
-    }
-    else
-    {
+    } else {
         scrn_data_id = 37; // old button layout nscr
         *(u16 *)(0x0226E29E) = 37;
         // swap out touch data ptr
@@ -580,7 +542,7 @@ void BGCallback_Waza_Extend(struct BI_PARAM *bip, int select_bg, int force_put)
 
     // swap out tilemap
     arc_data = ArcUtil_ScrnDataGet(7, scrn_data_id, 1, &scrnData, 5); // a007 file scrn_data_id (and it is compressed) slapped on heap 5.  need return ptr so we can free it too
-    /*MI_CpuCopy32*/memcpy(bip->scrn_buf[3], scrnData->rawData, 0x800);
+    /*MI_CpuCopy32*/ memcpy(bip->scrn_buf[3], scrnData->rawData, 0x800);
     sys_FreeMemoryEz(arc_data);
     bgl = BattleWorkGF_BGL_INIGet(bip->bw);
     BG_LoadScreenTilemapData(bgl, GF_BGL_FRAME3_S, bip->scrn_buf[3], 0x800); // GF_BGL_ScreenBufSet
@@ -604,12 +566,9 @@ void BGCallback_Waza_Extend(struct BI_PARAM *bip, int select_bg, int force_put)
  */
 u32 GrabCancelXValue(void)
 {
-    if (newBS.CanMega && !newBS.PlayerMegaed)
-    {
+    if (newBS.CanMega && !newBS.PlayerMegaed) {
         return 92;
-    }
-    else
-    {
+    } else {
         return 128;
     }
 }
@@ -621,15 +580,12 @@ u32 GrabCancelXValue(void)
  */
 void SwapOutBottomScreen(struct BI_PARAM *bip)
 {
-    if (CheckCanDrawMegaButton(bip) && !newBS.PlayerMegaed)
-    {
+    if (CheckCanDrawMegaButton(bip) && !newBS.PlayerMegaed) {
         *(u16 *)(0x0226E29E) = 353; // new button layout nscr
         // swap out touch data ptr
         *(u32 *)(0x0226E930) = (u32)&SkillMenuTouchData; // something like this
         *(u32 *)(0x02269F4C) = (u32)&DPadSelectTouchDataIndex; // new map x/y grid array for dpad movement callback
-    }
-    else
-    {
+    } else {
         *(u16 *)(0x0226E29E) = 37; // old button layout nscr
         // swap out touch data ptr
         *(u32 *)(0x0226E930) = (u32)&SkillMenuTouchDataNoMega;
@@ -637,10 +593,8 @@ void SwapOutBottomScreen(struct BI_PARAM *bip)
     }
 }
 
-
 // indices in a008 that determine the ncgr's for the opponent's side of the field
-u16 TerrainPlatformEnemyNCGR[] =
-{
+u16 TerrainPlatformEnemyNCGR[] = {
     [TERRAIN_PLAIN] = 136,
     [TERRAIN_SAND] = 146,
     [TERRAIN_GRASS] = 130,
@@ -672,8 +626,7 @@ u16 TerrainPlatformEnemyNCGR[] =
 };
 
 // indices in a008 that determine the ncgr's for the player's side of the field
-u16 TerrainPlatformPlayerNCGR[] =
-{
+u16 TerrainPlatformPlayerNCGR[] = {
     [TERRAIN_PLAIN] = 135,
     [TERRAIN_SAND] = 145,
     [TERRAIN_GRASS] = 127,
@@ -698,55 +651,58 @@ u16 TerrainPlatformPlayerNCGR[] =
     [TERRAIN_BATTLE_CASTLE] = 171,
     [TERRAIN_BATTLE_HALL] = 173,
     [TERRAIN_GIRATINA] = 175,
-    [TERRAIN_ELECTRIC_TERRAIN] = 357,
-    [TERRAIN_MISTY_TERRAIN] = 357,
-    [TERRAIN_GRASSY_TERRAIN] = 357,
-    [TERRAIN_PSYCHIC_TERRAIN] = 357,
+    [TERRAIN_ELECTRIC_TERRAIN] = BATTLE_GFX_TRANSPARENT_TERRAIN,
+    [TERRAIN_MISTY_TERRAIN] = BATTLE_GFX_TRANSPARENT_TERRAIN,
+    [TERRAIN_GRASSY_TERRAIN] = BATTLE_GFX_TRANSPARENT_TERRAIN,
+    [TERRAIN_PSYCHIC_TERRAIN] = BATTLE_GFX_TRANSPARENT_TERRAIN,
 };
 
 // indices in a008 that determine the nclr's for both sides' platforms
-u16 TerrainPlatformPalettes[][3] =
-{
-    [TERRAIN_PLAIN] = {7, 8, 9},
-    [TERRAIN_SAND] = {22, 23, 24},
-    [TERRAIN_GRASS] = {1, 2, 3},
-    [TERRAIN_PUDDLE] = {31, 32, 33},
-    [TERRAIN_MOUNTAIN] = {13, 14, 15},
-    [TERRAIN_CAVE] = {28, 29, 30},
-    [TERRAIN_SNOW] = {16, 17, 18},
-    [TERRAIN_WATER] = {4, 5, 6},
-    [TERRAIN_ICE] = {10, 11, 12},
-    [TERRAIN_BUILDING] = {19, 20, 21},
-    [TERRAIN_GREAT_MARSH] = {25, 26, 27},
-    [TERRAIN_UNKNOWN] = {25, 26, 27},
-    [TERRAIN_WILL] = {34, 35, 36},
-    [TERRAIN_KOGA] = {37, 38, 39},
-    [TERRAIN_BRUNO] = {40, 41, 42},
-    [TERRAIN_KAREN] = {43, 44, 45},
-    [TERRAIN_LANCE] = {46, 47, 48},
-    [TERRAIN_DISTORTION_WORLD] = {49, 50, 51},
-    [TERRAIN_BATTLE_TOWER] = {52, 53, 54},
-    [TERRAIN_BATTLE_FACTORY] = {55, 56, 57},
-    [TERRAIN_BATTLE_ARCADE] = {58, 59, 60},
-    [TERRAIN_BATTLE_CASTLE] = {61, 62, 63},
-    [TERRAIN_BATTLE_HALL] = {64, 65, 66},
-    [TERRAIN_GIRATINA] = {67, 68, 69},
-    [TERRAIN_ELECTRIC_TERRAIN] = {358, 358, 358},
-    [TERRAIN_MISTY_TERRAIN] = {358, 358, 358},
-    [TERRAIN_GRASSY_TERRAIN] = {358, 358, 358},
-    [TERRAIN_PSYCHIC_TERRAIN] = {358, 358, 358},
+u16 TerrainPlatformPalettes[][3] = {
+    [TERRAIN_PLAIN] = { 7, 8, 9 },
+    [TERRAIN_SAND] = { 22, 23, 24 },
+    [TERRAIN_GRASS] = { 1, 2, 3 },
+    [TERRAIN_PUDDLE] = { 31, 32, 33 },
+    [TERRAIN_MOUNTAIN] = { 13, 14, 15 },
+    [TERRAIN_CAVE] = { 28, 29, 30 },
+    [TERRAIN_SNOW] = { 16, 17, 18 },
+    [TERRAIN_WATER] = { 4, 5, 6 },
+    [TERRAIN_ICE] = { 10, 11, 12 },
+    [TERRAIN_BUILDING] = { 19, 20, 21 },
+    [TERRAIN_GREAT_MARSH] = { 25, 26, 27 },
+    [TERRAIN_UNKNOWN] = { 25, 26, 27 },
+    [TERRAIN_WILL] = { 34, 35, 36 },
+    [TERRAIN_KOGA] = { 37, 38, 39 },
+    [TERRAIN_BRUNO] = { 40, 41, 42 },
+    [TERRAIN_KAREN] = { 43, 44, 45 },
+    [TERRAIN_LANCE] = { 46, 47, 48 },
+    [TERRAIN_DISTORTION_WORLD] = { 49, 50, 51 },
+    [TERRAIN_BATTLE_TOWER] = { 52, 53, 54 },
+    [TERRAIN_BATTLE_FACTORY] = { 55, 56, 57 },
+    [TERRAIN_BATTLE_ARCADE] = { 58, 59, 60 },
+    [TERRAIN_BATTLE_CASTLE] = { 61, 62, 63 },
+    [TERRAIN_BATTLE_HALL] = { 64, 65, 66 },
+    [TERRAIN_GIRATINA] = { 67, 68, 69 },
+    [TERRAIN_ELECTRIC_TERRAIN] = { (BATTLE_GFX_TRANSPARENT_TERRAIN + 1), BATTLE_GFX_TRANSPARENT_TERRAIN + 1, (BATTLE_GFX_TRANSPARENT_TERRAIN + 1) },
+    [TERRAIN_MISTY_TERRAIN] = { (BATTLE_GFX_TRANSPARENT_TERRAIN + 1), BATTLE_GFX_TRANSPARENT_TERRAIN + 1, (BATTLE_GFX_TRANSPARENT_TERRAIN + 1) },
+    [TERRAIN_GRASSY_TERRAIN] = { (BATTLE_GFX_TRANSPARENT_TERRAIN + 1), BATTLE_GFX_TRANSPARENT_TERRAIN + 1, (BATTLE_GFX_TRANSPARENT_TERRAIN + 1) },
+    [TERRAIN_PSYCHIC_TERRAIN] = { (BATTLE_GFX_TRANSPARENT_TERRAIN + 1), BATTLE_GFX_TRANSPARENT_TERRAIN + 1, (BATTLE_GFX_TRANSPARENT_TERRAIN + 1) },
 };
 
-BattleBGStorage NewBattleBgTable[] =
-{
-    [BATTLE_BG_ELECTRIC_TERRAIN - NUM_VANILLA_BATTLE_BACKGROUNDS] = {.baseEntry = 354, .hasDayNightPals = FALSE, .hasPlatforms = FALSE},
-    [BATTLE_BG_MISTY_TERRAIN - NUM_VANILLA_BATTLE_BACKGROUNDS] = {.baseEntry = 356, .hasDayNightPals = FALSE, .hasPlatforms = FALSE},
-    [BATTLE_BG_GRASSY_TERRAIN - NUM_VANILLA_BATTLE_BACKGROUNDS] = {.baseEntry = 358, .hasDayNightPals = FALSE, .hasPlatforms = FALSE},
-    [BATTLE_BG_PSYCHIC_TERRAIN - NUM_VANILLA_BATTLE_BACKGROUNDS] = {.baseEntry = 360, .hasDayNightPals = FALSE, .hasPlatforms = FALSE},
+BattleBGStorage NewBattleBgTable[] = {
+    [BATTLE_BG_ELECTRIC_TERRAIN - NUM_VANILLA_BATTLE_BACKGROUNDS] = { .baseEntry = 354, .hasDayNightPals = FALSE, .hasPlatforms = FALSE },
+    [BATTLE_BG_MISTY_TERRAIN -
+        NUM_VANILLA_BATTLE_BACKGROUNDS]
+    = { .baseEntry = 356, .hasDayNightPals = FALSE, .hasPlatforms = FALSE },
+    [BATTLE_BG_GRASSY_TERRAIN -
+        NUM_VANILLA_BATTLE_BACKGROUNDS]
+    = { .baseEntry = 358, .hasDayNightPals = FALSE, .hasPlatforms = FALSE },
+    [BATTLE_BG_PSYCHIC_TERRAIN -
+        NUM_VANILLA_BATTLE_BACKGROUNDS]
+    = { .baseEntry = 360, .hasDayNightPals = FALSE, .hasPlatforms = FALSE },
 };
 
-u8 sCamouflageTypeTable[] =
-{
+u8 sCamouflageTypeTable[] = {
     [TERRAIN_PLAIN] = TYPE_GROUND,
     [TERRAIN_SAND] = TYPE_GROUND,
     [TERRAIN_GRASS] = TYPE_GRASS,
@@ -777,38 +733,36 @@ u8 sCamouflageTypeTable[] =
     [TERRAIN_PSYCHIC_TERRAIN] = TYPE_PSYCHIC,
 };
 
-u32 sSecretPowerEffectTable[] =
-{
-    [TERRAIN_PLAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_ACCURACY_DOWN,
-    [TERRAIN_SAND] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_ACCURACY_DOWN,
-    [TERRAIN_GRASS] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_SLEEP,
-    [TERRAIN_PUDDLE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_SLEEP,
-    [TERRAIN_MOUNTAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_TRY_FLINCH,
-    [TERRAIN_CAVE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_TRY_FLINCH,
-    [TERRAIN_SNOW] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_FREEZE,
-    [TERRAIN_WATER] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_ATTACK_DOWN,
-    [TERRAIN_ICE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_FREEZE,
-    [TERRAIN_BUILDING] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_GREAT_MARSH] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_SPEED_DOWN,
-    [TERRAIN_UNKNOWN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_EVASION_DOWN,
-    [TERRAIN_WILL] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_KOGA] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BRUNO] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_KAREN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_LANCE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_DISTORTION_WORLD] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BATTLE_TOWER] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BATTLE_FACTORY] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BATTLE_ARCADE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BATTLE_CASTLE] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_BATTLE_HALL] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_GIRATINA] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_ELECTRIC_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_PARALYSIS,
-    [TERRAIN_MISTY_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_SP_ATK_DOWN,
-    [TERRAIN_GRASSY_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_APPLY_SLEEP,
-    [TERRAIN_PSYCHIC_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | ADD_STATUS_EFF_BOOST_STATS_SPEED_DOWN,
+u32 sSecretPowerEffectTable[] = {
+    [TERRAIN_PLAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_ACCURACY_DOWN_1_STAGE,
+    [TERRAIN_SAND] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_ACCURACY_DOWN_1_STAGE,
+    [TERRAIN_GRASS] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SLEEP,
+    [TERRAIN_PUDDLE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SLEEP,
+    [TERRAIN_MOUNTAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_FLINCH,
+    [TERRAIN_CAVE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_FLINCH,
+    [TERRAIN_SNOW] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_FREEZE,
+    [TERRAIN_WATER] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_ATTACK_DOWN_1_STAGE,
+    [TERRAIN_ICE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_FREEZE,
+    [TERRAIN_BUILDING] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_GREAT_MARSH] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SPEED_DOWN_1_STAGE,
+    [TERRAIN_UNKNOWN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_EVASION_DOWN_1_STAGE,
+    [TERRAIN_WILL] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_KOGA] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BRUNO] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_KAREN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_LANCE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_DISTORTION_WORLD] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BATTLE_TOWER] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BATTLE_FACTORY] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BATTLE_ARCADE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BATTLE_CASTLE] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_BATTLE_HALL] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_GIRATINA] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_ELECTRIC_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_PARALYZE,
+    [TERRAIN_MISTY_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SP_ATTACK_DOWN_1_STAGE,
+    [TERRAIN_GRASSY_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SLEEP,
+    [TERRAIN_PSYCHIC_TERRAIN] = MOVE_SIDE_EFFECT_TO_DEFENDER | MOVE_SUBSCRIPT_PTR_SPEED_DOWN_1_STAGE,
 };
-
 
 /**
  *  @brief load in different battle bg and terrain
@@ -817,18 +771,15 @@ u32 sSecretPowerEffectTable[] =
  *  @param bg background id to load
  *  @param terrain platform id to load
  */
-void LoadDifferentBattleBackground(struct BattleSystem *bw, u32 bg, u32 terrain)
+void LONG_CALL LoadDifferentBattleBackground(struct BattleSystem *bw, u32 bg, u32 terrain)
 {
     u32 palette;
     BOOL vanillaBg = TRUE;
-    if (bg < NUM_VANILLA_BATTLE_BACKGROUNDS)
-    {
+    if (bg < NUM_VANILLA_BATTLE_BACKGROUNDS) {
         // vanilla handling for ncgr/nclr pal grabbing
-        palette = 176 + 3*bg + GrabTimeOfDayFileAdjustment(bw);
+        palette = 176 + 3 * bg + GrabTimeOfDayFileAdjustment(bw);
         bg = 3 + bg;
-    }
-    else
-    {
+    } else {
         bg = NewBattleBgTable[bg - NUM_VANILLA_BATTLE_BACKGROUNDS].baseEntry;
         palette = bg + 1 + (NewBattleBgTable[bg - NUM_VANILLA_BATTLE_BACKGROUNDS].hasDayNightPals == TRUE ? GrabTimeOfDayFileAdjustment(bw) : 0);
         vanillaBg = FALSE;
@@ -846,20 +797,126 @@ void LoadDifferentBattleBackground(struct BattleSystem *bw, u32 bg, u32 terrain)
     if (!(vanillaBg ? TRUE : NewBattleBgTable[bg - NUM_VANILLA_BATTLE_BACKGROUNDS].hasPlatforms)) // need to do it this way because otherwise invalid element is accessed in NewBattleBgTable
     {
         palette = TERRAIN_ELECTRIC_TERRAIN; // electric terrain does not use battle platforms, so we get rid of it here
-    }
-    else
-    {
+    } else {
         palette = terrain;
     }
+
     Ground_ActorResourceSet(&bw->ground[0], bw, 0, palette); // new terrains are just repointed below
     Ground_ActorResourceSet(&bw->ground[1], bw, 1, palette);
 
     // free resources
-    sys_FreeMemoryEz(bw->bg_area);
-    sys_FreeMemoryEz(bw->pal_area);
+    if (bw->bg_area != NULL) {
+        sys_FreeMemoryEz(bw->bg_area);
+    }
+    if (bw->pal_area != NULL) {
+        sys_FreeMemoryEz(bw->pal_area);
+    }
+
     BattleWorkGroundBGChg(bw);
 
     // finally set the fields for nature power/secret power/camouflage/friends
-    //bw->bgId = bg;
+    // bw->bgId = bg;
     bw->terrain = terrain; // terrain is used directly for secret power, camouflage
+}
+
+// vanilla battle background table
+extern BattleBgProfile sBattleBgProfileTable[] ALIGN4;
+
+// Store original callback so we can restore it
+static void (*originalCallback)(void *, int, int) = NULL;
+
+void LONG_CALL BattleBgExpansionLoader(struct BattleSystem *bsys)
+{
+    u8 terrainType = TERRAIN_NONE;
+
+    BOOL loadNewBattleBg = FALSE;
+
+    // Handle map header weather
+    switch (BattleWorkWeatherGet(bsys)) {
+    case WEATHER_SYS_THUNDER:
+#ifdef THUNDER_STORM_WEATHER_ELECTRIC_TERRAIN
+        terrainType = ELECTRIC_TERRAIN;
+#endif
+        break;
+    case WEATHER_SYS_MIST1:
+    case WEATHER_SYS_MIST2:
+#ifdef FOG_WEATHER_MISTY_TERRAIN
+        terrainType = MISTY_TERRAIN;
+#endif
+        break;
+    default:
+        break;
+    }
+
+    if (terrainType != TERRAIN_NONE) {
+        bsys->sp->terrainOverlay.type = terrainType;
+        bsys->sp->terrainOverlay.numberOfTurnsLeft = TERRAIN_TURNS_INFINITE;
+        loadNewBattleBg = TRUE;
+    }
+
+    if (loadNewBattleBg) {
+        // inject our custom callback func into the vanilla battle background at index 0
+        BattleBgProfile *vanillaTable = (BattleBgProfile *)((u32)sBattleBgProfileTable & ~1);
+        originalCallback = vanillaTable[0].callback;
+        vanillaTable[0].callback = BattleBackgroundCallback;
+    }
+}
+
+void LONG_CALL BattleBackgroundCallback(void *unkPtr, int unk2, int unk3)
+{
+    // extract BattleSystem from pointer array
+    struct BattleSystem **ptrArray = (struct BattleSystem **)unkPtr;
+    struct BattleSystem *bsys = ptrArray[0];
+
+    // Call original callback if it's not null
+    if (originalCallback != NULL) {
+        originalCallback(unkPtr, unk2, unk3);
+    }
+
+    BOOL loadNewBattleBg = FALSE;
+
+    // Get terrain and background to load
+    BattleBg newBg;
+    Terrain newTerrain;
+    switch (bsys->sp->terrainOverlay.type) {
+    case GRASSY_TERRAIN:
+        newBg = BATTLE_BG_GRASSY_TERRAIN;
+        newTerrain = TERRAIN_GRASSY_TERRAIN;
+        loadNewBattleBg = TRUE;
+        break;
+    case MISTY_TERRAIN:
+        newBg = BATTLE_BG_MISTY_TERRAIN;
+        newTerrain = TERRAIN_MISTY_TERRAIN;
+        loadNewBattleBg = TRUE;
+        break;
+    case ELECTRIC_TERRAIN:
+        newBg = BATTLE_BG_ELECTRIC_TERRAIN;
+        newTerrain = TERRAIN_ELECTRIC_TERRAIN;
+        loadNewBattleBg = TRUE;
+        break;
+    case PSYCHIC_TERRAIN:
+        newBg = BATTLE_BG_PSYCHIC_TERRAIN;
+        newTerrain = TERRAIN_PSYCHIC_TERRAIN;
+        loadNewBattleBg = TRUE;
+        break;
+    default:
+        break;
+    }
+
+    if (loadNewBattleBg) {
+        bsys->terrain = newTerrain;
+        LoadDifferentBattleBackground(bsys, newBg, newTerrain);
+    }
+
+    // restore the original callback func
+    BattleBgProfile *vanillaTable = (BattleBgProfile *)((u32)sBattleBgProfileTable & ~1);
+    vanillaTable[0].callback = originalCallback;
+}
+
+u16 LONG_CALL ov07_0221FB7C(u32 backgroundId, u32 assetIndex)
+{
+    u16 ret;
+
+    ReadFromNarcMemberByIdPair(&ret, ARC_CODE_ADDONS, CODE_ADDON_BACKGROUND_GFX_IDS, (backgroundId * 5 + assetIndex) * sizeof(u16), sizeof(ret));
+    return ret;
 }

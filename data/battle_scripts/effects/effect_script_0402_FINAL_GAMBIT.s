@@ -1,0 +1,10 @@
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
+
+.data
+
+_000:
+    UpdateVar OPCODE_FLAG_ON, BSCRIPT_VAR_BATTLE_STATUS, BATTLE_STATUS_IGNORE_TYPE_EFFECTIVENESS
+    UpdateMonDataFromVar OPCODE_GET, BATTLER_CATEGORY_ATTACKER, BMON_DATA_HP, BSCRIPT_VAR_DAMAGE
+    UpdateVar OPCODE_MUL, BSCRIPT_VAR_DAMAGE, -1
+    End 

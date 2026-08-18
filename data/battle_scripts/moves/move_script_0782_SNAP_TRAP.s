@@ -1,6 +1,9 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
-_000:
-    GoToEffectScript 
+_Start:
+    // {0} got trapped by a snap trap!
+    BufferMessage 1747, TAG_NICKNAME, BATTLER_CATEGORY_DEFENDER
+    GoToEffectScript

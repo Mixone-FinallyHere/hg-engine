@@ -3,11 +3,6 @@
 
 .include "armips/include/animscriptcmd.s"
 
-.include "asm/include/abilities.inc"
-.include "asm/include/items.inc"
-.include "asm/include/species.inc"
-.include "asm/include/moves.inc"
-
 .create "build/move/move_anim/0_506", 0
 //scald
 a010_506:
@@ -48,6 +43,8 @@ a010_506:
     unloadparticle 1
     waitparticle
     unloadparticle 2
+    waitstate
+    unloadparticle 3
     waitstate
     end
     

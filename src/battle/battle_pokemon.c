@@ -1,227 +1,221 @@
-#include "../../include/types.h"
-#include "../../include/bag.h"
-#include "../../include/battle.h"
-#include "../../include/overlay.h"
-#include "../../include/pokemon.h"
-#include "../../include/constants/ability.h"
-#include "../../include/constants/battle_message_constants.h"
-#include "../../include/constants/battle_script_constants.h"
-#include "../../include/constants/file.h"
-#include "../../include/constants/game.h"
-#include "../../include/constants/item.h"
-#include "../../include/constants/moves.h"
-#include "../../include/constants/species.h"
+#include "types.h"
+
+#include "constants/ability.h"
+#include "constants/battle_message_constants.h"
+#include "constants/battle_script_constants.h"
+#include "constants/file.h"
+#include "constants/game.h"
+#include "constants/item.h"
+#include "constants/moves.h"
+#include "constants/species.h"
+
+#include "bag.h"
+#include "battle.h"
+#include "overlay.h"
+#include "pokemon.h"
+
+#ifdef DEBUG_BATTLE_SCENARIOS
+#include "test_battle.h"
+#endif // DEBUG_BATTLE_SCENARIOS
 
 // function declarations
-//BOOL BattleFormChangeCheck(void *bw, struct BattleStruct *sp, int *seq_no);
+// BOOL BattleFormChangeCheck(void *bw, struct BattleStruct *sp, int *seq_no);
 void ClientPokemonEncount(void *bw, struct CLIENT_PARAM *cp);
 void ClientPokemonEncountAppear(void *bw, struct CLIENT_PARAM *cp);
 void ClientPokemonAppear(void *bw, struct CLIENT_PARAM *cp);
-int MessageParam_GetNickname(void *bw, struct BattleStruct *sp, int para);
-void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITCH_MESSAGE_PARAM *smp, MESSAGE_PARAM *mp);
-void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct ENCOUNT_SEND_OUT_MESSAGE_PARAM *esomp, MESSAGE_PARAM *mp);
-//void BattleFormChange(int client, int form_no, void* bw, struct BattleStruct *sp, bool8 SwitchAbility);
+int MessageParam_GetNickname(struct BattleSystem *bw, struct BattleStruct *sp, int para);
+void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITCH_MESSAGE_PARAM *smp, BattleMessage *mp);
+void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct ENCOUNT_SEND_OUT_MESSAGE_PARAM *esomp, BattleMessage *mp);
+// void BattleFormChange(int client, int form_no, void* bw, struct BattleStruct *sp, bool8 SwitchAbility);
 void TryRevertFormChange(struct BattleStruct *sp, void *bw, int client_no);
 void BattleEndRevertFormChange(struct BattleSystem *bw);
-//void ClearBattleMonFlags(struct BattleStruct *sp, int client);
-//u32 GetAdjustedMoveTypeBasics(struct BattleStruct *sp, u32 move, u32 ability, u32 type);
-//u32 GetAdjustedMoveType(struct BattleStruct *sp, u32 client, u32 move);
+// void ClearBattleMonFlags(struct BattleStruct *sp, int client);
+// u32 GetAdjustedMoveTypeBasics(struct BattleStruct *sp, u32 move, u32 ability, u32 type);
+// u32 GetAdjustedMoveType(struct BattleStruct *sp, u32 client, u32 move);
 
-ALIGN4 struct ILLUSION_STRUCT gIllusionStruct =
-{
-    .illusionClient = {CLIENT_MAX, CLIENT_MAX, CLIENT_MAX, CLIENT_MAX},
-    .illusionPos = {6, 6, 6, 6},
+ALIGN4 struct ILLUSION_STRUCT gIllusionStruct = {
+    .illusionClient = { CLIENT_MAX, CLIENT_MAX, CLIENT_MAX, CLIENT_MAX },
+    .illusionPos = { 6, 6, 6, 6 },
 };
 
 /**
  *  @brief type effectiveness table
+ *         iterated through from top to bottom
  *         format is move type, defending type, and effectiveness
- *         0 is ineffective, 5 is not very effective, 20 is super effective
- *         every entry after the 0xFE entry is ignored by foresight
+ *         table stops early at TYPE_RING_TARGET or TYPE_FORESIGHT if conditions are met.
  */
-u8 TypeEffectivenessTable[][3] =
-{
-    { TYPE_NORMAL, TYPE_ROCK, 0x05 },
-    { TYPE_NORMAL, TYPE_STEEL, 0x05 },
-    { TYPE_FIGHTING, TYPE_NORMAL, 0x14 },
-    { TYPE_FIGHTING, TYPE_FLYING, 0x05 },
-    { TYPE_FIGHTING, TYPE_POISON, 0x05 },
-    { TYPE_FIGHTING, TYPE_STELLAR, 0x05 },
-    { TYPE_FIGHTING, TYPE_ROCK, 0x14 },
-    { TYPE_FIGHTING, TYPE_BUG, 0x05 },
-    { TYPE_FIGHTING, TYPE_STEEL, 0x14 },
+u8 TypeEffectivenessTable[][3] = {
+    { TYPE_NORMAL, TYPE_ROCK, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_NORMAL, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_NORMAL, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_FLYING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_POISON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_ROCK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_BUG, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_STEEL, TYPE_MUL_SUPER_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_FIGHTING, TYPE_FAIRY, 0x05 },
+    { TYPE_FIGHTING, TYPE_FAIRY, TYPE_MUL_NOT_EFFECTIVE },
 #endif
 
-    { TYPE_FIGHTING, TYPE_PSYCHIC, 0x05 },
-    { TYPE_FIGHTING, TYPE_ICE, 0x14 },
-    { TYPE_FIGHTING, TYPE_DARK, 0x14 },
-    { TYPE_FLYING, TYPE_FIGHTING, 0x14 },
-    { TYPE_FLYING, TYPE_ROCK, 0x05 },
-    { TYPE_FLYING, TYPE_BUG, 0x14 },
-    { TYPE_FLYING, TYPE_STEEL, 0x05 },
-    { TYPE_FLYING, TYPE_GRASS, 0x14 },
-    { TYPE_FLYING, TYPE_ELECTRIC, 0x05 },
-    { TYPE_POISON, TYPE_POISON, 0x05 },
-    { TYPE_POISON, TYPE_STELLAR, 0x05 },
-    { TYPE_POISON, TYPE_GROUND, 0x05 },
-    { TYPE_POISON, TYPE_ROCK, 0x05 },
-    { TYPE_POISON, TYPE_GHOST, 0x05 },
+    { TYPE_FIGHTING, TYPE_PSYCHIC, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_ICE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIGHTING, TYPE_DARK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FLYING, TYPE_FIGHTING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FLYING, TYPE_ROCK, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FLYING, TYPE_BUG, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FLYING, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FLYING, TYPE_GRASS, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FLYING, TYPE_ELECTRIC, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_POISON, TYPE_POISON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_POISON, TYPE_GROUND, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_POISON, TYPE_ROCK, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_POISON, TYPE_GHOST, TYPE_MUL_NOT_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_POISON, TYPE_FAIRY, 0x14 },
+    { TYPE_POISON, TYPE_FAIRY, TYPE_MUL_SUPER_EFFECTIVE },
 #endif
 
-    { TYPE_POISON, TYPE_GRASS, 0x14 },
-    { TYPE_GROUND, TYPE_POISON, 0x14 },
-    { TYPE_GROUND, TYPE_STELLAR, 0x14 },
-    { TYPE_GROUND, TYPE_ROCK, 0x14 },
-    { TYPE_GROUND, TYPE_BUG, 0x05 },
-    { TYPE_GROUND, TYPE_STEEL, 0x14 },
-    { TYPE_GROUND, TYPE_FIRE, 0x14 },
-    { TYPE_GROUND, TYPE_GRASS, 0x05 },
-    { TYPE_GROUND, TYPE_ELECTRIC, 0x14 },
-    { TYPE_ROCK, TYPE_FIGHTING, 0x05 },
-    { TYPE_ROCK, TYPE_FLYING, 0x14 },
-    { TYPE_ROCK, TYPE_GROUND, 0x05 },
-    { TYPE_ROCK, TYPE_BUG, 0x14 },
-    { TYPE_ROCK, TYPE_STEEL, 0x05 },
-    { TYPE_ROCK, TYPE_FIRE, 0x14 },
-    { TYPE_ROCK, TYPE_ICE, 0x14 },
-    { TYPE_BUG, TYPE_FIGHTING, 0x05 },
-    { TYPE_BUG, TYPE_FLYING, 0x05 },
-    { TYPE_BUG, TYPE_POISON, 0x05 },
-    { TYPE_BUG, TYPE_STELLAR, 0x05 },
-    { TYPE_BUG, TYPE_GHOST, 0x05 },
-    { TYPE_BUG, TYPE_STEEL, 0x05 },
+    { TYPE_POISON, TYPE_GRASS, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GROUND, TYPE_POISON, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GROUND, TYPE_ROCK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GROUND, TYPE_BUG, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GROUND, TYPE_STEEL, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GROUND, TYPE_FIRE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GROUND, TYPE_GRASS, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GROUND, TYPE_ELECTRIC, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ROCK, TYPE_FIGHTING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ROCK, TYPE_FLYING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ROCK, TYPE_GROUND, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ROCK, TYPE_BUG, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ROCK, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ROCK, TYPE_FIRE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ROCK, TYPE_ICE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_BUG, TYPE_FIGHTING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_BUG, TYPE_FLYING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_BUG, TYPE_POISON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_BUG, TYPE_GHOST, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_BUG, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_BUG, TYPE_FAIRY, 0x05 },
+    { TYPE_BUG, TYPE_FAIRY, TYPE_MUL_NOT_EFFECTIVE },
 #endif
 
-    { TYPE_BUG, TYPE_FIRE, 0x05 },
-    { TYPE_BUG, TYPE_GRASS, 0x14 },
-    { TYPE_BUG, TYPE_PSYCHIC, 0x14 },
-    { TYPE_BUG, TYPE_DARK, 0x14 },
-    { TYPE_GHOST, TYPE_GHOST, 0x14 },
-    { TYPE_GHOST, TYPE_PSYCHIC, 0x14 },
-    { TYPE_GHOST, TYPE_DARK, 0x05 },
-    { TYPE_STEEL, TYPE_ROCK, 0x14 },
-    { TYPE_STEEL, TYPE_STEEL, 0x05 },
+    { TYPE_BUG, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_BUG, TYPE_GRASS, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_BUG, TYPE_PSYCHIC, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_BUG, TYPE_DARK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GHOST, TYPE_GHOST, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GHOST, TYPE_PSYCHIC, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GHOST, TYPE_DARK, TYPE_MUL_NOT_EFFECTIVE },
+#if TYPE_EFFECTIVENESS_GEN < 6
+    { TYPE_GHOST, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+#endif
+    { TYPE_STEEL, TYPE_ROCK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_STEEL, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_STEEL, TYPE_FAIRY, 0x14 },
+    { TYPE_STEEL, TYPE_FAIRY, TYPE_MUL_SUPER_EFFECTIVE },
 #endif
 
-    { TYPE_STEEL, TYPE_FIRE, 0x05 },
-    { TYPE_STEEL, TYPE_WATER, 0x05 },
-    { TYPE_STEEL, TYPE_ELECTRIC, 0x05 },
-    { TYPE_STEEL, TYPE_ICE, 0x14 },
-    { TYPE_STEEL, TYPE_DARK, 0x0A },
+    { TYPE_STEEL, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_STEEL, TYPE_WATER, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_STEEL, TYPE_ELECTRIC, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_STEEL, TYPE_ICE, TYPE_MUL_SUPER_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_FAIRY, TYPE_FIGHTING, 0x14 },
-    { TYPE_FAIRY, TYPE_POISON, 0x05 },
-    { TYPE_FAIRY, TYPE_STELLAR, 0x05 },
-    { TYPE_FAIRY, TYPE_STEEL, 0x05 },
-    { TYPE_FAIRY, TYPE_FIRE, 0x05 },
-    { TYPE_FAIRY, TYPE_DRAGON, 0x14 },
-    { TYPE_FAIRY, TYPE_DARK, 0x14 },
+    { TYPE_FAIRY, TYPE_FIGHTING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FAIRY, TYPE_POISON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FAIRY, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FAIRY, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FAIRY, TYPE_DRAGON, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FAIRY, TYPE_DARK, TYPE_MUL_SUPER_EFFECTIVE },
 #endif
 
-    { TYPE_FIRE, TYPE_ROCK, 0x05 },
-    { TYPE_FIRE, TYPE_BUG, 0x14 },
-    { TYPE_FIRE, TYPE_STEEL, 0x14 },
-    { TYPE_FIRE, TYPE_FIRE, 0x05 },
-    { TYPE_FIRE, TYPE_WATER, 0x05 },
-    { TYPE_FIRE, TYPE_GRASS, 0x14 },
-    { TYPE_FIRE, TYPE_ICE, 0x14 },
-    { TYPE_FIRE, TYPE_DRAGON, 0x05 },
-    { TYPE_WATER, TYPE_GROUND, 0x14 },
-    { TYPE_WATER, TYPE_ROCK, 0x14 },
-    { TYPE_WATER, TYPE_FIRE, 0x14 },
-    { TYPE_WATER, TYPE_WATER, 0x05 },
-    { TYPE_WATER, TYPE_GRASS, 0x05 },
-    { TYPE_WATER, TYPE_DRAGON, 0x05 },
-    { TYPE_GRASS, TYPE_FLYING, 0x05 },
-    { TYPE_GRASS, TYPE_POISON, 0x05 },
-    { TYPE_GRASS, TYPE_STELLAR, 0x05 },
-    { TYPE_GRASS, TYPE_GROUND, 0x14 },
-    { TYPE_GRASS, TYPE_ROCK, 0x14 },
-    { TYPE_GRASS, TYPE_BUG, 0x05 },
-    { TYPE_GRASS, TYPE_STEEL, 0x05 },
-    { TYPE_GRASS, TYPE_FIRE, 0x05 },
-    { TYPE_GRASS, TYPE_WATER, 0x14 },
-    { TYPE_GRASS, TYPE_GRASS, 0x05 },
-    { TYPE_GRASS, TYPE_DRAGON, 0x05 },
-    { TYPE_ELECTRIC, TYPE_FLYING, 0x14 },
-    { TYPE_ELECTRIC, TYPE_WATER, 0x14 },
-    { TYPE_ELECTRIC, TYPE_GRASS, 0x05 },
-    { TYPE_ELECTRIC, TYPE_ELECTRIC, 0x05 },
-    { TYPE_ELECTRIC, TYPE_DRAGON, 0x05 },
-    { TYPE_PSYCHIC, TYPE_FIGHTING, 0x14 },
-    { TYPE_PSYCHIC, TYPE_POISON, 0x14 },
-    { TYPE_PSYCHIC, TYPE_STELLAR, 0x14 },
-    { TYPE_PSYCHIC, TYPE_STEEL, 0x05 },
-    { TYPE_PSYCHIC, TYPE_PSYCHIC, 0x05 },
-    { TYPE_ICE, TYPE_FLYING, 0x14 },
-    { TYPE_ICE, TYPE_GROUND, 0x14 },
-    { TYPE_ICE, TYPE_STEEL, 0x05 },
-    { TYPE_ICE, TYPE_FIRE, 0x05 },
-    { TYPE_ICE, TYPE_WATER, 0x05 },
-    { TYPE_ICE, TYPE_GRASS, 0x14 },
-    { TYPE_ICE, TYPE_ICE, 0x05 },
-    { TYPE_ICE, TYPE_DRAGON, 0x14 },
-    { TYPE_DRAGON, TYPE_STEEL, 0x05 },
+    { TYPE_FIRE, TYPE_ROCK, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIRE, TYPE_BUG, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIRE, TYPE_STEEL, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIRE, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIRE, TYPE_WATER, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_FIRE, TYPE_GRASS, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIRE, TYPE_ICE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_FIRE, TYPE_DRAGON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_WATER, TYPE_GROUND, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_WATER, TYPE_ROCK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_WATER, TYPE_FIRE, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_WATER, TYPE_WATER, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_WATER, TYPE_GRASS, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_WATER, TYPE_DRAGON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_FLYING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_POISON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_GROUND, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GRASS, TYPE_ROCK, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GRASS, TYPE_BUG, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_WATER, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_GRASS, TYPE_GRASS, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_GRASS, TYPE_DRAGON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ELECTRIC, TYPE_FLYING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ELECTRIC, TYPE_WATER, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ELECTRIC, TYPE_GRASS, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ELECTRIC, TYPE_ELECTRIC, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ELECTRIC, TYPE_DRAGON, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_PSYCHIC, TYPE_FIGHTING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_PSYCHIC, TYPE_POISON, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_PSYCHIC, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_PSYCHIC, TYPE_PSYCHIC, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ICE, TYPE_FLYING, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ICE, TYPE_GROUND, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ICE, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ICE, TYPE_FIRE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ICE, TYPE_WATER, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ICE, TYPE_GRASS, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_ICE, TYPE_ICE, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_ICE, TYPE_DRAGON, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_DRAGON, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
 
-    { TYPE_DRAGON, TYPE_DRAGON, 0x14 },
-    { TYPE_DARK, TYPE_FIGHTING, 0x05 },
-    { TYPE_DARK, TYPE_GHOST, 0x14 },
+    { TYPE_DRAGON, TYPE_DRAGON, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_DARK, TYPE_FIGHTING, TYPE_MUL_NOT_EFFECTIVE },
+    { TYPE_DARK, TYPE_GHOST, TYPE_MUL_SUPER_EFFECTIVE },
 
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_DARK, TYPE_FAIRY, 0x05 },
+    { TYPE_DARK, TYPE_FAIRY, TYPE_MUL_NOT_EFFECTIVE },
 #endif
 
-    { TYPE_DARK, TYPE_PSYCHIC, 0x14 },
-    { TYPE_DARK, TYPE_DARK, 0x05 },
-
-// AI bugfix: move all of the immune type interactions to the end of the table so that the
-// immunities properly unset the super effective move effect flag (and a lanturn with thunderbolt
-// isn't switched in on a gliscor over a raichu with ice beam)
-    { TYPE_POISON, TYPE_STEEL, 0x00 },
-    { TYPE_GROUND, TYPE_FLYING, 0x00 },
-    { TYPE_GHOST, TYPE_NORMAL, 0x00 },
-    { TYPE_ELECTRIC, TYPE_GROUND, 0x00 },
-    { TYPE_PSYCHIC, TYPE_DARK, 0x00 },
+    { TYPE_DARK, TYPE_PSYCHIC, TYPE_MUL_SUPER_EFFECTIVE },
+    { TYPE_DARK, TYPE_DARK, TYPE_MUL_NOT_EFFECTIVE },
+#if TYPE_EFFECTIVENESS_GEN < 6
+    { TYPE_DARK, TYPE_STEEL, TYPE_MUL_NOT_EFFECTIVE },
+#endif
+    { TYPE_RING_TARGET, TYPE_RING_TARGET, TYPE_MUL_NO_EFFECT },
+    // AI bugfix: move all of the immune type interactions to the end of the table so that the
+    // immunities properly unset the super effective move effect flag (and a lanturn with thunderbolt
+    // isn't switched in on a gliscor over a raichu with ice beam)
+    { TYPE_POISON, TYPE_STEEL, TYPE_MUL_NO_EFFECT },
+    { TYPE_GROUND, TYPE_FLYING, TYPE_MUL_NO_EFFECT },
+    { TYPE_GHOST, TYPE_NORMAL, TYPE_MUL_NO_EFFECT },
+    { TYPE_ELECTRIC, TYPE_GROUND, TYPE_MUL_NO_EFFECT },
+    { TYPE_PSYCHIC, TYPE_DARK, TYPE_MUL_NO_EFFECT },
 #if FAIRY_TYPE_IMPLEMENTED == 1
-    { TYPE_DRAGON, TYPE_FAIRY, 0x00 },
+    { TYPE_DRAGON, TYPE_FAIRY, TYPE_MUL_NO_EFFECT },
 #endif
-    { TYPE_STELLAR, TYPE_NORMAL, 0x00 },
-    { TYPE_STELLAR, TYPE_FIGHTING, 0x00 },
-    { TYPE_STELLAR, TYPE_FLYING, 0x00 },
-    { TYPE_STELLAR, TYPE_POISON, 0x00 },
-    { TYPE_STELLAR, TYPE_GROUND, 0x00 },
-    { TYPE_STELLAR, TYPE_ROCK, 0x00 },
-    { TYPE_STELLAR, TYPE_BUG, 0x00 },
-    { TYPE_STELLAR, TYPE_GHOST, 0x00 },
-    { TYPE_STELLAR, TYPE_STEEL, 0x00 },
-    { TYPE_STELLAR, TYPE_FIRE, 0x00 },
-    { TYPE_STELLAR, TYPE_WATER, 0x00 },
-    { TYPE_STELLAR, TYPE_GRASS, 0x00 },
-    { TYPE_STELLAR, TYPE_ELECTRIC, 0x00 },
-    { TYPE_STELLAR, TYPE_ICE, 0x00 },
-    { TYPE_STELLAR, TYPE_DRAGON, 0x00 },
-    { TYPE_STELLAR, TYPE_DARK, 0x00 },
-    { TYPE_STELLAR, TYPE_FAIRY, 0x00 },
-    { TYPE_STELLAR, TYPE_STELLAR, 0x00 },
 
-    { 0xFE, 0xFE, 0x00 },
-    { TYPE_NORMAL, TYPE_GHOST, 0x00 },
-    { TYPE_FIGHTING, TYPE_GHOST, 0x00 },
-    { 0xFF, 0xFF, 0xFF },
+    { TYPE_FORESIGHT, TYPE_FORESIGHT, TYPE_MUL_NO_EFFECT },
+    { TYPE_NORMAL, TYPE_GHOST, TYPE_MUL_NO_EFFECT },
+    { TYPE_FIGHTING, TYPE_GHOST, TYPE_MUL_NO_EFFECT },
+    { TYPE_ENDTABLE, TYPE_ENDTABLE, 0xFF },
 };
+
+/**
+ *  @brief get total entries in TypeEffectivenessTable
+ *
+ *  @return number of entries in TypeEffectivenessTable
+ */
+u32 LONG_CALL TypeEffectivenessTable_GetTotalEntries(void)
+{
+    return NELEMS(TypeEffectivenessTable);
+}
 
 /**
  *  @brief check if a form change needs to happen.  if so, return TRUE and populate *seq_no with the subscript to run
@@ -236,7 +230,9 @@ BOOL LONG_CALL BattleFormChangeCheck(void *bw, struct BattleStruct *sp, int *seq
 {
     u32 ovyId, offset;
     BOOL ret;
+    // clang-format off
     BOOL (*internalFunc)(void *bw, struct BattleStruct *sp, int *seq_no);
+    // clang-format on
 
     UnloadOverlayByID(6); // unload overlay 6 so this can be loaded
 
@@ -253,8 +249,33 @@ BOOL LONG_CALL BattleFormChangeCheck(void *bw, struct BattleStruct *sp, int *seq
 }
 
 /**
+ *  @brief grab the illusion party index of a passed Party structure
+ *
+ *  @param party party structure to assess for illusion validity
+ *  @param illusionIndex index of the mon that is setting up the illusion
+ *  @return index in the party that an illusion mon would copy; 6 if there is not a valid index
+ */
+s32 Party_GetIllusionImitatedIndex(struct Party *party, s32 illusionIndex)
+{
+    s32 count = party->count, ret = illusionIndex, i = 0;
+
+    for (i = illusionIndex; i < count; i++) {
+        struct PartyPokemon *mon = Party_GetMonByIndex(party, i);
+        // skip illusion
+        if (i == illusionIndex) {
+            continue;
+        }
+        // illusion can not copy eggs or fainted mons
+        if (GetMonData(mon, MON_DATA_HP, NULL) != 0 && GetMonData(mon, MON_DATA_IS_EGG, NULL) != TRUE) {
+            ret = i;
+        }
+    }
+    return ret;
+}
+
+/**
  *  @brief one of a number of functions that control how a battler appears
- *         this one is for wild encounters
+ *         this one is for wild encounters.  illusion handling is here and should be used if you wanted to have a wild illusion mon
  *
  *  @param bw battle work structure
  *  @param cp client param structure
@@ -266,39 +287,35 @@ void ClientPokemonEncount(void *bw, struct CLIENT_PARAM *cp)
     struct Party *party = BattleWorkPokePartyGet(bw, side);
     u32 count = party->count;
 
+    gIllusionStruct.isSideInIllusion &= ~No2Bit(SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client));
+    gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = CLIENT_MAX;
+    gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = 6;
+
     if (
-    // mon's ability is illusion
-         GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), 0), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
-    // illusion position is not initialized or has been initialized to the current position
-     && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 0)
-    // if a side has 2 battlers, the logic can run regardless--the "last mon" is worst-case the one being sent out so nothing changes
-     && ((DoesSideHave2Battlers(bw, side))
-    // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-    // else single battles are fine to pass through here too
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0))
-    {
-        u16 strbuf[11];
+        // mon's ability is illusion
+        GetMonData(Party_GetMonByIndex(party, 0), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
+        // illusion position is not initialized or has been initialized to the current position
+        && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 0)
+        // if a side has 2 battlers, the logic can run regardless--the "last mon" is worst-case the one being sent out so nothing changes
+        && ((DoesSideHave2Battlers(bw, side))
+            // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && count > 2)
+            // else single battles are fine to pass through here too
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)) {
+        s32 illusionIndex = Party_GetIllusionImitatedIndex(party, 0);
+        newmon = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_SPECIES, NULL);
+        newform = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_FORM, NULL);
+        newshiny = MonIsShiny(Party_GetMonByIndex(party, illusionIndex));
 
-        newmon = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_SPECIES, NULL);
-        newform = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_FORM, NULL);
-        newshiny = MonIsShiny(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1));
-
-        if (newmon != pep->monsno || newform != pep->form_no)
-        {
+        if (newmon != pep->monsno || newform != pep->form_no) {
             pep->monsno = newmon;
             pep->form_no = newform;
             pep->rare = newshiny;
 
             gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, side)] = side;
-            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side))))
-            {
+            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side)))) {
                 gIllusionStruct.isSideInIllusion |= No2Bit(SanitizeClientForTeamAccess(bw, side));
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_NICKNAME, strbuf);
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), 0), MON_DATA_NICKNAME, gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, side)]);
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] = 0;
-
-                SetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), 0), MON_DATA_NICKNAME, strbuf);
             }
         }
     }
@@ -321,39 +338,35 @@ void ClientPokemonEncountAppear(void *bw, struct CLIENT_PARAM *cp)
     struct Party *party = BattleWorkPokePartyGet(bw, side);
     u32 count = party->count;
 
+    gIllusionStruct.isSideInIllusion &= ~No2Bit(SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client));
+    gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = CLIENT_MAX;
+    gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = 6;
+
     if (
-    // mon's ability is illusion
-         GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
-    // illusion position is not initialized or has been initialized to the current position
-     && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == pap->sel_mons_no)
-    // if a side has 2 battlers, the logic can run regardless--the "last mon" worst-case is the one being sent out so nothing changes
-     && ((DoesSideHave2Battlers(bw, side))
-    // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-    // else single battles are fine to pass through here too
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0))
-    {
-        u16 strbuf[11];
+        // mon's ability is illusion
+        GetMonData(Party_GetMonByIndex(party, pap->sel_mons_no), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
+        // illusion position is not initialized or has been initialized to the current position
+        && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == pap->sel_mons_no)
+        // if a side has 2 battlers, the logic can run regardless--the "last mon" worst-case is the one being sent out so nothing changes
+        && ((DoesSideHave2Battlers(bw, side))
+            // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && count > 2)
+            // else single battles are fine to pass through here too
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)) {
+        s32 illusionIndex = Party_GetIllusionImitatedIndex(party, pap->sel_mons_no);
+        newmon = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_SPECIES, NULL);
+        newform = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_FORM, NULL);
+        newshiny = MonIsShiny(Party_GetMonByIndex(party, illusionIndex));
 
-        newmon = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_SPECIES, NULL);
-        newform = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_FORM, NULL);
-        newshiny = MonIsShiny(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1));
-
-        if (newmon != pap->monsno || newform != pap->form_no)
-        {
+        if (newmon != pap->monsno || newform != pap->form_no) {
             pap->monsno = newmon;
             pap->form_no = newform;
             pap->rare = newshiny;
 
             gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, side)] = side;
-            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side))))
-            {
+            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side)))) {
                 gIllusionStruct.isSideInIllusion |= No2Bit(SanitizeClientForTeamAccess(bw, side));
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_NICKNAME, strbuf);
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_NICKNAME, gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, side)]);
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] = pap->sel_mons_no;
-
-                SetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_NICKNAME, strbuf);
             }
         }
     }
@@ -376,39 +389,35 @@ void ClientPokemonAppear(void *bw, struct CLIENT_PARAM *cp)
     struct Party *party = BattleWorkPokePartyGet(bw, side);
     u32 count = party->count;
 
+    gIllusionStruct.isSideInIllusion &= ~No2Bit(SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client));
+    gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = CLIENT_MAX;
+    gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(gBattleSystem, gBattleSystem->sp->defence_client)] = 6;
+
     if (
-    // mon's ability is illusion
-         GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
-    // illusion position is not initialized or has been initialized to the current position
-     && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == pap->sel_mons_no)
-    // if a side has 2 battlers, the logic can run regardless--the "last mon" is worst-case the one being sent out so nothing changes
-     && ((DoesSideHave2Battlers(bw, side))
-    // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-    // else single battles are fine to pass through here too
-      || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0))
-    {
-        u16 strbuf[11];
+        // mon's ability is illusion
+        GetMonData(Party_GetMonByIndex(party, pap->sel_mons_no), MON_DATA_ABILITY, 0) == ABILITY_ILLUSION
+        // illusion position is not initialized or has been initialized to the current position
+        && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] == pap->sel_mons_no)
+        // if a side has 2 battlers, the logic can run regardless--the "last mon" is worst-case the one being sent out so nothing changes
+        && ((DoesSideHave2Battlers(bw, side))
+            // if the side does not have 2 battlers and the battle type is doubles, then the party count must be greater than 2
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && count > 2)
+            // else single battles are fine to pass through here too
+            || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)) {
+        s32 illusionIndex = Party_GetIllusionImitatedIndex(party, pap->sel_mons_no);
+        newmon = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_SPECIES, NULL);
+        newform = GetMonData(Party_GetMonByIndex(party, illusionIndex), MON_DATA_FORM, NULL);
+        newshiny = MonIsShiny(Party_GetMonByIndex(party, illusionIndex));
 
-        newmon = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_SPECIES, NULL);
-        newform = GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_FORM, NULL);
-        newshiny = MonIsShiny(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1));
-
-        if (newmon != pap->monsno || newform != pap->form_no)
-        {
+        if (newmon != pap->monsno || newform != pap->form_no) {
             pap->monsno = newmon;
             pap->form_no = newform;
             pap->rare = newshiny;
 
             gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, side)] = side;
-            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side))))
-            {
+            if (!(gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, side)))) {
                 gIllusionStruct.isSideInIllusion |= No2Bit(SanitizeClientForTeamAccess(bw, side));
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), count - 1), MON_DATA_NICKNAME, strbuf);
-                GetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_NICKNAME, gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, side)]);
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, side)] = pap->sel_mons_no;
-
-                SetMonData(Party_GetMonByIndex(BattleWorkPokePartyGet(bw, side), pap->sel_mons_no), MON_DATA_NICKNAME, strbuf);
             }
         }
     }
@@ -425,7 +434,7 @@ void ClientPokemonAppear(void *bw, struct CLIENT_PARAM *cp)
  *  @param para battle script param to resolve to a battler
  *  @return client passed in or'd by switch in party slot << 8
  */
-int MessageParam_GetNickname(void *bw, struct BattleStruct *sp, int para)
+int MessageParam_GetNickname(struct BattleSystem *bw, struct BattleStruct *sp, int para)
 {
     int ret;
     int client;
@@ -434,29 +443,220 @@ int MessageParam_GetNickname(void *bw, struct BattleStruct *sp, int para)
 
     ret = client;
 
-    if (GetBattlerAbility(sp, client) == ABILITY_ILLUSION
-     && (gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, client)))
-     && gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, client)] == client
-     && gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, client)] == sp->sel_mons_no[client])
-    {
+    if (IS_CLIENT_IN_ILLUSION(bw, client)) {
         struct Party *party;
         u32 count;
 
         party = BattleWorkPokePartyGet(bw, client);
-        count = party->count - 1;
+        count = Party_GetIllusionImitatedIndex(party, sp->sel_mons_no[client]);
 
         ret |= count << 8;
-    }
-    else if (para == 0x16) // switch after the attack?
-    {
+    } else if (para == 0x16) { // switch after the attack?
         ret |= sp->reshuffle_sel_mons_no[client] << 8;
-    }
-    else
-    {
+    } else {
         ret |= sp->sel_mons_no[client] << 8;
     }
 
     return ret;
+}
+
+void BattleMessage_BufferNickname(struct BattleSystem *battleSystem, int bufferIndex, int param)
+{
+    int partyIndex = (param & 0xFF00) >> 8;
+    int client = param & 0xFF;
+    struct Party *party = BattleWorkPokePartyGet(battleSystem, client);
+    struct PartyPokemon *mon = Party_GetMonByIndex(party, partyIndex);
+    struct BattleStruct *ctx = battleSystem->sp;
+
+    if (IS_CLIENT_IN_ILLUSION_NO_ABILITY(battleSystem, client)) {
+        mon = Party_GetMonByIndex(party, Party_GetIllusionImitatedIndex(party, ctx->sel_mons_no[client]));
+    }
+    BufferBoxMonNickname(battleSystem->msgFormat, bufferIndex, &mon->box);
+    // yes i am currently restricting totems to be client 1, whatever
+    if (BattleTypeGet(battleSystem) & BATTLE_TYPE_TOTEM && client == 1) {
+        String *name = battleSystem->msgFormat->fields[bufferIndex].msg;
+        // debug_printf("name's maxsize is %d with a current size of %d\n", name->maxsize, name->size);
+        //  6 is NELEMS("Totem ")
+        //  maxsize here has always been 32 actually...  should be more than fine to buffer a full extended species name, at least in battle
+        if (name->maxsize >= (name->size + 6)) {
+            s32 i;
+            vu16 temp = 0; // vu16 so the below doesn't optimize to a memmove...
+            for (i = name->size - 1; i >= 0; i--) {
+                temp = name->data[i];
+                name->data[i + 6] = temp;
+            }
+            name->size += 6;
+            name->data[0] = 0x013E; // T
+            name->data[1] = 0x0153; // o
+            name->data[2] = 0x0158; // t
+            name->data[3] = 0x0149; // e
+            name->data[4] = 0x0151; // m
+            name->data[5] = 0x01DE; // " "
+            //} else {
+            //    debug_printf("name is not big enough for Totem prefix :(");
+        }
+    }
+}
+
+void BattleMessage_BufferPokemon(struct BattleSystem *battleSystem, int bufferIndex, int param)
+{
+    int partyIndex = (param & 0xFF00) >> 8;
+    int client = param & 0xFF;
+    struct Party *party = BattleWorkPokePartyGet(battleSystem, client);
+    struct PartyPokemon *mon = Party_GetMonByIndex(party, partyIndex);
+    struct BattleStruct *ctx = battleSystem->sp;
+
+    if (IS_CLIENT_IN_ILLUSION_NO_ABILITY(battleSystem, client)) {
+        mon = Party_GetMonByIndex(party, Party_GetIllusionImitatedIndex(party, ctx->sel_mons_no[client]));
+    }
+    BufferBoxMonSpeciesName(battleSystem->msgFormat, bufferIndex, &mon->box);
+}
+
+// parameter order is for assembly convenience
+void BattleSystem_GrabIllusionBoxMonNameForHpBar(struct BattleSystem *battleSystem, int client, int partyIndex, MessageFormat *msgFormat)
+{
+    struct Party *party = BattleWorkPokePartyGet(battleSystem, client);
+    struct PartyPokemon *mon = Party_GetMonByIndex(party, partyIndex);
+    struct BattleStruct *ctx = battleSystem->sp;
+
+    if (IS_CLIENT_IN_ILLUSION_NO_ABILITY(battleSystem, client)) {
+        mon = Party_GetMonByIndex(party, Party_GetIllusionImitatedIndex(party, ctx->sel_mons_no[client]));
+    }
+    BufferBoxMonNickname(msgFormat, 0, &mon->box);
+}
+
+void BattleSystem_AdjustMessageForSide(struct BattleSystem *battleSystem, struct BattleMessage *msg)
+{
+    u32 battleType = BattleTypeGet(battleSystem);
+    // For now, we can cheat needing to do proper Totem prefixes by circumventing this check entirely.
+    // If/when SOS battles are introduced, hooking this func will be a lot more important.
+    if (msg->tag & 0x80 || battleType & BATTLE_TYPE_TOTEM) {
+        return;
+    }
+
+    if (msg->tag & 0x40) {
+        if (IsClientEnemy(battleSystem, msg->battlerId)) {
+            msg->id++;
+        }
+        return;
+    }
+
+    switch (msg->tag & 0x3F) {
+    case TAG_NONE:
+    case TAG_MOVE:
+    case TAG_STAT:
+    case TAG_ITEM:
+    case TAG_NUMBER:
+    case TAG_NUMBERS:
+    case TAG_TRNAME:
+    case TAG_MOVE_MOVE:
+    case TAG_ITEM_MOVE:
+    case TAG_NUMBER_NUMBER:
+    case TAG_TRNAME_TRNAME:
+    case TAG_TRNAME_NICKNAME:
+    case TAG_TRNAME_ITEM:
+    case TAG_TRNAME_NUM:
+    case TAG_TRCLASS_TRNAME:
+    case TAG_TRNAME_NICKNAME_NICKNAME:
+    case TAG_TRCLASS_TRNAME_NICKNAME:
+    case TAG_TRCLASS_TRNAME_ITEM:
+    case TAG_TRNAME_NICKNAME_TRNAME_NICKNAME:
+    case TAG_TRCLASS_TRNAME_NICKNAME_NICKNAME:
+    case TAG_TRCLASS_TRNAME_NICKNAME_TRNAME:
+    case TAG_TRCLASS_TRNAME_TRCLASS_TRNAME:
+    case TAG_TRCLASS_TRNAME_NICKNAME_TRCLASS_TRNAME_NICKNAME:
+        break;
+    case TAG_NONE_SIDE:
+        if (IsClientEnemy(battleSystem, msg->param[0] & 0xFF)) {
+            msg->id++;
+        }
+        break;
+    case TAG_NICKNAME:
+    case TAG_NICKNAME_MOVE:
+    case TAG_NICKNAME_ABILITY:
+    case TAG_NICKNAME_STAT:
+    case TAG_NICKNAME_TYPE:
+    case TAG_NICKNAME_POKE:
+    case TAG_NICKNAME_ITEM:
+    case TAG_NICKNAME_POFFIN:
+    case TAG_NICKNAME_NUM:
+    case TAG_NICKNAME_TRNAME:
+    case TAG_NICKNAME_BOX:
+    case TAG_NICKNAME_MOVE_MOVE:
+    case TAG_NICKNAME_MOVE_NUMBER:
+    case TAG_NICKNAME_ABILITY_MOVE:
+    case TAG_NICKNAME_ABILITY_ITEM:
+    case TAG_NICKNAME_ABILITY_STAT:
+    case TAG_NICKNAME_ABILITY_TYPE:
+    case TAG_NICKNAME_ABILITY_STATUS:
+    case TAG_NICKNAME_ABILITY_NUMBER:
+    case TAG_NICKNAME_ITEM_MOVE:
+    case TAG_NICKNAME_ITEM_STAT:
+    case TAG_NICKNAME_ITEM_STATUS:
+    case TAG_NICKNAME_BOX_BOX:
+        if (IsClientEnemy(battleSystem, msg->param[0] & 0xFF)) {
+            msg->id++;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id++;
+            }
+        }
+        break;
+    case TAG_MOVE_SIDE:
+        if (IsClientEnemy(battleSystem, msg->param[1] & 0xFF)) {
+            msg->id++;
+        }
+        break;
+    case TAG_MOVE_NICKNAME:
+    case TAG_ABILITY_NICKNAME:
+    case TAG_ITEM_NICKNAME_FLAVOR:
+        if (IsClientEnemy(battleSystem, msg->param[1] & 0xFF)) {
+            msg->id++;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id++;
+            }
+        }
+        break;
+    case TAG_NICKNAME_NICKNAME:
+    case TAG_NICKNAME_NICKNAME_MOVE:
+    case TAG_NICKNAME_NICKNAME_ABILITY:
+    case TAG_NICKNAME_NICKNAME_ITEM:
+        if (IsClientEnemy(battleSystem, msg->param[0] & 0xFF)) {
+            msg->id += 3;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id += 2;
+            }
+            if (IsClientEnemy(battleSystem, msg->param[1] & 0xFF)) {
+                msg->id++;
+            }
+        } else if (IsClientEnemy(battleSystem, msg->param[1] & 0xFF)) {
+            msg->id++;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id++;
+            }
+        }
+        break;
+    case TAG_NICKNAME_ABILITY_NICKNAME:
+    case TAG_NICKNAME_ITEM_NICKNAME:
+    case TAG_NICKNAME_ABILITY_NICKNAME_MOVE:
+    case TAG_NICKNAME_ABILITY_NICKNAME_ABILITY:
+    case TAG_NICKNAME_ABILITY_NICKNAME_STAT:
+    case TAG_NICKNAME_ITEM_NICKNAME_ITEM:
+        if (IsClientEnemy(battleSystem, msg->param[0] & 0xFF)) {
+            msg->id += 3;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id += 2;
+            }
+            if (IsClientEnemy(battleSystem, msg->param[2] & 0xFF)) {
+                msg->id++;
+            }
+        } else if (IsClientEnemy(battleSystem, msg->param[2] & 0xFF)) {
+            msg->id++;
+            if (battleType & BATTLE_TYPE_TRAINER) {
+                msg->id++;
+            }
+        }
+        break;
+    }
 }
 
 /**
@@ -467,10 +667,9 @@ int MessageParam_GetNickname(void *bw, struct BattleStruct *sp, int para)
  *  @param smp switchin message param
  *  @param mp message param to construct
  */
-void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITCH_MESSAGE_PARAM *smp, MESSAGE_PARAM *mp)
+void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITCH_MESSAGE_PARAM *smp, BattleMessage *mp)
 {
-    if (cp->client_type & 1)
-    {
+    if (cp->client_type & 1) {
         struct Party *party;
         u32 ability = 0;
 
@@ -480,32 +679,26 @@ void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITC
 
         // switch in we do not need to check for if the client is actually in an illusion
         if (ability == ABILITY_ILLUSION
-         && ((DoesSideHave2Battlers(bw, cp->client_no))
-          || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-          || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-         && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == smp->sel_mons_no))
-        {
-            smp->sel_mons_no = party->count - 1;
+            && ((DoesSideHave2Battlers(bw, cp->client_no))
+                || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+            && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == smp->sel_mons_no)) {
+            smp->sel_mons_no = Party_GetIllusionImitatedIndex(party, smp->sel_mons_no);
         }
 
-        if ((BattleTypeGet(bw) & BATTLE_TYPE_WIRELESS) == 0)
-        {
-            mp->msg_id = BATTLE_MSG_SWITCH_IN_ENEMY_MSG;
-            mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME;
-            mp->msg_para[0] = cp->client_no;
-            mp->msg_para[1] = cp->client_no;
-            mp->msg_para[2] = cp->client_no | (smp->sel_mons_no << 8);
+        if ((BattleTypeGet(bw) & BATTLE_TYPE_LINK) == 0) {
+            mp->id = BATTLE_MSG_SWITCH_IN_ENEMY_MSG;
+            mp->tag = TAG_TRCLASS_TRNAME_NICKNAME;
+            mp->param[0] = cp->client_no;
+            mp->param[1] = cp->client_no;
+            mp->param[2] = cp->client_no | (smp->sel_mons_no << 8);
+        } else {
+            mp->id = BATTLE_MSG_SWITCH_IN_TITLELESS;
+            mp->tag = TAG_TRNAME_NICKNAME;
+            mp->param[0] = cp->client_no;
+            mp->param[1] = cp->client_no | (smp->sel_mons_no << 8);
         }
-        else
-        {
-            mp->msg_id = BATTLE_MSG_SWITCH_IN_TITLELESS;
-            mp->msg_tag = TAG_TRNAME_NICKNAME;
-            mp->msg_para[0] = cp->client_no;
-            mp->msg_para[1] = cp->client_no | (smp->sel_mons_no << 8);
-        }
-    }
-    else
-    {
+    } else {
         struct Party *party;
         u32 ability = 0;
 
@@ -513,44 +706,31 @@ void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITC
 
         ability = GetMonData(Party_GetMonByIndex(party, smp->sel_mons_no), MON_DATA_ABILITY, NULL);
         if (ability == ABILITY_ILLUSION
-         && ((DoesSideHave2Battlers(bw, cp->client_no))
-          || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-          || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-         && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == smp->sel_mons_no))
-        {
-            smp->sel_mons_no = party->count - 1;
+            && ((DoesSideHave2Battlers(bw, cp->client_no))
+                || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+            && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == smp->sel_mons_no)) {
+            smp->sel_mons_no = Party_GetIllusionImitatedIndex(party, smp->sel_mons_no);
         }
 
-        if (((BattleTypeGet(bw) & BATTLE_TYPE_DOUBLE) == 0)
-         && ((BattleTypeGet(bw) & BATTLE_TYPE_WIRELESS) == 0))
-        {
-            if (smp->rate < 100)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_3;
+        if (((BattleTypeGet(bw) & BATTLE_TYPE_DOUBLES) == 0)
+            && ((BattleTypeGet(bw) & BATTLE_TYPE_LINK) == 0)) {
+            if (smp->rate < 100) {
+                mp->id = BATTLE_MSG_SEND_IN_MON_3;
+            } else if (smp->rate < 325) {
+                mp->id = BATTLE_MSG_SEND_IN_MON_4;
+            } else if (smp->rate < 550) {
+                mp->id = BATTLE_MSG_SEND_IN_MON_2;
+            } else if (smp->rate < 775) {
+                mp->id = BATTLE_MSG_SEND_IN_MON_1;
+            } else {
+                mp->id = BATTLE_MSG_SEND_IN_MON_0;
             }
-            else if (smp->rate < 325)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_4;
-            }
-            else if (smp->rate < 550)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_2;
-            }
-            else if (smp->rate < 775)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_1;
-            }
-            else
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_0;
-            }
+        } else {
+            mp->id = BATTLE_MSG_SEND_IN_MON_0;
         }
-        else
-        {
-            mp->msg_id = BATTLE_MSG_SEND_IN_MON_0;
-        }
-        mp->msg_tag = TAG_NICKNAME;
-        mp->msg_para[0] = cp->client_no | (smp->sel_mons_no << 8);
+        mp->tag = TAG_NICKNAME;
+        mp->param[0] = cp->client_no | (smp->sel_mons_no << 8);
     }
 }
 
@@ -562,7 +742,7 @@ void CT_SwitchInMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct SWITC
  *  @param esomp encounter send out message param
  *  @param mp message param to construct
  */
-void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct ENCOUNT_SEND_OUT_MESSAGE_PARAM *esomp, MESSAGE_PARAM *mp)
+void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct ENCOUNT_SEND_OUT_MESSAGE_PARAM *esomp, BattleMessage *mp)
 {
     u32 fight_type;
     int client1 = 0;
@@ -570,15 +750,11 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
 
     fight_type = BattleTypeGet(bw);
 
-    if (cp->client_type & 1)
-    {
-        if (fight_type & BATTLE_TYPE_DOUBLE)
-        {
+    if (cp->client_type & 1) {
+        if (fight_type & BATTLE_TYPE_DOUBLES) {
             client1 = cp->client_no;
             client2 = BattleWorkPartnerClientNoGet(bw, cp->client_no);
-        }
-        else
-        {
+        } else {
             client1 = cp->client_no;
             client2 = client1;
         }
@@ -591,18 +767,16 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
 
             ability = GetMonData(Party_GetMonByIndex(party, esomp->sel_mons_no[client1]), MON_DATA_ABILITY, NULL);
             if (ability == ABILITY_ILLUSION
-             && ((DoesSideHave2Battlers(bw, cp->client_no))
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-             && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client1]))
-            {
+                && ((DoesSideHave2Battlers(bw, cp->client_no))
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+                && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client1])) {
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] = esomp->sel_mons_no[client1];
-                esomp->sel_mons_no[client1] = party->count - 1;
+                esomp->sel_mons_no[client1] = Party_GetIllusionImitatedIndex(party, esomp->sel_mons_no[client1]);
             }
         }
 
-        if (client1 != client2)
-        {
+        if (client1 != client2) {
             struct Party *party;
             u32 ability = 0;
 
@@ -610,98 +784,76 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
 
             ability = GetMonData(Party_GetMonByIndex(party, esomp->sel_mons_no[client2]), MON_DATA_ABILITY, NULL);
             if (ability == ABILITY_ILLUSION
-             && ((DoesSideHave2Battlers(bw, cp->client_no))
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-             && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client2]))
-            {
+                && ((DoesSideHave2Battlers(bw, cp->client_no))
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+                && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client2])) {
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] = esomp->sel_mons_no[client2];
-                esomp->sel_mons_no[client2] = party->count - 1;
+                esomp->sel_mons_no[client2] = Party_GetIllusionImitatedIndex(party, esomp->sel_mons_no[client2]);
             }
         }
 
-
-        if (fight_type & BATTLE_TYPE_WIRELESS)
-        {
-            if (fight_type & BATTLE_TYPE_BATTLE_TOWER)
-            {
-                mp->msg_id = BATTLE_MSG_DOUBLE_TOWER_BATTLE_SEND_OUT;
-                mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME_TRCLASS_TRNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1;
-                mp->msg_para[2] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[3] = client2;
-                mp->msg_para[4] = client2;
-                mp->msg_para[5] = client2 | (esomp->sel_mons_no[client2] << 8);
+        if (fight_type & BATTLE_TYPE_LINK) {
+            if (fight_type & BATTLE_TYPE_FRONTIER) {
+                mp->id = BATTLE_MSG_DOUBLE_TOWER_BATTLE_SEND_OUT;
+                mp->tag = TAG_TRCLASS_TRNAME_NICKNAME_TRCLASS_TRNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1;
+                mp->param[2] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[3] = client2;
+                mp->param[4] = client2;
+                mp->param[5] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else if (fight_type & BATTLE_TYPE_MULTI) {
+                mp->id = BATTLE_MSG_MULTI_BATTLE_SEND_OUT_MESSAGE;
+                mp->tag = TAG_TRNAME_NICKNAME_TRNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[2] = client2;
+                mp->param[3] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else if (fight_type & BATTLE_TYPE_DOUBLES) {
+                mp->id = BATTLE_MSG_DOUBLE_BATTLE_SEND_OUT_WIRELESS;
+                mp->tag = TAG_TRNAME_NICKNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[2] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else {
+                mp->id = BATTLE_MSG_SWITCH_IN_TITLELESS;
+                mp->tag = TAG_TRNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1 | (esomp->sel_mons_no[client1] << 8);
             }
-            else if (fight_type & BATTLE_TYPE_MULTI)
-            {
-                mp->msg_id = BATTLE_MSG_MULTI_BATTLE_SEND_OUT_MESSAGE;
-                mp->msg_tag = TAG_TRNAME_NICKNAME_TRNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[2] = client2;
-                mp->msg_para[3] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else if (fight_type & BATTLE_TYPE_DOUBLE)
-            {
-                mp->msg_id = BATTLE_MSG_DOUBLE_BATTLE_SEND_OUT_WIRELESS;
-                mp->msg_tag = TAG_TRNAME_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[2] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else
-            {
-                mp->msg_id = BATTLE_MSG_SWITCH_IN_TITLELESS;
-                mp->msg_tag = TAG_TRNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1 | (esomp->sel_mons_no[client1] << 8);
-            }
-        }
-        else
-        {
+        } else {
             if ((fight_type & BATTLE_TYPE_TAG)
-             || (fight_type & BATTLE_TYPE_MULTI))
-            {
-                mp->msg_id = BATTLE_MSG_DOUBLE_TOWER_BATTLE_SEND_OUT;
-                mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME_TRCLASS_TRNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1;
-                mp->msg_para[2] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[3] = client2;
-                mp->msg_para[4] = client2;
-                mp->msg_para[5] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else if (fight_type & BATTLE_TYPE_DOUBLE)
-            {
-                mp->msg_id = BATTLE_MSG_ENEMY_SEND_OUT_DOUBLES;
-                mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1;
-                mp->msg_para[2] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[3] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else
-            {
-                mp->msg_id = BATTLE_MSG_SWITCH_IN_ENEMY_MSG;
-                mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1;
-                mp->msg_para[2] = client1 | (esomp->sel_mons_no[client1] << 8);
+                || (fight_type & BATTLE_TYPE_MULTI)) {
+                mp->id = BATTLE_MSG_DOUBLE_TOWER_BATTLE_SEND_OUT;
+                mp->tag = TAG_TRCLASS_TRNAME_NICKNAME_TRCLASS_TRNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1;
+                mp->param[2] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[3] = client2;
+                mp->param[4] = client2;
+                mp->param[5] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else if (fight_type & BATTLE_TYPE_DOUBLES) {
+                mp->id = BATTLE_MSG_ENEMY_SEND_OUT_DOUBLES;
+                mp->tag = TAG_TRCLASS_TRNAME_NICKNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1;
+                mp->param[2] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[3] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else {
+                mp->id = BATTLE_MSG_SWITCH_IN_ENEMY_MSG;
+                mp->tag = TAG_TRCLASS_TRNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1;
+                mp->param[2] = client1 | (esomp->sel_mons_no[client1] << 8);
             }
         }
-    }
-    else
-    {
-        if (fight_type & BATTLE_TYPE_WIRELESS)
-        {
+    } else {
+        if (fight_type & BATTLE_TYPE_LINK) {
             u8 sio_id = BattleWorkCommIDGet(bw);
 
-            if (fight_type & BATTLE_TYPE_MULTI)
-            {
-                switch (BattleWorkCommStandNoGet(bw,sio_id))
-                {
+            if (fight_type & BATTLE_TYPE_MULTI) {
+                switch (BattleWorkCommStandNoGet(bw, sio_id)) {
                 case 0:
                 case 3:
                     client1 = BattleWorkClientNoGet(bw, 4);
@@ -713,30 +865,20 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
                     client2 = BattleWorkClientNoGet(bw, 4);
                     break;
                 }
-            }
-            else if (fight_type & BATTLE_TYPE_DOUBLE)
-            {
+            } else if (fight_type & BATTLE_TYPE_DOUBLES) {
                 client1 = BattleWorkClientNoGet(bw, 2);
                 client2 = BattleWorkClientNoGet(bw, 4);
-            }
-            else
-            {
+            } else {
                 client1 = BattleWorkClientNoGet(bw, 0);
                 client2 = client1;
             }
-        }
-        else if (fight_type & BATTLE_TYPE_MULTI)
-        {
+        } else if (fight_type & BATTLE_TYPE_MULTI) {
             client1 = BattleWorkPartnerClientNoGet(bw, cp->client_no);
             client2 = cp->client_no;
-        }
-        else if (fight_type & BATTLE_TYPE_DOUBLE)
-        {
+        } else if (fight_type & BATTLE_TYPE_DOUBLES) {
             client1 = BattleWorkClientNoGet(bw, 2);
             client2 = BattleWorkClientNoGet(bw, 4);
-        }
-        else
-        {
+        } else {
             client1 = cp->client_no;
             client2 = client1;
         }
@@ -749,18 +891,16 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
 
             ability = GetMonData(Party_GetMonByIndex(party, esomp->sel_mons_no[client1]), MON_DATA_ABILITY, NULL);
             if (ability == ABILITY_ILLUSION
-             && ((DoesSideHave2Battlers(bw, cp->client_no))
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-             && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client1]))
-            {
+                && ((DoesSideHave2Battlers(bw, cp->client_no))
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+                && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client1])) {
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] = esomp->sel_mons_no[client1];
-                esomp->sel_mons_no[client1] = party->count - 1;
+                esomp->sel_mons_no[client1] = Party_GetIllusionImitatedIndex(party, esomp->sel_mons_no[client1]);
             }
         }
 
-        if (client1 != client2)
-        {
+        if (client1 != client2) {
             struct Party *party;
             u32 ability = 0;
 
@@ -768,63 +908,49 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
 
             ability = GetMonData(Party_GetMonByIndex(party, esomp->sel_mons_no[client2]), MON_DATA_ABILITY, NULL);
             if (ability == ABILITY_ILLUSION
-             && ((DoesSideHave2Battlers(bw, cp->client_no))
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE) && party->count > 2)
-              || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLE)) == 0)
-             && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client2]))
-            {
+                && ((DoesSideHave2Battlers(bw, cp->client_no))
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES) && party->count > 2)
+                    || (BattleTypeGet(bw) & (BATTLE_TYPE_MULTI | BATTLE_TYPE_DOUBLES)) == 0)
+                && (gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == 6 || gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] == esomp->sel_mons_no[client2])) {
                 gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, cp->client_no)] = esomp->sel_mons_no[client2];
-                esomp->sel_mons_no[client2] = party->count - 1;
+                esomp->sel_mons_no[client2] = Party_GetIllusionImitatedIndex(party, esomp->sel_mons_no[client2]);
             }
         }
 
-        if (fight_type & BATTLE_TYPE_WIRELESS)
-        {
-            if (fight_type & BATTLE_TYPE_MULTI)
-            {
-                mp->msg_id = BATTLE_MSG_MULTI_BATTLE_PLAYER_SEND_OUT_MESSAGE;
-                mp->msg_tag = TAG_TRNAME_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[2] = client2 | (esomp->sel_mons_no[client2] << 8);
+        if (fight_type & BATTLE_TYPE_LINK) {
+            if (fight_type & BATTLE_TYPE_MULTI) {
+                mp->id = BATTLE_MSG_MULTI_BATTLE_PLAYER_SEND_OUT_MESSAGE;
+                mp->tag = TAG_TRNAME_NICKNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[2] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else if (fight_type & BATTLE_TYPE_DOUBLES) {
+                mp->id = BATTLE_MSG_SEND_OUT_DOUBLES;
+                mp->tag = TAG_NICKNAME_NICKNAME;
+                mp->param[0] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[1] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else {
+                mp->id = BATTLE_MSG_SEND_IN_MON_0;
+                mp->tag = TAG_NICKNAME;
+                mp->param[0] = client1 | (esomp->sel_mons_no[client1] << 8);
             }
-            else if (fight_type & BATTLE_TYPE_DOUBLE)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_OUT_DOUBLES;
-                mp->msg_tag = TAG_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[1] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_0;
-                mp->msg_tag = TAG_NICKNAME;
-                mp->msg_para[0] = client1 | (esomp->sel_mons_no[client1] << 8);
-            }
-        }
-        else
-        {
-            if (fight_type & BATTLE_TYPE_MULTI)
-            {
-                mp->msg_id = BATTLE_MSG_MULTI_BATTLE_PLAYER_SIDE_SEND_OUT;
-                mp->msg_tag = TAG_TRCLASS_TRNAME_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1;
-                mp->msg_para[1] = client1;
-                mp->msg_para[2] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[3] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else if (fight_type & BATTLE_TYPE_DOUBLE)
-            {
-                mp->msg_id = BATTLE_MSG_SEND_OUT_DOUBLES;
-                mp->msg_tag = TAG_NICKNAME_NICKNAME;
-                mp->msg_para[0] = client1 | (esomp->sel_mons_no[client1] << 8);
-                mp->msg_para[1] = client2 | (esomp->sel_mons_no[client2] << 8);
-            }
-            else
-            {
-                mp->msg_id = BATTLE_MSG_SEND_IN_MON_0;
-                mp->msg_tag = TAG_NICKNAME;
-                mp->msg_para[0] = client1 | (esomp->sel_mons_no[client1] << 8);
+        } else {
+            if (fight_type & BATTLE_TYPE_MULTI) {
+                mp->id = BATTLE_MSG_MULTI_BATTLE_PLAYER_SIDE_SEND_OUT;
+                mp->tag = TAG_TRCLASS_TRNAME_NICKNAME_NICKNAME;
+                mp->param[0] = client1;
+                mp->param[1] = client1;
+                mp->param[2] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[3] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else if (fight_type & BATTLE_TYPE_DOUBLES) {
+                mp->id = BATTLE_MSG_SEND_OUT_DOUBLES;
+                mp->tag = TAG_NICKNAME_NICKNAME;
+                mp->param[0] = client1 | (esomp->sel_mons_no[client1] << 8);
+                mp->param[1] = client2 | (esomp->sel_mons_no[client2] << 8);
+            } else {
+                mp->id = BATTLE_MSG_SEND_IN_MON_0;
+                mp->tag = TAG_NICKNAME;
+                mp->param[0] = client1 | (esomp->sel_mons_no[client1] << 8);
             }
         }
     }
@@ -839,7 +965,7 @@ void CT_EncountSendOutMessageParamMake(void *bw, struct CLIENT_PARAM *cp, struct
  *  @param sp global battle structure
  *  @param SwitchAbility whether the ability should be updated from the base stats in personal
  */
-void LONG_CALL BattleFormChange(int client, int form_no, void* bw, struct BattleStruct *sp, bool8 SwitchAbility)
+void LONG_CALL BattleFormChange(int client, int form_no, void *bw, struct BattleStruct *sp, bool8 SwitchAbility)
 {
     void *pp2;
 
@@ -847,12 +973,10 @@ void LONG_CALL BattleFormChange(int client, int form_no, void* bw, struct Battle
     SetMonData(pp2, MON_DATA_FORM, &form_no);
 
     RecalcPartyPokemonStats(pp2);
-    if (SwitchAbility)
-    {
+    if (SwitchAbility) {
         ResetPartyPokemonAbility(pp2);
         sp->battlemon[client].ability = GetMonData(pp2, MON_DATA_ABILITY, NULL);
     }
-
 
     sp->battlemon[client].attack = GetMonData(pp2, MON_DATA_ATTACK, NULL);
     sp->battlemon[client].defense = GetMonData(pp2, MON_DATA_DEFENSE, NULL);
@@ -862,11 +986,18 @@ void LONG_CALL BattleFormChange(int client, int form_no, void* bw, struct Battle
 
     sp->battlemon[client].type1 = GetMonData(pp2, MON_DATA_TYPE_1, NULL);
     sp->battlemon[client].type2 = GetMonData(pp2, MON_DATA_TYPE_2, NULL);
+    sp->battlemon[client].type3 = TYPE_TYPELESS;
+    sp->moveConditionsFlags[client].soakFlag = FALSE;
+    sp->moveConditionsFlags[client].magicPowderFlag = FALSE;
+    sp->moveConditionsFlags[client].forestsCurseFlag = FALSE;
+    sp->moveConditionsFlags[client].trickOrTreatFlag = FALSE;
+    sp->moveConditionsFlags[client].burnUpFlag = FALSE;
+    sp->moveConditionsFlags[client].doubleShockFlag = FALSE;
     sp->battlemon[client].ability_activated_flag = FALSE;
 
     // need to update weight as well
     // read s32's from a214 file 1, resets autotomize lightening
-    ArchiveDataLoadOfs(&sp->battlemon[client].weight, ARC_DEX_LISTS, 1, PokeOtherFormMonsNoGet(sp->battlemon[client].species, form_no) * sizeof(s32), sizeof(s32));
+    ReadFromNarcMemberByIdPair(&sp->battlemon[client].weight, ARC_DEX_LISTS, 1, PokeOtherFormMonsNoGet(sp->battlemon[client].species, form_no) * sizeof(s32), sizeof(s32));
 }
 
 /**
@@ -897,7 +1028,7 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
     struct PartyPokemon *pp;
     u16 monsno;
     u16 form;
-    u16 newItems[6] = {0, 0, 0, 0, 0, 0};
+    u16 newItems[6] = { 0, 0, 0, 0, 0, 0 };
 
     newBS.SideMega[0] = 0;
     newBS.SideMega[1] = 0;
@@ -910,26 +1041,14 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
     newBS.ChangeBgFlag = 0;
     newBS.MegaIconLight = 0;
 
-    for (i = 0; i < 2; i++)
-    {
-        // revert illusion
-        if (gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, i))
-         && gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, i)] == i)
-        {
-            pp = BattleWorkPokemonParamGet(bw, 0, gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, i)]);
-            SetMonData(pp, MON_DATA_NICKNAME, gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, i)]);
-        }
-
+    for (i = 0; i < 2; i++) {
         // clear the illusion structure
         gIllusionStruct.isSideInIllusion &= ~No2Bit(SanitizeClientForTeamAccess(bw, i));
         gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, i)] = CLIENT_MAX;
         gIllusionStruct.illusionPos[SanitizeClientForTeamAccess(bw, i)] = 6;
-        for (j = 0; j < 11; j++)
-            gIllusionStruct.illusionNameBuf[SanitizeClientForTeamAccess(bw, i)][j] = 0;
     }
 
-    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
-    {
+    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++) {
         pp = BattleWorkPokemonParamGet(bw, 0, i);
         monsno = GetMonData(pp, MON_DATA_SPECIES, NULL);
         form = GetMonData(pp, MON_DATA_FORM, NULL);
@@ -939,69 +1058,93 @@ void BattleEndRevertFormChange(struct BattleSystem *bw)
 
 #ifdef RESTORE_ITEMS_AT_BATTLE_END
     // grab newItems array for use later
-    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
-    {
+    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++) {
         newItems[i] = GetMonData(BattleWorkPokemonParamGet(bw, 0, i), MON_DATA_HELD_ITEM, NULL);
     }
 
     // add the items that the mons have stolen to the bag
-    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
-    {
+    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++) {
         u32 battleItem = newItems[i];
         u32 originalQuantity = 0;
         u32 newQuantity = 0;
 
         // count up both old and new quantities of an item
-        if (battleItem)
-        {
-            for (j = 0; j < BattleWorkPokeCountGet(bw, 0); j++)
-            {
-                if (battleItem == newItems[j])
-                {
+        if (battleItem) {
+            for (j = 0; j < BattleWorkPokeCountGet(bw, 0); j++) {
+                if (battleItem == newItems[j]) {
                     // current item is identical to an item that we've previously handled, move to the next one
-                    if (i > j)
-                    {
+                    if (i > j) {
                         continue;
-                    }
-                    else
-                    {
+                    } else {
                         newQuantity++;
                     }
                 }
             }
-            for (j = 0; j < BattleWorkPokeCountGet(bw, 0); j++)
-            {
-                if (battleItem == newBS.itemsToRestore[j])
-                {
+            for (j = 0; j < BattleWorkPokeCountGet(bw, 0); j++) {
+                if (battleItem == newBS.itemsToRestore[j]) {
                     originalQuantity++;
                 }
             }
-        } else continue;
+        } else {
+            continue;
+        }
 
         // if mon i has a held item that has a bigger quantity across the party than was started with, add the extra quantity to the bag
-        if (newQuantity > originalQuantity && (BattleTypeGet(bw) & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_NO_EXPERIENCE)) == 0)
-        {
+        if (newQuantity > originalQuantity && (BattleTypeGet(bw) & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_NO_EXPERIENCE)) == 0) {
             Bag_AddItem(bw->bag, battleItem, newQuantity - originalQuantity, 5);
         }
     }
 
     // restore items regardless of if it's a trainer battle--this will also overwrite items gained from trainers
-    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
-    {
+    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++) {
         u32 battleItem = newBS.itemsToRestore[i];
         pp = BattleWorkPokemonParamGet(bw, 0, i);
-        if (!IS_ITEM_BERRY(newBS.itemsToRestore[i]))
-        {
+        if (!IS_ITEM_BERRY(newBS.itemsToRestore[i])) {
             SetMonData(pp, MON_DATA_HELD_ITEM, &battleItem);
         }
     }
 
     // set to zero after the items have already been restored to maybe prevent observed byte loss
-    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++)
-    {
+    for (i = 0; i < BattleWorkPokeCountGet(bw, 0); i++) {
         newBS.itemsToRestore[i] = 0;
     }
 #endif // RESTORE_ITEMS_AT_BATTLE_END
+
+#ifdef DEBUG_BATTLE_SCENARIOS
+
+    struct TestBattleScenario *currentScenario = TestBattle_GetCurrentScenario();
+
+    while (currentScenario != NULL && TestBattle_HasMoreExpectations()) {
+        // debug_printf("Has more expectations\n");
+        // debug_printf("expectation: %d\n", currentScenario->expectations[currentScenario->expectationPassCount].expectationType);
+        if (currentScenario->expectations[currentScenario->expectationPassCount].expectationType == EXPECTATION_OVERWORLD_FORM) {
+            // debug_printf("Checking form\n");
+            struct Party *party = SaveData_GetPlayerPartyPtr(SaveBlock2_get());
+            struct PartyPokemon partyPokemon = party->members[currentScenario->expectations[currentScenario->expectationPassCount].battlerIDOrPartySlot];
+            u32 expectedForm = currentScenario->expectations[currentScenario->expectationPassCount].expectationValue.formID;
+            // debug_printf("expected form %d\n", expectedForm);
+            if (GetMonData(&partyPokemon, MON_DATA_FORM, NULL) == expectedForm) {
+                // debug_printf("Form matches expectation\n");
+                currentScenario->expectationPassCount++;
+            }
+        } else {
+            // debug_printf("Break\n");
+            break;
+        }
+    }
+
+    if (TestBattle_HasMoreExpectations()) {
+        debug_printf("expectation[%d] ❌\n", currentScenario->expectationPassCount);
+        if (currentScenario->knownFailing) {
+            SendValueThroughCommunicationSendHole(TEST_CASE_KNOWN_FAILING);
+        } else {
+            SendValueThroughCommunicationSendHole(TEST_CASE_FAIL);
+        }
+    } else {
+        SendValueThroughCommunicationSendHole(TEST_CASE_PASS);
+    }
+
+#endif // DEBUG_BATTLE_SCENARIOS
 }
 
 /**
@@ -1028,20 +1171,38 @@ void LONG_CALL ClearBattleMonFlags(struct BattleStruct *sp, int client)
     sp->battlemon[client].is_currently_terastallized = 0;
     sp->battlemon[client].is_currently_dynamaxed = 0;
     sp->battlemon[client].has_dynamaxed_before = 0;
-    sp->battlemon[client].type3 = 0;
+    sp->battlemon[client].type3 = TYPE_TYPELESS;
+    sp->moveConditionsFlags[client].soakFlag = FALSE;
+    sp->moveConditionsFlags[client].magicPowderFlag = FALSE;
+    sp->moveConditionsFlags[client].forestsCurseFlag = FALSE;
+    sp->moveConditionsFlags[client].trickOrTreatFlag = FALSE;
+    sp->moveConditionsFlags[client].burnUpFlag = FALSE;
+    sp->moveConditionsFlags[client].doubleShockFlag = FALSE;
     sp->oneTurnFlag[client].parental_bond_flag = 0;
     sp->oneTurnFlag[client].parental_bond_is_active = 0;
 
+    sp->moveConditionsFlags[client].moveFailureThisTurn = 0;
+    sp->moveConditionsFlags[client].moveFailureLastTurn = 0;
+    sp->moveConditionsFlags[client].powderBlockingFireMove = 0;
+    sp->moveConditionsFlags[client].laserFocusTimer = 0;
+    sp->moveConditionsFlags[client].glaiveRush = 0;
+    sp->moveConditionsFlags[client].anyStatLoweredThisTurn = 0;
+    sp->moveConditionsFlags[client].throatChopTimer = 0;
+    sp->moveConditionsFlags[client].dragonDartsStatus = 0;
+    sp->moveConditionsFlags[client].endure = 0;
+
     sp->log_hail_for_ice_face &= ~(1 << client); // unset log_hail_for_ice_face for client
     sp->binding_turns[client] = 0;
+    sp->protectSuccessTurns[client] = 0;
+    sp->paradoxBoostedStat[client] = 0;
+    sp->boosterEnergyActivated[client] = FALSE;
+    sp->lastClientMoveType[client] = TYPE_TYPELESS;
 
-    if (gBattleSystem != NULL)
-    {
+    if (gBattleSystem != NULL) {
         int maxBattlers = BattleWorkClientSetMaxGet(gBattleSystem);
         for (i = 0; i < maxBattlers; i++) // will be run multiple times per client but whatever
         {
-            if (sp->battlemon[i].moveeffect.battlerIdBinding == client)
-            {
+            if (sp->battlemon[i].moveeffect.battlerIdBinding == client) {
                 sp->binding_turns[i] = 0;
             }
         }
@@ -1057,7 +1218,7 @@ void LONG_CALL ClearBattleMonFlags(struct BattleStruct *sp, int client)
 /**
  *  @brief moves that soundproof blocks
  */
-u16 SoundProofMovesList[] = {
+u16 SoundBasedMoveList[] = {
     MOVE_ALLURING_VOICE,
     MOVE_BOOMBURST,
     MOVE_BUG_BUZZ,
@@ -1084,7 +1245,7 @@ u16 SoundProofMovesList[] = {
     MOVE_ROAR,
     MOVE_ROUND,
     MOVE_SCREECH,
-    //MOVE_SHADOW_PANIC,
+    // MOVE_SHADOW_PANIC,
     MOVE_SING,
     MOVE_SNARL,
     MOVE_SNORE,
@@ -1106,46 +1267,38 @@ u32 LONG_CALL GetAdjustedMoveTypeBasics(struct BattleStruct *sp, u32 move, u32 a
 {
     u32 typeLocal;
 
-    if (ability == ABILITY_NORMALIZE)
-    {
+    if (ability == ABILITY_NORMALIZE) {
         typeLocal = TYPE_NORMAL;
-    }
-    else if (sp->moveTbl[move].type == TYPE_NORMAL && MoveIsAffectedByNormalizeVariants(sp->current_move_index))
-    {
-        if (ability == ABILITY_PIXILATE)
-        {
+    } else if (sp->moveTbl[move].type == TYPE_NORMAL && MoveIsAffectedByNormalizeVariants(sp->current_move_index)) {
+        if (ability == ABILITY_PIXILATE) {
             typeLocal = TYPE_FAIRY;
-        }
-        else if (ability == ABILITY_REFRIGERATE)
-        {
+        } else if (ability == ABILITY_REFRIGERATE) {
             typeLocal = TYPE_ICE;
-        }
-        else if (ability == ABILITY_AERILATE)
-        {
+        } else if (ability == ABILITY_AERILATE) {
             typeLocal = TYPE_FLYING;
-        }
-        else if (ability == ABILITY_GALVANIZE)
-        {
+        } else if (ability == ABILITY_GALVANIZE) {
             typeLocal = TYPE_ELECTRIC;
         }
-        else // needs to be for sure initialized
+        if (ability == ABILITY_DRAGONIZE) {
+            typeLocal = TYPE_DRAGON;
+        } else // needs to be for sure initialized
         {
             typeLocal = TYPE_NORMAL;
         }
-    }
-    else if (type)
-    {
+    } else if (type) {
         typeLocal = type;
-    }
-    else
-    {
+    } else {
         typeLocal = sp->moveTbl[move].type;
     }
 
-    // so all of that happens, but we still need to handle liquid voice in a way that still lets the type != 0 happen and that the type from the move table is grabbed.  moved down here
-    if (ability == ABILITY_LIQUID_VOICE && IsMoveSoundBased(sp->current_move_index))
-    {
+    // So all of that happens, but we still need to handle Liquid Voice in a way that lets the type != 0 happen and that the type from the move table is grabbed.
+    if (ability == ABILITY_LIQUID_VOICE && IsMoveSoundBased(sp->current_move_index)) {
         typeLocal = TYPE_WATER;
+    }
+
+    // Ion Deluge's effect is applied after all type-modifying abilities have activated.
+    if (typeLocal == TYPE_NORMAL && (sp->field_condition & FIELD_CONDITION_ION_DELUGE) == FIELD_CONDITION_ION_DELUGE) {
+        typeLocal = TYPE_ELECTRIC;
     }
 
     return typeLocal;
@@ -1161,7 +1314,12 @@ u32 LONG_CALL GetAdjustedMoveTypeBasics(struct BattleStruct *sp, u32 move, u32 a
  */
 u32 LONG_CALL GetAdjustedMoveType(struct BattleStruct *sp, u32 client, u32 move)
 {
-    return GetAdjustedMoveTypeBasics(sp, move, GetBattlerAbility(sp, client), sp->move_type);
+    // Tera moves ignore type adjustments if the client is Terastallized.
+    if (sp->battlemon[client].is_currently_terastallized
+        && (move == MOVE_TERA_BLAST || move == MOVE_TERA_STARSTORM)) {
+        return GetDynamicMoveType(gBattleSystem, sp, client, move);
+    }
+    return GetAdjustedMoveTypeBasics(sp, move, GetBattlerAbility(sp, client), GetDynamicMoveType(gBattleSystem, sp, client, move));
 }
 
 /**
@@ -1172,23 +1330,21 @@ u32 LONG_CALL GetAdjustedMoveType(struct BattleStruct *sp, u32 client, u32 move)
  */
 BOOL LONG_CALL IsMoveSoundBased(u32 move)
 {
-    return IsElementInArray(SoundProofMovesList, (u16 *)(&move), NELEMS(SoundProofMovesList), sizeof(SoundProofMovesList[0]));
+    return IsElementInArray(SoundBasedMoveList, (u16 *)(&move), NELEMS(SoundBasedMoveList), sizeof(SoundBasedMoveList[0]));
 }
-
 
 struct PartyPokemon *TargetSelectGrabIllusionPartyPokemon(void *bw, u32 client, u32 pos)
 {
     struct PartyPokemon *pp;
 
     if (gIllusionStruct.isSideInIllusion & No2Bit(SanitizeClientForTeamAccess(bw, client))
-     && gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, client)] == client) {
+        && gIllusionStruct.illusionClient[SanitizeClientForTeamAccess(bw, client)] == client) {
         pp = BattleWorkPokemonParamGet(bw, client, BattleWorkPokePartyGet(bw, client)->count - 1);
     } else {
         pp = BattleWorkPokemonParamGet(bw, client, pos);
     }
     return pp;
 }
-
 
 /**
  *  @brief dumbs client parameter down into its team in proper scenarios
@@ -1199,16 +1355,12 @@ struct PartyPokemon *TargetSelectGrabIllusionPartyPokemon(void *bw, u32 client, 
  */
 u32 LONG_CALL SanitizeClientForTeamAccess(void *bw, u32 client)
 {
-    if (DoesSideHave2Battlers(bw, client))
-    {
+    if (DoesSideHave2Battlers(bw, client)) {
         return client;
-    }
-    else
-    {
+    } else {
         return client & 1;
     }
 }
-
 
 /**
  *  @brief checks if the client's side has 2 battlers
@@ -1219,9 +1371,24 @@ u32 LONG_CALL SanitizeClientForTeamAccess(void *bw, u32 client)
  */
 BOOL LONG_CALL DoesSideHave2Battlers(void *bw, u32 client)
 {
-    if ((BattleTypeGet(bw) & (BATTLE_TYPE_DOUBLE | BATTLE_TYPE_MULTI)) && (BattleWork_GetTrainerIndex(bw, client) != BattleWork_GetTrainerIndex(bw, BATTLER_ALLY(client))))
-    {
+    if ((BattleTypeGet(bw) & (BATTLE_TYPE_DOUBLES | BATTLE_TYPE_MULTI)) && (BattleWork_GetTrainerIndex(bw, client) != BattleWork_GetTrainerIndex(bw, BATTLER_ALLY(client)))) {
         return TRUE;
     }
     return FALSE;
+}
+
+BOOL LONG_CALL ClientBelongsToPlayer(struct BattleSystem *bsys, int client)
+{
+    return BattleWork_GetTrainerIndex(bsys, client) == 0;
+}
+
+BOOL LONG_CALL IsMonValidAndHealthy(struct PartyPokemon *mon)
+{
+    return GetMonData(mon, MON_DATA_HP, 0) != 0 && GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0) != 0 && GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0) != SPECIES_EGG && GetMonData(mon, MON_DATA_STATUS, 0) == 0;
+}
+
+BOOL LONG_CALL IsBattlerSlotValid(struct BattleSystem *battleSystem, int battlerId)
+{
+    // TODO implement battle type check for relevant types like raids and totem battles here
+    return battleSystem->sp->battlemon[battlerId].species != SPECIES_NONE;
 }

@@ -1,0 +1,45 @@
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
+
+.data
+
+_000:
+    PrintAttackMessage 
+    Wait 
+    PlayMoveAnimation BATTLER_CATEGORY_ATTACKER
+    Wait 
+
+    StrengthSapCalc // prints num into hp calc work
+
+    UpdateVar OPCODE_SET, BSCRIPT_VAR_SIDE_EFFECT_PARAM, MOVE_SUBSCRIPT_PTR_ATTACK_DOWN_1_STAGE
+    Call BATTLE_SUBSCRIPT_UPDATE_STAT_STAGE
+
+_022:
+    CheckItemHoldEffect CHECK_OPCODE_NOT_HAVE, BATTLER_CATEGORY_ATTACKER, HOLD_EFFECT_LEECH_BOOST, _042
+    GetItemEffectParam BATTLER_CATEGORY_ATTACKER, BSCRIPT_VAR_CALC_TEMP
+    UpdateVar OPCODE_ADD, BSCRIPT_VAR_CALC_TEMP, 100
+    UpdateVarFromVar OPCODE_MUL, BSCRIPT_VAR_HP_CALC, BSCRIPT_VAR_CALC_TEMP
+    UpdateVar OPCODE_DIV, BSCRIPT_VAR_HP_CALC, 100
+
+_042:
+    UpdateVarFromVar OPCODE_SET, BSCRIPT_VAR_MSG_BATTLER_TEMP, BSCRIPT_VAR_BATTLER_ATTACKER
+    UpdateVar OPCODE_FLAG_ON, BSCRIPT_VAR_BATTLE_STATUS, BATTLE_STATUS_NO_BLINK
+
+    // liq ooze check
+    CheckAbility CHECK_OPCODE_HAVE, BATTLER_CATEGORY_DEFENDER, ABILITY_LIQUID_OOZE, _088
+    
+    UpdateVar OPCODE_MUL, BSCRIPT_VAR_HP_CALC, -1
+    Call BATTLE_SUBSCRIPT_RECOVER_HP
+    End 
+
+_088:
+    CheckAbility CHECK_OPCODE_HAVE, BATTLER_CATEGORY_ATTACKER, ABILITY_MAGIC_GUARD, _101
+    AbilityPopup BATTLER_CATEGORY_DEFENDER
+    Call BATTLE_SUBSCRIPT_UPDATE_HP
+    // It sucked up the liquid ooze!
+    PrintMessage 720, TAG_NONE
+    Wait 
+    WaitButtonABTime 30
+
+_101:
+    End 

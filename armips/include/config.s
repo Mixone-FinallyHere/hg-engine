@@ -1,14 +1,14 @@
 // all of the current configurations for this project.  each is explained in a comment.
 
-GEN_LATEST equ 9
+GEN_CHAMPIONS equ 99
 
-// START_ADDRESS defines the file address within the synthetic overlay where you would like to place all of the code that this project uses.  this is largely the repointed tables that the code uses.
-// if START_ADDRESS is 0x10000, then the tables will be inserted at address 0x10000 of the synthetic overlay
-// the current implementation (with all gen 5 mons) uses ~9222/0x2406 bytes.  make sure this points to that much free space (probably allow for a little bit more than that)
-START_ADDRESS equ 0x0
+GEN_LATEST equ defined(DEBUG_BATTLE_SCENARIOS) ? GEN_CHAMPIONS : 9
 
-// FAIRY_TYPE_IMPLEMENTED defines whether or not the fairy type is to be implemented as type 9 or not.
-// if you do not want this change, then set it to 0
+// DISALLOW_DEXIT_GEN controls whether to disallow selection of dexited moves in later generations. Choose any Generation below 8 for none. 0 will instead disable any unimplemented moves.
+DISALLOW_DEXIT_GEN equ 0
+
+// FAIRY_TYPE_IMPLEMENTED defines whether or not the Fairy type is to be implemented as type 9 or not.
+// If you do not want this change, then set it to 0.
 FAIRY_TYPE_IMPLEMENTED equ 1
 
 // SNOW_WARNING_GENERATION controls whether to summon Snow or Hail when the ability is activated.
@@ -16,15 +16,18 @@ FAIRY_TYPE_IMPLEMENTED equ 1
 // Otherwise: Hail
 SNOW_WARNING_GENERATION equ GEN_LATEST
 
+// SLEEP_TURNS_GENERATION controls the number of turns a Pokémon can be asleep.
+// 4 : 2-5 turns (Prevents movement for 1-4 turns.)
+// 5 or above : 2-4 turns
+// Champions: 2-3 turns
+SLEEP_TURNS_GENERATION equ GEN_LATEST
+
 // ALLOW_SAVE_CHANGES tells the assembler that it can build the code that pertains to expanding the save data for extra fields for our usage.
 // this is required for dex expansion and will break PKHeX compatibility!  comment this line out to prevent save changes from being made.
 .definelabel ALLOW_SAVE_CHANGES, 0
 
 // CRY_PSEUDOBANK_START defines the first pseudobank to be used as cries in the sdat.  cries are loaded differently to save on RAM space
 CRY_PSEUDOBANK_START equ 778
-
-// LEARNSET_TOTAL_MOVES is the amount of moves that each pokémon should be able to learn by level up
-LEARNSET_TOTAL_MOVES equ 41 // 40+terminate - currently driven by gallade
 
 // BATTLE_MODE_FORCE_SET defines whether or not players will be able to switch out mons when the opponent sends out their next mon. The player will be able to choose themselves like normal if the following is 0, 1 if the player will be forced to use "set"
 BATTLE_MODE_FORCE_SET equ 0
@@ -41,16 +44,6 @@ BATTLES_UNCAPPED_FRAME_RATE equ 0
 // FAST_TEXT_PRINTING will make the text print quickly, almost instantly
 FAST_TEXT_PRINTING equ 0
 
-// REUSABLE_TMS will make TMs infinite and hide the quantity number.
-REUSABLE_TMS equ 1
-
-// DELETABLE_HMS Allows HMs to be forgotten, this also makes their quantity reduce, but the infinite TMs change prevents this.
-DELETABLE_HMS equ 0
-
 // NO_PARTNER_DOUBLE_BATTLES allows for setting trainers to double battles without setting up a partner trainer.  set to 0 to disable
 // note that the entry in `armips/data/trainers/trainertext.s` has to use `TEXT_DOUBLE_DEFEATED_IN_BATTLE_1`, but the overworld entries can remain the same.
 NO_PARTNER_DOUBLE_BATTLES equ 1
-
-// APPLY_ANTIPIRACY will apply the typical anti-piracy code changes to your ROM automatically so that the game runs well on hardware (TWLmenu and R4 are both tested)
-// comment out the lines if you do not want anti-piracy to be applied to your ROM
-.definelabel APPLY_ANTIPIRACY, 0

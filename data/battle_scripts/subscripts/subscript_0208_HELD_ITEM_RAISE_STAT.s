@@ -1,4 +1,5 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
@@ -10,5 +11,6 @@ _000:
     UpdateVar OPCODE_SET, BSCRIPT_VAR_SIDE_EFFECT_TYPE, SIDE_EFFECT_TYPE_HELD_ITEM
     UpdateVarFromVar OPCODE_SET, BSCRIPT_VAR_BATTLER_STAT_CHANGE, BSCRIPT_VAR_MSG_BATTLER_TEMP
     Call BATTLE_SUBSCRIPT_UPDATE_STAT_STAGE
+    Call BATTLE_SUBSCRIPT_CHEEK_POUCH
     Call BATTLE_SUBSCRIPT_PLUCK_CHECK
-    End 
+    End  

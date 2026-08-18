@@ -3,12 +3,9 @@
 
 .include "armips/include/animscriptcmd.s"
 
-.include "asm/include/abilities.inc"
-.include "asm/include/items.inc"
-.include "asm/include/species.inc"
-.include "asm/include/moves.inc"
-
 .create "build/move/move_anim/0_326", 0
+
+//Extrasensory
 
 a010_326:
     initspriteresource

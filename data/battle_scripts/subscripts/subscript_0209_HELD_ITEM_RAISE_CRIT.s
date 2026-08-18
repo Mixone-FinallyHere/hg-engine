@@ -1,4 +1,5 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
@@ -10,5 +11,6 @@ _000:
     Wait 
     WaitButtonABTime 30
     UpdateMonData OPCODE_FLAG_ON, BATTLER_CATEGORY_MSG_TEMP, BMON_DATA_STATUS2, STATUS2_FOCUS_ENERGY
+    Call BATTLE_SUBSCRIPT_CHEEK_POUCH
     Call BATTLE_SUBSCRIPT_PLUCK_CHECK
     End 

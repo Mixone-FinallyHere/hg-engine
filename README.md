@@ -1,6 +1,6 @@
 # hg-engine
 ## About
- A huge upgrade to the battle engine in HeartGold
+ `hg-engine` is an engine overhaul for ***English** Pokémon HeartGold* with a focus on bringing battles up to par with recent mainline Pokémon games and their mechanics.
 
 ### Disclaimer
  This repository and its assets are a [community endeavor](CREDITS.md).  By its nature, using it and subsequently profiting off of it is profiting on the backs of all of our work, all of which is intended to be used to further hobbies and for everyone to have fun.  You have my blessing to use code and assets from this repository as you please as long as there is *no money involved*, including optional donations through whichever platform to play your hack.  The creations that stem from this repository must be freely accessible and not hidden at all behind any paywall, including those that prompt the player to pay optionally (Ko-Fi's style comes to mind here).  The [Credits](CREDITS.md) should also be replicated in your hack's repository and/or the post to your hack--we all sit on the shoulders of giants here.
@@ -10,18 +10,20 @@
 - [Setup Instructions (Linux with apt)](#setup-instructions-linux-with-apt)
 - [Setup Instructions (Linux with apk)](#setup-instructions-linux-with-apk)
 - [Setup Instructions (Linux with dnf or yum)](#setup-instructions-linux-with-dnf-or-yum)
+- [Setup Instructions (Linux with pacman)](#setup-instructions-linux-with-pacman)
 - [Setup Instructions (macOS)](#setup-instructions-macos)
 - [Setup Instructions (Windows on WSL)](#setup-instructions-windows-on-wsl)
 - [Setup Instructions (Windows on MSYS2)](#setup-instructions-windows-on-msys2)
 - [Further Setup Instructions](#further-setup-instructions-all-platforms-continued-from-individual-sections)
-- [Setup Instructions (Docker)](#setup-instructions-docker)
-- [Build Instructions](#build-instructions-all-platforms-continued-from-further-setup-instructions)
+- [Build Instructions (General)](#build-instructions-all-platforms-continued-from-further-setup-instructions)
+- [Build Instructions (Docker)](#build-instructions-docker)
+- [Updating Your Repository](#updating-your-repository)
 - [Credits](#credits)
 
 
 ## Features:
 * Dex Expansion (through Gen 6 almost entirely implemented)
-* Ability Expansion (through Gen 6 almost entirely implemented)
+* Ability Expansion up to 512 (through Gen 6 almost entirely implemented)
 * Move Expansion with future generation moves
 * Item Expansion with future generation items
 * Mega Evolutions + Primal Reversions
@@ -37,14 +39,16 @@
 
 *A more comprehensive list of features + a roadmap can be found by visiting the [hg-engine wiki](https://github.com/BluRosie/hg-engine/wiki).  Please read this README and the Wiki thoroughly before asking questions.*
 
+If you are looking to contribute to hg-engine, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Setup Instructions (Linux with apt)
-1. In a Terminal window, run the following commands:
+1. In a Terminal window, run the following command:
     * ```sudo apt-get install libpng-dev build-essential cmake python3-pip python3-venv git automake autoconf gcc-arm-none-eabi pkg-config```
 2. Continue to [Further Setup Instructions](#further-setup-instructions-all-platforms-continued-from-individual-sections)
 
 
 ## Setup Instructions (Linux with apk)
-1. In a Terminal window, run the following commands:
+1. In a Terminal window, run the following command:
     * ```apk add libpng-dev build-base cmake python3 git automake autoconf```
     * Grab your Alpine Linux version using the command `grep PRETTY_NAME /etc/os-release`.  I get `PRETTY_NAME='Alpine Linux v3.14'`, so my version is `v3.14`.  Substitute that into the next command for `[version]`.
     * ```apk add --no-cache binutils-arm-none-eabi gcc-arm-none-eabi newlib-arm-none-eabi --repository http://dl-cdn.alpinelinux.org/alpine/[version]/community```
@@ -52,8 +56,14 @@
 
 
 ## Setup Instructions (Linux with dnf or yum)
-1. In a Terminal window, run the following commands (replace `dnf` with `yum` if applicable):
+1. In a Terminal window, run the following command (replace `dnf` with `yum` if applicable):
     * ```sudo dnf install libpng-devel arm-none-eabi-gcc-cs arm-none-eabi-newlib.noarch cmake python3 git automake autoconf make```
+2. Continue to [Further Setup Instructions](#further-setup-instructions-all-platforms-continued-from-individual-sections)
+
+
+## Setup Instructions (Linux with pacman)
+1. In a Terminal window, run the following command:
+    * ```sudo pacman -S libpng cmake python-pip python git automake autoconf arm-none-eabi-gcc arm-none-eabi-newlib pkg-config base-devel```
 2. Continue to [Further Setup Instructions](#further-setup-instructions-all-platforms-continued-from-individual-sections)
 
 
@@ -101,30 +111,43 @@
 
 
 ## Further Setup Instructions (All Platforms) (Continued from Individual Sections)
-1. In Terminal/WSL, run the following commands:
-    * ```mkdir -p ~/git && cd ~/git```
-    * ```git clone --recursive https://github.com/BluRosie/hg-engine.git```
+
+You now need to get a local copy of the `hg-engine` source code. Choose one of the options below.
+
+### Option A: Continue with a fork (RECOMMENDED)
+
+This approach provides a smoother long-term experience.
+It allows you to store your code changes on GitHub in case of computer issues as well as providing a way for you
+to get the latest development changes from upstream. This approach requires a little bit more reading but is
+
+1. Create a GitHub account [(link)][github-signup].
+2. Read the short GitHub docs for setting up authentication if you're unfamiliar [(docs)][github-setup-docs].
+3. Fork `BluRosie/hg-engine` via GitHub [(docs)][github-fork-docs].
+4. Run the following commands in Terminal/WSL, replacing `[YOUR-USERNAME]` with your GitHub username:
+```
+mkdir -p ~/git && cd ~/git
+git clone --recursive https://github.com/[YOUR-USERNAME]/hg-engine.git
+cd hg-engine
+```
+5. Add `BluRosie/hg-engine` as an `upstream` source so you can pull changes
+```
+git remote add upstream https://github.com/BluRosie/hg-engine.git
+```
+6. Continue to [Build Instructions](#build-instructions-all-platforms-continued-from-further-setup-instructions)
+
+### Option B: Continue without a fork (NOT recommended)
+
+This approach is the fastest way to get working with `hg-engine` and does not require a GitHub account.
+This is generally __not__ recommended because you can easily lose your progress if WSL has issues, and you will
+have a harder time keeping up with repository changes.
+
+1. Run the following commands in Terminal/WSL:
+```
+mkdir -p ~/git && cd ~/git
+git clone --recursive https://github.com/BluRosie/hg-engine.git
+cd hg-engine
+```
 2. Continue to [Build Instructions](#build-instructions-all-platforms-continued-from-further-setup-instructions)
-
-## Setup Instructions (Docker)
-If you are using Docker, there is no need for complicated setup or anything.  You just have to clone the git repository:
-* ```mkdir -p ~/git && cd ~/git```
-* ```git clone --recursive https://github.com/BluRosie/hg-engine.git```
-* ```cd hg-engine```
-
-Docker handles all of the setup for you with relative replicability across platforms.  This abstracts a bit of it away from the user and is slightly slower, but such is the price of simplicity.
-
-To set up for the first time, all that needs to be run is:
-```docker build . -t hg-engine```
-
-To build, you can then run a simple shell script to build the `test.nds`:
-```./docker-makerom.cmd```
-
-This script is written in such a way that it works on every platform (including from `cmd` on Windows).
-
-There is no need to continue to [Build Instructions](#build-instructions-all-platforms-continued-from-further-setup-instructions) for anything.  Docker handles it all for you.
-
-You will still have to `make clean` and `make clean_code` manually when changing code or other things that won't build for some reason.  But this makes setup really convenient.
 
 ## Build Instructions (All Platforms) (Continued from Further Setup Instructions)
 
@@ -138,10 +161,49 @@ You will still have to `make clean` and `make clean_code` manually when changing
         * ```cd ~/git/hg-engine```
         * ```make tools/nitrogfx```
         * ```make tools/ENCODE_IMG```
+        * ```make tools/btx```
     * Make sure to undo your changes to Terminal after you are done so it will run as a native arm64 application again (uncheck the checkbox from before).
 3. After the process completes, a new file will appear in the `hg-engine` folder named **test.nds**.
    * It is important to note that this alone will not add new Pokémon to the wild, trainers, etc...; it simply makes them available in your game. It is up to you to place them.
    * You can edit various game data such as trainers, dex entries, Pokémon stats, and more in the files in `armips/data`.
+
+## Build Instructions (Docker)
+
+Docker handles the setup for you with relative replicability across platforms.
+This abstracts a bit of it away from the user and is slightly slower, but such is the price of simplicity.
+
+To set up for the first time, all that needs to be run is:
+```docker build . -t hg-engine```
+
+To build, you can then run a simple shell script to build the `test.nds`:
+```./docker-makerom.cmd```
+
+This script is written in such a way that it works on every platform (including from `cmd` on Windows).
+
+You will still have to `make clean` and `make clean_code` manually when changing code or other things that won't build for some reason. But this makes setup really convenient.
+
+## Updating Your Repository
+### Normal Clone
+If you cloned the repository without forking, follow these steps:
+
+1. Change to your local repository:
+   * ```cd ~/git/hg-engine```
+2. Fetch the latest changes
+   * ```git fetch origin```
+3. Pull the latest changes from the main repository. Note: without a fork, your `pull` may fail due to uncommitted changes.
+   * ```git pull origin main```
+
+### Fork
+If you cloned your own fork and added an `upstream` remote, follow these steps:
+
+1. Change to your local repository:
+   * ```cd ~/git/hg-engine```
+2. Fetch the latest changes from the main repository:
+   * ```git fetch upstream```
+3. Merge `upstream/main` into your current branch:
+   * ```git merge upstream/main```
+
+If the CLI indicates merge conflicts, check [this article][github-merge-conflicts] for how to navigate them.
 
 # Credits
 * [CREDITS.md](CREDITS.md).
@@ -150,6 +212,7 @@ You will still have to `make clean` and `make clean_code` manually when changing
 * [**PokeDiamond decompilation projects (nitrogfx, msgenc)**][diamond]
 * [**Mikelan98, Nomura (ARM9 Expansion Subroutine )**][ARM9]
 * Rafael Vuijk (ndstool)
+* Come swing by the [Kingdom of DS Hacking](https://discord.gg/zAtqJDW2jC) or [DS Modding Community](https://discord.gg/YBtdN3aXfv) Discord servers for any help with this!
 
 [MONEXPAND]: https://github.com/BluRosie/hgss-monexpansion
 [CFRU]: https://github.com/Skeli789/Complete-Fire-Red-Upgrade
@@ -158,3 +221,7 @@ You will still have to `make clean` and `make clean_code` manually when changing
 [diamond]:https://github.com/pret/pokediamond
 [TEMPLATE]: https://github.com/Bubble791/Pokemon-Heart-Gold-Engine
 [LUNOS]: https://www.pokecommunity.com/showthread.php?t=432351
+[github-signup]: https://github.com/signup
+[github-setup-docs]: https://docs.github.com/en/get-started/git-basics/set-up-git
+[github-fork-docs]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo
+[github-merge-conflicts]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line

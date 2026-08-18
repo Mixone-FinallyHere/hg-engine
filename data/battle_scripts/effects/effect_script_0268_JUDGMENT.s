@@ -1,4 +1,5 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
@@ -55,7 +56,7 @@ _128:
     GoTo _186
 
 _134:
-    UpdateVar OPCODE_SET, BSCRIPT_VAR_MOVE_TYPE, TYPE_MYSTERY
+    UpdateVar OPCODE_SET, BSCRIPT_VAR_MOVE_TYPE, TYPE_FAIRY
     GoTo _186
 
 _140:

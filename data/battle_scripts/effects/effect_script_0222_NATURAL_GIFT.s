@@ -1,13 +1,10 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
 _000:
-    CalcNaturalGiftParams _008
-    GotoIfFirstHitOfParentalBond _005
-    RemoveItem BATTLER_CATEGORY_ATTACKER
-
-_005:
+    //CalcNaturalGiftParams _008
     CalcCrit 
     CalcDamage 
     End 

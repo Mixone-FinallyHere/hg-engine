@@ -1,8 +1,10 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
 _000:
+    SetCurrentMoveSwitchingStatus CURRENT_MOVE_SWITCH_DONE
     TryRestoreStatusOnSwitch BATTLER_CATEGORY_SWITCHED_MON, _007
     UpdateMonData OPCODE_SET, BATTLER_CATEGORY_SWITCHED_MON, BMON_DATA_STATUS, STATUS_NONE
 
@@ -10,6 +12,10 @@ _007:
     PrintRecallMessage BATTLER_CATEGORY_SWITCHED_MON
     Wait 
     Call BATTLE_SUBSCRIPT_PURSUIT
+    IsPursuitActive _noPursuit
+    End
+
+_noPursuit:
     CompareMonDataToValue OPCODE_NEQ, BATTLER_CATEGORY_SWITCHED_MON, BMON_DATA_HP, 0, _020
     GoTo _026
 

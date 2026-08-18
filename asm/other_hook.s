@@ -270,28 +270,6 @@ bx r3
 .pool
 
 
-.global UseItemMonAttrChangeCheck_hook
-UseItemMonAttrChangeCheck_hook:
-push {r1-r7}
-
-mov r0, r5
-mov r1, r4 // so that the memory can be freed
-bl UseItemMonAttrChangeCheck
-
-pop {r1-r7}
-cmp r0, #1
-bne return_to_0207C2D2
-mov r0, #31
-ldr r1, =0x0207C2D0 | 1 // else return 31
-bx r1
-
-return_to_0207C2D2:
-ldr r0, =0x0207C2D2 | 1
-bx r0
-
-.pool
-
-
 .global UseItemMonAttrLoadDiffMessage_hook
 UseItemMonAttrLoadDiffMessage_hook:
 ldr r1, =partyMenuSignal
@@ -723,6 +701,133 @@ AllocFromHeapInternal_return_address:
 .word 0
 
 
+
+.global GetBoxMonData_EditedCases_hook
+GetBoxMonData_EditedCases_hook:
+sub sp, #0x14
+
+mov r3, sp
+str r5, [r3, #0x0] // blockA
+str r6, [r3, #0x4] // blockB
+str r7, [r3, #0x8] // blockC
+str r0, [r3, #0xC] // blockD
+ldr r1, [r3, #(0x14+0x4)] // field from before sp adjust
+ldr r2, [r3, #(0x14+0x8)] // data from before sp adjust
+mov r0, r3
+add r3, #0x10 // retBool
+bl GetBoxMonData_EditedCases // (blocks, field, data, retBool)
+ldr r1, [sp, #0x10]
+cmp r1, #1
+bne _retBoolFalse
+
+// if retBoot is not false, jump to return function
+add sp, #0x14
+mov r4, r0
+ldr r0, =0x0206EC36|1
+bx r0
+
+_retBoolFalse:
+// get blockD back in r1
+ldr r1, [sp, #0xC]
+
+add sp, #0x14
+
+// mov r1, r0 // blockD
+ldr r0, [sp, #0x4] // field as stored in stack
+ldr r2, =0x0206E6EA | 1
+bx r2
+
+.pool
+
+
+.global SetBoxMonData_EditedCases_hook
+SetBoxMonData_EditedCases_hook:
+sub sp, #0x10
+mov r0, sp
+str r7, [r0, #0x0] // blockA
+str r5, [r0, #0x4] // blockB
+ldr r1, [r0, #(0x10+0x8)]
+str r1, [r0, #0x8] // blockC
+str r6, [r0, #0xC] // blockD
+ldr r1, [r0, #(0x10+0x4)] // field
+mov r2, r4 // data
+
+bl SetBoxMonData_EditedCases // (blocks, field, data)
+cmp r0, #1
+bne _vanillaBoxMonHandling
+add sp, #0x10
+ldr r0, =0x0206F554 | 1
+bx r0
+
+_vanillaBoxMonHandling:
+add sp, #0x10
+ldr r0, [sp, #0x4] // field
+ldr r1, =0x0206EE30 | 1
+bx r1
+
+.pool
+
+.global AddBoxMonData_EditedCases_hook
+AddBoxMonData_EditedCases_hook:
+sub sp, #0x14
+mov r3, sp
+str r4, [r3, #0x0]   // blockA
+str r5, [r3, #0x4]   // blockB
+str r1, [r3, #0x8]   // blockC
+str r0, [r3, #0xC]   // blockD
+ldr r1, [r3, #(0x14 + 0x4)]  // field
+mov r2, r6                   // data
+mov r0, r3                   // blocks
+bl AddBoxMonData_EditedCases
+cmp r0, #1
+bne _vanillaAddBoxMonHandling
+add sp, #0x14
+ldr r0, =0x0206FA54 | 1
+bx  r0
+
+_vanillaAddBoxMonHandling:
+add sp, #0x14
+cmp r7, #0xba
+bls _returnTo0206F684
+ldr r0, =0x0206FA50 | 1
+bx  r0
+
+_returnTo0206F684:
+mov r0, r7
+lsl r0, #1
+ldr r1, =0x0206F684 | 1
+bx  r1
+
+.pool
+
+
+// actually just store the ability to 0x021E73B8.  that should do lol
+.global BoxDisplayMon_StoreAbility
+BoxDisplayMon_StoreAbility:
+mov r0, r7
+mov r1, #0xA // MON_DATA_ABILITY
+mov r2, #0
+ldr r3, =0x0206E640 | 1 // GetBoxMonData
+bl bx_r3
+ldr r1, =0x021E73B8
+strh r0, [r1]
+ldr r1, =0x021E73BC | 1
+bx r1
+
+.global BoxDisplayMon_GrabAbility
+BoxDisplayMon_GrabAbility:
+ldr r2, =0x021E73B8
+ldrh r2, [r2]
+ldr r0, [r5, #0x24]
+mov r1, #0
+ldr r3, =0x0200C060 | 1
+bl bx_r3
+ldr r1, =0x021F52B8 | 1
+bx r1
+
+.pool
+
+
 .data
 
 .align 2
@@ -742,3 +847,54 @@ word_to_store_form_at:
 .global gTriggerDouble
 gTriggerDouble:
 .word 0
+
+.global CreateStarter_SetStarterSpecies_hook
+CreateStarter_SetStarterSpecies_hook:
+push {r0-r7}
+mov r0, r2
+sub r0, #8
+bl CreateStarter_SetStarterSpecies
+pop {r0-r7}
+
+ldr r0, [r0, #0x20]
+ldr r0, [r0, #0x0]
+ldr r3, =MapHeader_GetMapSec
+bl bx_r3
+
+ldr r2, =0x0209609C | 1
+bx r2
+
+.pool
+
+
+.global CreateStarterMon_hook
+CreateStarterMon_hook:
+add r0, r4, r5
+ldr r1, [r6, #0]
+ldr r2, [sp, #0x18]
+bl CreateStarter_CreateMon
+
+mov r0, #12
+str r0, [sp, #0]
+mov r0, #11
+ldr r3, =0x020960F0 | 1
+bx r3
+
+.pool
+
+
+.global CreateMonSprites_hook
+CreateMonSprites_hook:
+ldr r3, [sp, #0]
+sub sp, #4
+str r4, [sp, #0]
+bl CreateMonSprites_HandleForm
+add sp, #4
+
+add r0, r5, #0
+add r1, r5, #0
+
+ldr r3, =0x021E70A0 | 1
+bx r3
+
+.pool

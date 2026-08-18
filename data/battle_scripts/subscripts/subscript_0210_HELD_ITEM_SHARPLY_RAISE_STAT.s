@@ -1,4 +1,5 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
@@ -19,5 +20,6 @@ _000:
     UpdateMonData OPCODE_SET, BATTLER_CATEGORY_MSG_TEMP, BMON_DATA_TEMP, 12
 
 _042:
+    Call BATTLE_SUBSCRIPT_CHEEK_POUCH
     Call BATTLE_SUBSCRIPT_PLUCK_CHECK
-    End 
+    End  

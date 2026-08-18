@@ -1,0 +1,44 @@
+name: pr-lint
+
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.c'
+      - 'include/**/*.h'
+
+jobs:
+  pr-lint:
+    if: ${{ github.repository == 'BluRosie/hg-engine' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install clang-format 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-18
+
+      - name: Run formatter and report any failure
+        run: |
+          CLANG_FORMAT_BIN=clang-format-18
+          echo "clang-format version:"
+          "$CLANG_FORMAT_BIN" --version
+
+          ./.githooks/pre-commit
+          git diff --staged --name-only |
+          while IFS= read -r f; do
+            if [ -f "$f" ] && [[ "$f" =~ ^(src/.+\.c|include/.+\.h)$ ]]; then
+              echo "File diffs failing:\n"
+              git diff --staged
+              exit 1
+            fi
+          done
+
+          exit 0

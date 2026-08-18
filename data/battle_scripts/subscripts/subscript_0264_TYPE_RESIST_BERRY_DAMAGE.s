@@ -1,4 +1,5 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
@@ -60,7 +61,7 @@ _097:
     CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, 31, _288
     CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, 32, _295
     CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, 33, _302
-    CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, 148, _309
+    CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, HOLD_EFFECT_WEAKEN_SE_FAIRY, _309
     CompareVarToValue OPCODE_EQU, BSCRIPT_VAR_TEMP_DATA, 34, _316
     GoTo _338
 
@@ -136,14 +137,6 @@ _316:
     CompareVarToValue OPCODE_NEQ, BSCRIPT_VAR_CALC_TEMP, 0x00000008, _338
 
 _321:
-    // PlayBattleAnimation BATTLER_CATEGORY_MSG_TEMP, BATTLE_ANIMATION_HELD_ITEM
-    // Wait 
-    DivideVarByValue BSCRIPT_VAR_HP_CALC, 2
-    // The {0} weakened {1}’s power!
-    // PrintMessage 1131, TAG_ITEM_MOVE, BATTLER_CATEGORY_MSG_BATTLER_TEMP, BATTLER_CATEGORY_ATTACKER
-    // Wait 
-    // WaitButtonABTime 30
-    //RemoveItem BATTLER_CATEGORY_MSG_TEMP
 
 _338:
     End 

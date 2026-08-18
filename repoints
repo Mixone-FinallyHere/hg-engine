@@ -22,6 +22,7 @@ arm9 sPocketCounts 08077C14
 
 0001 gOWTagToFileNum 021F92FC
 0001 gOWTagToFileNum 021FA280
+#arm9 gIconPalTable 02074408
 
 # repoint the type effectiveness table
 0012 TypeEffectivenessTable+1 02251D20
@@ -35,15 +36,6 @@ arm9 sPocketCounts 08077C14
 0012 TypeEffectivenessTable+2 02252648
 0012 TypeEffectivenessTable 02252694
 
-# metronome and mimic banlist
-0012 sMetronomeMimicMoveBanList 02257D9C
-0012 sMetronomeMimicMoveBanList 02257DF4
-
-# item use func table
-arm9 sItemFieldUseFuncs 020649AC
-arm9 sItemFieldUseFuncs+4 020649B0
-arm9 sItemFieldUseFuncs+8 020649B4
-
 # terrain table expansion
 0012 TerrainPlatformPlayerNCGR 02265F1C
 0012 TerrainPlatformEnemyNCGR 02265F24
@@ -55,9 +47,15 @@ arm9 sSwarmMapLUT 02097F94
 arm9 sSwarmMapLUT+2 02097F98
 
 # Trainer Class Money Table
+#ifdef EXPAND_TRAINER_PRIZE_MONEY
 0012 PrizeMoney 08008380
 0012 PrizeMoney+2 08008384
+#endif
+#ifdef EXPAND_TRAINER_GENDER_TABLE
 arm9 sTrainerGenders 020FFB90
+#endif
+
+#ifdef EXPAND_MUSIC_TABLES
 
 # sTrainerEncounterMusicParam
 arm9 sTrainerEncounterMusicParam 020550E0
@@ -71,9 +69,65 @@ arm9 MainMusicComboTable+2 080517E4
 
 # Pokemon battle music table
 arm9 PokemonBattleMusic 080518D4
+#endif
 
 # secret power move effect table
 0012 sSecretPowerEffectTable 0800CBC0
 
 # camouflage type table
 0012 sCamouflageTypeTable 0800CB60
+
+# move tutor moves
+0001 sTutorMoves 0220304C
+0001 sTutorMoves 02202C20
+0001 sTutorMoves+2 02202C24
+
+#ifdef MART_EXPANSION
+arm9 sCherrygroveCityMart 0210FA3C
+arm9 sVioletCityMart 0210FA40
+arm9 sAzaleaCityMart 0210FA44
+arm9 sGoldenrodDepartmentLower2F 0210FA48
+arm9 sGoldenrodDepartmentUpper2F 0210FA4C
+arm9 sGoldenrodDepartment3F 0210FA50
+arm9 sGoldenrodDepartment4F 0210FA54
+arm9 sGoldenrodDepartment5F 0210FA58
+arm9 sGoldenrodHerbs 0210FA5C
+arm9 sEcruteakMart 0210FA60
+arm9 sOlivineMart 0210FA64
+arm9 sCianwoodPharmacy 0210FA68
+arm9 sBlackthornAndBattleFrontierMart 0210FA6C
+arm9 sIndigoPlateau 0210FA70
+arm9 sVermilionAndSafariMart 0210FA74
+arm9 sSaffronMart 0210FA78
+arm9 sLavenderMart 0210FA7C
+arm9 sCeruleanMart 0210FA80
+arm9 sCeladonDepartmentUpper2F 0210FA84
+arm9 sCeladonDepartmentLower2F 0210FA88
+arm9 sCeladonDepartment3F 0210FA8C
+arm9 sCeladonDepartment4F 0210FA90
+arm9 sCeladonDepartmentLeft5F 0210FA94
+arm9 sCeladonDepartmentRight5F 0210FA98
+arm9 sFuschiaMart 0210FA9C
+arm9 sPewterMart 0210FAA0
+arm9 sViridianMart 0210FAA4
+arm9 sMtMoonSquare 0210FAA8
+arm9 sMahoganyPreRocketHideout  0210FAAC
+arm9 sMahoganyPostRocketHideout 0210FAB0
+#endif
+
+#ifdef POKEATHLON_SHOP_EXPANSION
+arm9 sPokeathlonShop_Sunday 0210FA04
+arm9 sPokeathlonShop_Monday 0210FA08
+arm9 sPokeathlonShop_Tuesday 0210FA0C
+arm9 sPokeathlonShop_Wednesday 0210FA10
+arm9 sPokeathlonShop_Thursday 0210FA14
+arm9 sPokeathlonShop_Friday 0210FA18
+arm9 sPokeathlonShop_Saturday 0210FA1C
+arm9 sPokeathlonShop_NatdexSunday 0210FA20
+arm9 sPokeathlonShop_NatdexMonday 0210FA24
+arm9 sPokeathlonShop_NatdexTuesday 0210FA28
+arm9 sPokeathlonShop_NatdexWednesday 0210FA2C
+arm9 sPokeathlonShop_NatdexThursday 0210FA30
+arm9 sPokeathlonShop_NatdexFriday 0210FA34
+arm9 sPokeathlonShop_NatdexSaturday 0210FA38
+#endif

@@ -1,6 +1,9 @@
-.include "asm/include/battle_commands.inc"
+#include "constants/battle_constants.h"
+.include "battle_commands.inc"
 
 .data
 
-_000:
-    GoToEffectScript 
+_Start:
+    // {0} trapped {1}!
+    BufferMessage 1750, TAG_NICKNAME_NICKNAME, BATTLER_CATEGORY_ATTACKER, BATTLER_CATEGORY_DEFENDER
+    GoToEffectScript

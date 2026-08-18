@@ -1,13 +1,7 @@
 .ifndef ASM_BATTLE_SCRIPT_INC
 .set ASM_BATTLE_SCRIPT_INC, 1
+
 .include "asm/include/interop_macros.inc"
-.include "asm/include/abilities.inc"
-.include "asm/include/hold_item_effects.inc"
-.include "asm/include/items.inc"
-.include "asm/include/move_effects.inc"
-.include "asm/include/moves.inc"
-.include "asm/include/species.inc"
-.include "asm/include/battle_constants.inc"
 
     .macro PlayEncounterAnimation
     .long 0
@@ -95,19 +89,21 @@
     .long 17
     .endm
 
+	// preproc nonsense doesn't let me use C constants here!
+
     .macro PrintMessage msg_id, tag, arg_0, arg_1, arg_2, arg_3, arg_4, arg_5
     .long 18
     .long \msg_id
     .long \tag
-    .if \tag > TAG_NONE
+    .if \tag > 0x0 // TAG_NONE
         .long \arg_0
-        .if \tag > TAG_TRNAME
+        .if \tag > 0x8 // TAG_TRNAME
             .long \arg_1
-            .if \tag > TAG_TRCLASS_TRNAME
+            .if \tag > 0x1E // TAG_TRCLASS_TRNAME
                 .long \arg_2
-                .if \tag > TAG_TRCLASS_TRNAME_ITEM
+                .if \tag > 0x33 // TAG_TRCLASS_TRNAME_ITEM
                     .long \arg_3
-                    .if \tag > TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
+                    .if \tag > 0x3B // TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
                         .long \arg_4
                         .long \arg_5
                     .endif
@@ -121,15 +117,15 @@
     .long 19
     .long \msg_id
     .long \tag
-    .if \tag > TAG_NONE
+    .if \tag > 0x0 // TAG_NONE
         .long \arg_0
-        .if \tag > TAG_TRNAME
+        .if \tag > 0x8 // TAG_TRNAME
             .long \arg_1
-            .if \tag > TAG_TRCLASS_TRNAME
+            .if \tag > 0x1E // TAG_TRCLASS_TRNAME
                 .long \arg_2
-                .if \tag > TAG_TRCLASS_TRNAME_ITEM
+                .if \tag > 0x33 // TAG_TRCLASS_TRNAME_ITEM
                     .long \arg_3
-                    .if \tag > TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
+                    .if \tag > 0x3B // TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
                         .long \arg_4
                         .long \arg_5
                     .endif
@@ -147,15 +143,15 @@
     .long 21
     .long \msg_id
     .long \tag
-    .if \tag > TAG_NONE
+    .if \tag > 0x0 // TAG_NONE
         .long \arg_0
-        .if \tag > TAG_TRNAME
+        .if \tag > 0x8 // TAG_TRNAME
             .long \arg_1
-            .if \tag > TAG_TRCLASS_TRNAME
+            .if \tag > 0x1E // TAG_TRCLASS_TRNAME
                 .long \arg_2
-                .if \tag > TAG_TRCLASS_TRNAME_ITEM
+                .if \tag > 0x33 // TAG_TRCLASS_TRNAME_ITEM
                     .long \arg_3
-                    .if \tag > TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
+                    .if \tag > 0x3B // TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
                         .long \arg_4
                         .long \arg_5
                     .endif
@@ -170,15 +166,15 @@
     .long \battler
     .long \msg_id
     .long \tag
-    .if \tag > TAG_NONE
+    .if \tag > 0x0 // TAG_NONE
         .long \arg_0
-        .if \tag > TAG_TRNAME
+        .if \tag > 0x8 // TAG_TRNAME
             .long \arg_1
-            .if \tag > TAG_TRCLASS_TRNAME
+            .if \tag > 0x1E // TAG_TRCLASS_TRNAME
                 .long \arg_2
-                .if \tag > TAG_TRCLASS_TRNAME_ITEM
+                .if \tag > 0x33 // TAG_TRCLASS_TRNAME_ITEM
                     .long \arg_3
-                    .if \tag > TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
+                    .if \tag > 0x3B // TAG_TRCLASS_TRNAME_TRCLASS_TRNAME
                         .long \arg_4
                         .long \arg_5
                     .endif
@@ -332,11 +328,13 @@
     .long \val
     .endm
 
-    .macro ChangeStatStage arg_0, arg_1, arg_2
+    .macro ChangeStatStage arg_0, arg_1, arg_2, arg_3, arg_4
     .long 51
-    .long (((\arg_0 - .) / 4) - 3)
-    .long (((\arg_1 - .) / 4) - 2)
-    .long (((\arg_2 - .) / 4) - 1)
+    .long (((\arg_0 - .) / 4) - 5)
+    .long (((\arg_1 - .) / 4) - 4)
+    .long (((\arg_2 - .) / 4) - 3)
+    .long (((\arg_3 - .) / 4) - 2)
+    .long (((\arg_4 - .) / 4) - 1)
     .endm
 
     .macro UpdateMonData op, battler, param, val
@@ -1422,13 +1420,186 @@
     .long \arg_1
     .endm
 
-    .macro CheckShouldNotTurnOffMultiStatAnim battlerCategory, label
     // need to skip the stat animation turning off in case of defiant and competitive so the animation shows properly
-    CheckAbility CHECK_OPCODE_HAVE, \battlerCategory, ABILITY_DEFIANT, \label
-    CheckAbility CHECK_OPCODE_HAVE, \battlerCategory, ABILITY_COMPETITIVE, \label
+	// preproc shenanigans don't let me use the constant directly
+    .macro CheckShouldNotTurnOffMultiStatAnim battlerCategory, label
+	CheckAbility 0x0, \battlerCategory, 128, \label
+	CheckAbility 0x0, \battlerCategory, 172, \label
     .endm
 
-    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 255
+    .macro CheckProtectContactMoves
+    .long 259
+    .endm
+
+    .macro TryIncinerate arg_0
+    .long 260
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro AddType arg_0
+    .long 261
+    .long \arg_0
+    .endm
+
+    .macro TryAuroraVeil
+    .long 262
+    .endm
+
+    .macro ClearAuroraVeil
+    .long 263
+    .endm
+
+    .macro StrengthSapCalc
+    .long 264
+    .endm
+
+    .macro CheckTargetIsPartner arg_0
+    .long 265
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro ClearSmog
+    .long 266
+    .endm
+
+    .macro GoToIfThirdType arg_0, arg_1, arg_2
+    .long 267
+    .long \arg_0
+    .long \arg_1
+    .long (((\arg_2 - .) / 4) - 1)
+    .endm
+
+    .macro GoToIfTerastallized arg_0, arg_1
+    .long 268
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro HandleRoost arg_0
+    .long 269
+    .long \arg_0
+    .endm
+
+    .macro HandleSoak arg_0
+    .long 270
+    .long \arg_0
+    .endm
+
+    .macro HandleMagicPowder arg_0
+    .long 271
+    .long \arg_0
+    .endm
+
+    .macro HandleForestsCurse arg_0
+    .long 272
+    .long \arg_0
+    .endm
+
+    .macro HandleTrickOrTreat arg_0
+    .long 273
+    .long \arg_0
+    .endm
+
+    .macro HandleBurnUp arg_0
+    .long 274
+    .long \arg_0
+    .endm
+
+    .macro HandleDoubleShock arg_0
+    .long 275
+    .long \arg_0
+    .endm
+
+    .macro StuffCheeks arg_0
+    .long 276
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro SetMoveConditionFlag arg_0, arg_1
+    .long 277
+    .long \arg_0
+    .long \arg_1
+    .endm
+
+    .macro AbilityPopup arg_0:req, arg_1=-1
+    .long 278
+    .long \arg_0
+    .long \arg_1
+    .endm
+
+    .macro ActivateParadoxAbility arg_0
+    .long 279
+    .long \arg_0
+    .endm
+
+    .macro ResetParadoxAbility arg_0
+    .long 280
+    .long \arg_0
+    .endm
+
+    .macro SetCurrentMoveSwitchingStatus arg_0
+    .long 281
+    .long \arg_0
+    .endm
+
+    .macro TrySynchronizeStatus arg_0
+    .long 282
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro TryCureStatusBerry arg_0, arg_1
+    .long 283
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro BatchUpdateHealthBar
+    .long 284
+    .endm
+
+    .macro BatchUpdateHealthBarValue
+    .long 285
+    .endm
+
+    .macro BatchFollowupMessage arg_0
+    .long 286
+    .long \arg_0
+    .endm
+
+    .macro BatchEffectivenessMessage arg_0, arg_1, arg_2
+    .long 287
+    .long \arg_0
+    .long \arg_1
+    .long (((\arg_2 - .) / 4) - 1)
+    .endm
+
+    .macro DivideVarByValueRoundUp var, val
+    .long 288
+    .long \var
+    .long \val
+    .endm
+
+    .macro IsPursuitActive arg_0
+    .long 289
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro GoBackToBeforeMove
+    .long 290
+    .endm
+
+    .macro MakeTotem arg_0, arg_1
+    .long 291
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro GetMonByCottonDownOrder arg_0
+    .long 292
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 292
 
     // .macro YourCustomCommand
     // .long (BASE_ENGINE_BTL_SCR_CMDS_MAX + 1)
