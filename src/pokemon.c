@@ -17,6 +17,7 @@
 
 #include "bag.h"
 #include "battle.h"
+#include "nuzlocke.h"
 #include "overlay.h"
 #include "rtc.h"
 #include "save.h"
@@ -1797,6 +1798,13 @@ u32 CheckCanUseBallOnDoublesFromBag(struct BattleStruct *sp)
     if (sp->battlemon[1].hp && sp->battlemon[3].hp) {
         return FALSE;
     }
+
+#ifdef IMPLEMENT_HARDCODE_NUZLOCKE
+    if (Nuzlocke_ShouldBlockBall(sp)) {
+        return FALSE;
+    }
+#endif
+
     return TRUE;
 }
 

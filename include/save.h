@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "constants/game_stats.h"
+#include "constants/maps.h"
 #include "constants/save.h"
 
 #include "pokemon.h"
@@ -117,6 +118,10 @@ struct SAVE_MISC_DATA {
     // expanded fields - offset 0x2E0 and up
     struct PartyPokemon storedMons[NUM_OF_STORED_MONS];
     u8 isMonStored[NUM_OF_STORED_MONS];
+
+#ifdef IMPLEMENT_HARDCODE_NUZLOCKE
+    u8 nuzlockeRouteUsed[(MAP_ID_MAX + 7) / 8]; // one bit per MAP_* id; set once a non-dupe wild mon has been encountered on that map
+#endif
 
 #endif
 };
@@ -385,6 +390,7 @@ void *LONG_CALL PROC_GetWork(void *proc);
 // defined in src/save.c
 u32 LONG_CALL Sav2_Misc_sizeof(void);
 void LONG_CALL InitStoredMons(struct SAVE_MISC_DATA *saveMiscData);
+void LONG_CALL InitNuzlockeRouteFlags(struct SAVE_MISC_DATA *saveMiscData);
 void LONG_CALL Sav2_Misc_init_new_fields(struct SAVE_MISC_DATA *saveMiscData);
 u32 LONG_CALL sqrt(u32 num);
 

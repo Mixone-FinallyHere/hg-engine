@@ -13,6 +13,7 @@
 #include "battle.h"
 #include "item.h"
 #include "mega.h"
+#include "nuzlocke.h"
 #include "overlay.h"
 #include "pokemon.h"
 
@@ -61,6 +62,12 @@ struct BattleStruct *ServerInit(struct BattleSystem *bw)
     BattleBgExpansionLoader(bw);
 
     gBattleSystem = bw;
+
+#ifdef IMPLEMENT_HARDCODE_NUZLOCKE
+    // must run after gBattleSystem/bw's wild party are fully populated, and once per battle
+    // regardless of whether a ball ends up getting thrown
+    Nuzlocke_RegisterEncounter(bw);
+#endif
 
 #ifdef DEBUG_BATTLE_SCENARIOS
     // Apply test battle state (recharge, charging, etc.)

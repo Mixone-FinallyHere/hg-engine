@@ -77,6 +77,19 @@
 // this will also make the critical capture species only count the regional dex species.
 #define CRITICAL_CAPTURE_GENERATION GEN_LATEST
 
+// IMPLEMENT_HARDCODE_NUZLOCKE enforces a nuzlocke-style capture rule directly in the engine:
+// only the first non-dupe wild Pokémon encountered on a given map ("route") can be caught there.
+// shiny clause: a shiny target is always catchable, regardless of the route's lock state.
+// dupes clause: a species you've already caught doesn't count as "the" encounter for a route,
+// so running into a dupe never locks it.
+// commenting this line out disables all nuzlocke capture restrictions
+// NOTE: requires ALLOW_SAVE_CHANGES, since per-route lock state is stored in the save file
+// #define IMPLEMENT_HARDCODE_NUZLOCKE
+
+#if defined(IMPLEMENT_HARDCODE_NUZLOCKE) && !defined(ALLOW_SAVE_CHANGES)
+#error "IMPLEMENT_HARDCODE_NUZLOCKE requires ALLOW_SAVE_CHANGES to be defined, since per-route lock state is stored in an expanded save field."
+#endif
+
 // IMPLEMENT_NEW_EV_IV_VIEWER defines whether or not pressing L, R, or Select in the pokémon summaries will display EV's, IV's, or the raw stat
 // commenting this line out disables the building of the new EV/IV viewing system
 #define IMPLEMENT_NEW_EV_IV_VIEWER

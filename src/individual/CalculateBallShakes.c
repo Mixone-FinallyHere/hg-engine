@@ -15,6 +15,7 @@
 
 #include "battle.h"
 #include "mega.h"
+#include "nuzlocke.h"
 #include "overlay.h"
 #include "pokemon.h"
 #include "q412.h"
@@ -66,6 +67,14 @@ u32 __attribute__((section(".init"))) CalculateBallShakesInternal(void *bw, stru
     {
         return 4;
     }
+
+#ifdef IMPLEMENT_HARDCODE_NUZLOCKE
+    // safety net: the ball category should already be greyed out by CheckCanUseBallOnDoublesFromBag
+    // in this situation, but force a guaranteed break-free here too in case a throw slips through
+    if (Nuzlocke_ShouldBlockBall(sp)) {
+        return 0;
+    }
+#endif
 
     // location does not need to be adjusted because speciesCatchRate is not used until heavyBallMod is
     if (sp->item_work == ITEM_SAFARI_BALL) {

@@ -30,9 +30,19 @@ void LONG_CALL InitStoredMons(struct SAVE_MISC_DATA *saveMiscData)
 #endif
 }
 
+void LONG_CALL InitNuzlockeRouteFlags(struct SAVE_MISC_DATA *saveMiscData)
+{
+#ifdef IMPLEMENT_HARDCODE_NUZLOCKE
+
+    memset(&saveMiscData->nuzlockeRouteUsed[0], 0, sizeof(saveMiscData->nuzlockeRouteUsed));
+
+#endif
+}
+
 void LONG_CALL Sav2_Misc_init_new_fields(struct SAVE_MISC_DATA *saveMiscData)
 {
     InitStoredMons(saveMiscData);
+    InitNuzlockeRouteFlags(saveMiscData);
 }
 
 // convenience flag/var access functions
