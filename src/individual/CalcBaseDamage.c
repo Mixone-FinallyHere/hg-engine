@@ -606,7 +606,7 @@ int UNUSED CalcBaseDamageInternal(struct BattleSystem *bw, struct BattleStruct *
 #if FAIRY_TYPE_IMPLEMENTED == 1
         // if Fairy Aura is present but not Aura Break
         if (!fairyAuraApplied
-            && (movetype == TYPE_DARK)
+            && (movetype == TYPE_FAIRY)
             && (battlerAbilities[damageCalc->rawSpeedNonRNGClientOrder[i]] == ABILITY_FAIRY_AURA)
             && (fieldHasAuraBreak == FALSE)) {
             fairyAuraApplied = TRUE;
@@ -616,7 +616,7 @@ int UNUSED CalcBaseDamageInternal(struct BattleSystem *bw, struct BattleStruct *
 
         // if Aura Break is present and also Fairy Aura
         if (!fairyAuraApplied
-            && (movetype == TYPE_DARK)
+            && (movetype == TYPE_FAIRY)
             && (battlerAbilities[damageCalc->rawSpeedNonRNGClientOrder[i]] == ABILITY_AURA_BREAK)
             && (fieldHasFairyAura == TRUE)) {
             fairyAuraApplied = TRUE;
@@ -717,14 +717,17 @@ int UNUSED CalcBaseDamageInternal(struct BattleSystem *bw, struct BattleStruct *
             }
 
             // handle Analytic
-            if (AttackingMon.ability == ABILITY_ANALYTIC) {
-                for (i = 0; i < 4; i++) {
-                    // TODO: handle without bw, sp
-                    if (attacker != i && damageCalc->clients[i].hp != 0 && CalcSpeed(bw, sp, attacker, i, 0) == 0) {
+            if (AttackingMon.ability == ABILITY_ANALYTIC && moveEffect != MOVE_EFFECT_HIT_IN_3_TURNS) {
+                int k = 0;
+                for (k = 0; k < 4; k++) {
+                    if (attacker == k || damageCalc->clients[k].hp == 0) {
+                        continue;
+                    }
+                    if (IsMovingAfterClient(sp, k) == FALSE) { // checks if sp->playerActions[k][0] == CONTROLLER_COMMAND_40
                         break;
                     }
                 }
-                if (i == 4) {
+                if (k == 4) {
                     basePowerModifier = QMul_RoundUp(basePowerModifier, UQ412__1_3);
                     continue;
                 }

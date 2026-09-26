@@ -4411,7 +4411,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
         .data = {
             .effect = MOVE_EFFECT_HIGH_CRITICAL,
             .split = SPLIT_PHYSICAL,
-            .power = 70,
+            .power = ((CHAMPIONS_POWER_CHANGES) ? (80) : (70)),
             .type = TYPE_NORMAL,
             .accuracy = 100,
             .pp = 20,
@@ -5633,7 +5633,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .effectChance = 0,
         },
         .battle = {
-            .target = RANGE_USER,
+            .target = RANGE_SINGLE_TARGET_USER_SIDE,
             .priority = 0,
             .flags = FLAG_SNATCH,
         },
@@ -7384,7 +7384,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .power = 0,
             .type = TYPE_NORMAL,
             .accuracy = 0,
-            .pp = 10,
+            .pp = ((CHAMPIONS_PP_CHANGES) ? (5) : (10)),
             .effectChance = 0,
         },
         .battle = {
@@ -12995,7 +12995,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .fullName = "Magic Room",
         },
         .data = {
-            .effect = MOVE_EFFECT_HIT,
+            .effect = MOVE_EFFECT_MAGIC_ROOM,
             .split = SPLIT_STATUS,
             .power = 0,
             .type = TYPE_PSYCHIC,
@@ -18130,7 +18130,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .power = 0,
             .type = TYPE_GRASS,
             .accuracy = 100,
-            .pp = 10,
+            .pp = ((CHAMPIONS_PP_CHANGES) ? (5) : (10)),
             .effectChance = 100,
         },
         .battle = {
@@ -19529,7 +19529,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .fullName = "Mind Blown",
         },
         .data = {
-            .effect = MOVE_EFFECT_HIT,
+            .effect = MOVE_EFFECT_STEEL_BEAM,
             .split = SPLIT_SPECIAL,
             .power = 150,
             .type = TYPE_FIRE,
@@ -19540,7 +19540,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
         .battle = {
             .target = RANGE_ALL_ADJACENT,
             .priority = 0,
-            .flags = FLAG_MIRROR_MOVE | FLAG_UNUSABLE_IN_GEN_8 | FLAG_UNUSABLE_IN_GEN_9 | FLAG_UNUSABLE_UNIMPLEMENTED | FLAG_PROTECT,
+            .flags = FLAG_MIRROR_MOVE | FLAG_UNUSABLE_IN_GEN_8 | FLAG_UNUSABLE_IN_GEN_9 | FLAG_PROTECT,
         },
         .contest = {
             .appeal = 0,
@@ -21529,7 +21529,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
         .data = {
             .effect = MOVE_EFFECT_RECHARGE_AFTER,
             .split = SPLIT_PHYSICAL,
-            .power = 150,
+            .power = ((CHAMPIONS_POWER_CHANGES) ? (170) : (150)),
             .type = TYPE_FIGHTING,
             .accuracy = 100,
             .pp = 5,
@@ -21581,7 +21581,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
             .fullName = "Steel Beam",
         },
         .data = {
-            .effect = MOVE_EFFECT_HIT,
+            .effect = MOVE_EFFECT_STEEL_BEAM,
             .split = SPLIT_SPECIAL,
             .power = 140,
             .type = TYPE_STEEL,
@@ -21592,7 +21592,7 @@ const MoveSourceEntry sMoveSource[NUM_OF_MOVES + 1] = {
         .battle = {
             .target = RANGE_SINGLE_TARGET,
             .priority = 0,
-            .flags = FLAG_MIRROR_MOVE | FLAG_UNUSABLE_IN_GEN_8 | FLAG_UNUSABLE_IN_GEN_9 | FLAG_UNUSABLE_UNIMPLEMENTED | FLAG_PROTECT,
+            .flags = FLAG_MIRROR_MOVE | FLAG_UNUSABLE_IN_GEN_8 | FLAG_UNUSABLE_IN_GEN_9 | FLAG_PROTECT,
         },
         .contest = {
             .appeal = 0,

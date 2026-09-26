@@ -1604,7 +1604,36 @@
     .long \arg_0
     .endm
 
-    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 293
+    .macro TryHealingWish arg_0
+    .long 294
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro ActivateHealingWish arg_0
+    .long 295
+    .long (((\arg_0 - .) / 4) - 1)
+    .endm
+
+    .macro IsFieldCondition2On arg_0, arg_1
+    .long 296
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro SetFieldCondition2 arg_0, arg_1
+    .long 297
+    .long \arg_0
+    .long \arg_1
+    .endm
+
+    .macro GoToIfMoveConditionFlagSet arg_0, arg_1, arg_2
+    .long 298
+    .long \arg_0
+    .long \arg_1
+    .long (((\arg_2 - .) / 4) - 1)
+    .endm
+
+    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 298
 
     // .macro YourCustomCommand
     // .long (BASE_ENGINE_BTL_SCR_CMDS_MAX + 1)

@@ -1541,7 +1541,15 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             debug_printf("In ENDTURN_MAGIC_ROOM_DISSIPATING\n");
 
 #endif
-
+            if (sp->field_condition2 & FIELD_CONDITION_2_MAGIC_ROOM) {
+                --sp->magicRoomCounter;
+                if (sp->magicRoomCounter == 0) {
+                    LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_MAGIC_ROOM_END);
+                    sp->next_server_seq_no = sp->server_seq_no;
+                    sp->server_seq_no = 22;
+                    ret = 1;
+                }
+            }
             sp->fcc_seq_no++;
             break;
         }
@@ -1709,7 +1717,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                     }
                     case ABILITY_BAD_DREAMS: {
                         while (sp->updateMonConditionData < client_set_max) {
-                            if (sp->updateMonConditionData != BATTLER_ALLY(battlerId) && (sp->battlemon[sp->updateMonConditionData].condition & STATUS_SLEEP) && GetBattlerAbility(sp, sp->updateMonConditionData) != ABILITY_MAGIC_GUARD && sp->battlemon[sp->updateMonConditionData].hp != 0) {
+                            if (sp->updateMonConditionData != battlerId && sp->updateMonConditionData != BATTLER_ALLY(battlerId) && (sp->battlemon[sp->updateMonConditionData].condition & STATUS_SLEEP) && GetBattlerAbility(sp, sp->updateMonConditionData) != ABILITY_MAGIC_GUARD && sp->battlemon[sp->updateMonConditionData].hp != 0) {
                                 seq_no = BATTLE_SUBSCRIPT_BAD_DREAMS;
                                 sp->hp_calc_work = BattleDamageDivide(sp->battlemon[sp->updateMonConditionData].maxhp * -1, 8); // 1/8 health drop, can probably put binding band in here too soon
 #ifdef DEBUG_ENDTURN_LOGIC
@@ -1952,6 +1960,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                 }
                 sp->moveConditionsFlags[i].dragonDartsStatus = 0;
                 sp->moveConditionsFlags[i].endure = 0;
+                sp->moveConditionsFlags[i].mindBlownOrSteelBeam = 0;
                 sp->moveProtect[i] = 0;
             }
 

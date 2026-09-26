@@ -214,6 +214,10 @@ u16 LONG_CALL GetBattleMonItem(struct BattleStruct *sp, int client_no)
         return 0;
     }
 
+    if ((sp->field_condition2 & FIELD_CONDITION_2_MAGIC_ROOM) && sp->magicRoomCounter) {
+        return 0;
+    }
+
     return sp->battlemon[client_no].item;
 }
 
@@ -404,7 +408,7 @@ void CalcDamageOverall(void *bw, struct BattleStruct *sp)
 
     // 6.3.5 Glaive Rush
     // https://www.smogon.com/forums/threads/scarlet-violet-battle-mechanics-research.3709545/post-10498744
-    if (sp->moveConditionsFlags[defender].glaiveRush) {
+    if (sp->moveConditionsFlags[defender].wideOpen) {
         damage = damage * 200 / 100;
     }
 
@@ -785,13 +789,28 @@ void CalcDamageOverall(void *bw, struct BattleStruct *sp)
         // 6.9.16 Ice Scales
         // handle Ice Scales - halve damage if move is special, regardless of if it uses defense stat
         // https://www.smogon.com/forums/threads/sword-shield-battle-mechanics-research.3655528/post-8319925
-        if (MoldBreakerAbilityCheck(sp, attacker, defender, ABILITY_ICE_SCALES) == TRUE && movesplit == SPLIT_SPECIAL) {
+        if ((sp->rawSpeedNonRNGClientOrder[i] == defender)
+            && (MoldBreakerAbilityCheck(sp, attacker, defender, ABILITY_ICE_SCALES) == TRUE)
+            && (movesplit == SPLIT_SPECIAL)) {
             finalModifier = QMul_RoundUp(finalModifier, UQ412__0_5);
 #ifdef DEBUG_DAMAGE_CALC
             debug_printf("\n=================\n");
             debug_printf("[CalcBaseDamage] 6.9.16 Ice Scales\n");
             debug_printf("[CalcBaseDamage] finalModifier: %d\n", finalModifier);
 #endif
+        }
+
+        if ((sp->rawSpeedNonRNGClientOrder[i] == defender)
+            && MoldBreakerAbilityCheck(sp, attacker, defender, ABILITY_AURA_GUARD)) {
+            // 6.9.17 Aura Guard (contact moves) //TODO: confirm location
+            if (IsContactBeingMade(GetBattlerAbility(sp, sp->attack_client), attackerItemHeldEffect, HeldItemHoldEffectGet(sp, sp->defence_client), sp->current_move_index, sp->moveTbl[sp->current_move_index].flag)) {
+                finalModifier = QMul_RoundUp(finalModifier, UQ412__0_5);
+#ifdef DEBUG_DAMAGE_CALC
+                debug_printf("\n=================\n");
+                debug_printf("[CalcBaseDamage] 6.9.17 Aura Guard (contact moves)\n");
+                debug_printf("[CalcBaseDamage] finalModifier: %d\n", finalModifier);
+#endif
+            }
         }
     }
 
