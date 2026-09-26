@@ -45,6 +45,7 @@ int LONG_CALL Activate_Switch(void *bsys UNUSED, struct BattleStruct *ctx);
 int LONG_CALL Activate_RecoilDamage(void *bsys UNUSED, struct BattleStruct *ctx);
 int LONG_CALL Activate_AdditionalMoveEffects(void *bsys UNUSED, struct BattleStruct *ctx);
 int LONG_CALL Activate_SparklingAria(void *bsys, struct BattleStruct *ctx);
+int LONG_CALL Activate_SmackDown(void *bsys UNUSED, struct BattleStruct *ctx);
 int LONG_CALL Activate_SkillEffects(void *bsys UNUSED, struct BattleStruct *ctx);
 
 int LONG_CALL Activate_Moxie_BeastBoost_Others(void *bsys, struct BattleStruct *ctx);
@@ -126,6 +127,24 @@ void __attribute__((section(".init"))) ServerDoPostMoveEffectsInternal(void *bsy
             ctx->store_damage[ctx->attack_client] += ctx->hit_damage;
         }
         ctx->swoam_seq_no++;
+        FALLTHROUGH;
+    case MOVE_PERFORMANCE_STEP_4_2_HEAVY_RECOIL:
+#ifdef DEBUG_MOVE_PERFORMANCE_LOGIC
+        if (IsAttackerOnField(ctx)) {
+            debug_printf("in MOVE_PERFORMANCE_STEP_4_2_HEAVY_RECOIL %d\n", ctx->swoam_seq_no);
+        }
+#endif
+        ctx->swoam_seq_no++;
+        if (ctx->moveConditionsFlags[ctx->attack_client].mindBlownOrSteelBeam
+            && GetBattlerAbility(ctx, ctx->attack_client) != ABILITY_MAGIC_GUARD
+            && (ctx->current_move_index == MOVE_STEEL_BEAM
+                || ctx->current_move_index == MOVE_MIND_BLOWN)) {
+            LoadBattleSubSeqScript(ctx, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_HEAVY_RECOIL);
+            ctx->next_server_seq_no = ctx->server_seq_no;
+            ctx->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+            return;
+        }
+
         FALLTHROUGH;
     case MOVE_PERFORMANCE_STEP_5_SE_TYPE_EFFECTIVENESS_MESSAGE:
 #ifdef DEBUG_MOVE_PERFORMANCE_LOGIC
@@ -446,6 +465,37 @@ void __attribute__((section(".init"))) ServerDoPostMoveEffectsInternal(void *bsy
         ctx->clientLoopForSpreadMoves = 0;
         ctx->swoam_seq_no++;
     }
+        FALLTHROUGH;
+    case MOVE_PERFORMANCE_STEP_15_4_SMACK_DOWN:
+#ifdef DEBUG_MOVE_PERFORMANCE_LOGIC
+        debug_printf("in MOVE_PERFORMANCE_STEP_15_4_SMACK_DOWN %d\n", ctx->swoam_seq_no);
+#endif
+        switch (ctx->current_move_index) {
+        case MOVE_SMACK_DOWN:
+        case MOVE_THOUSAND_ARROWS: {
+            if (ctx->moveContext.isAllyHit) {
+                ctx->defence_client = BATTLER_ALLY(ctx->attack_client);
+                if (Activate_SmackDown(bsys, ctx) == TRUE) {
+                    return;
+                }
+            }
+
+            for (; ctx->clientLoopForSpreadMoves < ctx->moveContext.hitFoesCount;) {
+                ctx->defence_client = ctx->moveContext.hitFoes[ctx->clientLoopForSpreadMoves];
+                ctx->clientLoopForSpreadMoves++;
+
+                if (Activate_SmackDown(bsys, ctx) == TRUE) {
+                    return;
+                }
+            }
+        }
+        default:
+            break;
+        }
+
+        ctx->swoak_work = 0;
+        ctx->clientLoopForSpreadMoves = 0;
+        ctx->swoam_seq_no++;
         FALLTHROUGH;
     case MOVE_PERFORMANCE_STEP_16_0_MAGICIAN_MOXIE: // speed order
 #ifdef DEBUG_MOVE_PERFORMANCE_LOGIC
@@ -1070,7 +1120,7 @@ int LONG_CALL Activate_AdditionalMoveEffects(void *bsys UNUSED, struct BattleStr
         // case EFFECT_SWALLOW: confirm
 
         // case MOVE_EFFECT_TELEKINESIS:
-        // case MOVE_EFFECT_SMACK_DOWN: thousand arrows
+
         // case MOVE_EFFECT_SECRET_POWER:
     case MOVE_EFFECT_WHIRLPOOL:
     case MOVE_EFFECT_BIND_HIT: // fire spin/wrap/infestation
@@ -1297,6 +1347,24 @@ int LONG_CALL Activate_SparklingAria(void *bsys, struct BattleStruct *ctx)
     return FALSE;
 }
 
+int LONG_CALL Activate_SmackDown(void *bsys UNUSED, struct BattleStruct *ctx)
+{
+    if (ctx->attack_client != BATTLER_NONE
+        && (CheckSubstitute(ctx, ctx->defence_client) == FALSE)
+        && !IsClientGrounded(ctx, ctx->defence_client)) {
+
+        ctx->battlerIdTemp = ctx->defence_client;
+        ctx->moveConditionsFlags[ctx->defence_client].grounded = TRUE;
+        ctx->battlemon[ctx->defence_client].moveeffect.magnetRiseTurns = 0;
+        // TODO clear Telekinesis, once implemented
+        LoadBattleSubSeqScript(ctx, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_FELL_STRAIGHT_DOWN);
+        ctx->next_server_seq_no = ctx->server_seq_no;
+        ctx->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+        return TRUE;
+    }
+    return FALSE;
+}
+
 // https://bulbapedia.bulbagarden.net/wiki/Category:Moves_that_thaw_out_the_user
 // will have to add matcha gotcha and burn up to the list of effects that thaw the user
 u16 gMovesThatThawFrozenMons[] = {
@@ -1516,7 +1584,7 @@ int LONG_CALL Activate_Moxie_BeastBoost_Others(void *bsys, struct BattleStruct *
         if (!ctx->futureSightHitTurn
             && ctx->battlemon[ctx->attack_client].hp
             && ctx->battlemon[ctx->attack_client].item == ITEM_NONE
-            && ctx->moveTbl[ctx->current_move_index].power != 0
+            && ctx->moveTbl[ctx->current_move_index].split != SPLIT_STATUS
             && ctx->gemBoostingMove == FALSE) {
             for (int battler = 0; battler < BattleWorkClientSetMaxGet(bsys); battler++) {
                 int client_no = ctx->turnOrder[battler];
@@ -2519,6 +2587,8 @@ u32 LONG_CALL Activate_AbilityHealingStatusCondition(void *bsys, struct BattleSt
 
 int LONG_CALL Activate_SecondaryEffects(void *bsys, struct BattleStruct *ctx)
 {
+    ctx->hit_damage = ctx->damageForSpreadMoves[ctx->defence_client];
+
     int seq_no = 0;
     // TODO hook and simplify logic for flags
     u32 indirectStatusEffectFlag = ctx->add_status_flag_indirect;

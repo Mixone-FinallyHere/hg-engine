@@ -113,8 +113,8 @@ SDATTOOL := $(PYTHON) tools/SDATTool.py
 
 # Compiler/Assembler/Linker settings
 LDFLAGS = rom.ld -T $(C_SUBDIR)/linker.ld
-ASFLAGS =  -I$(shell pwd)/asm/include -I$(shell pwd)/include -mthumb -mcpu=arm946e-s -mtune=arm946e-s
-CFLAGS =  -I$(shell pwd)/include -mthumb -mno-thumb-interwork -mcpu=arm946e-s -mtune=arm946e-s -mno-long-calls -Wall -Wextra -Wno-builtin-declaration-mismatch -Wno-sequence-point -Wno-address-of-packed-member -Os -fira-loop-pressure -fipa-pta
+ASFLAGS =  -I"$(shell pwd)/asm/include" -I"$(shell pwd)/include" -mthumb -mcpu=arm946e-s -mtune=arm946e-s
+CFLAGS =  -I"$(shell pwd)/include" -mthumb -mno-thumb-interwork -mcpu=arm946e-s -mtune=arm946e-s -mno-long-calls -Wall -Wextra -Wno-builtin-declaration-mismatch -Wno-sequence-point -Wno-address-of-packed-member -Os -fira-loop-pressure -fipa-pta
 ARMIPS_FLAGS = -equ DEBUG_BATTLE_SCENARIOS 0
 
 ifeq ($(AUTO_TEST),Y)
@@ -533,6 +533,9 @@ move_narc: $(NARC_FILES)
 	@echo "hidden item params:"
 	cp $(HIDDEN_ITEM_PARAMS_BIN) $(HIDDEN_ITEM_PARAMS_TARGET)
 
+	@echo "ability flag params:"
+	cp $(ABILITY_FLAG_PARAMS_BIN) $(ABILITY_FLAG_PARAMS_TARGET)
+
 update_machine_moves: $(VENV_ACTIVATE)
 	$(PYTHON) scripts/update_machine_moves.py --descriptions --sprites
 	@echo "Updated item descriptions and sprites. Double check formatting"
@@ -543,3 +546,5 @@ update_machine_moves: $(VENV_ACTIVATE)
 
 ####################### Debug #######################
 print-% : ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
+
+contents-% : ; $(info $($*)) @true

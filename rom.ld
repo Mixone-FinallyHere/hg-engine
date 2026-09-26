@@ -54,10 +54,13 @@ ReadFromNarcMemberByIdPair = 0x02007560 | 1;
 /*Pokemon*/
 AllocMonZeroed = 0x0206DD2C | 1;
 ZeroMonData = 0x0206DCE4 |1;
+Save_MapObjects_Get = 0x0203B9D0 |1;
+GetFirstAliveMonInParty_CrashIfNone = 0x02054388 |1;
+MapObjectManager_RestoreFromSave = 0x0205E648 |1;
+SaveArray_Party_Get = 0x02074904 |1;
 PokeParaSet = 0x0206DE38 |1;
 PokeParaSetChr = 0x0206E108 |1;
 PokeParaSetSexChr = 0x0206E14C |1;
-GetMonSpriteCharAndPlttNarcIdsEx = 0x020701E4 |1;
 PokeCopyPPtoPP = 0x0207188C |1;
 GetMonData = 0x0206E540 |1;
 GetBoxMonData = 0x0206E640 |1;
@@ -205,7 +208,6 @@ Snd_SePlay = 0x0200604C | 1;
 BattleDamageDivide = 0x02253178 | 1;
 BattleWorkWeatherGet = 0x0223BAF8 | 1;
 BattleWorkEnemyClientGet = 0x32F8 + 0x022378C1;
-TraceClientGet = 0x022585B8 | 1;
 IsClientEnemy = 0x0223AB1C | 1;
 TypeCalc = 0x02251D28 | 1;
 AnticipateMoveEffectListCheck = 0x0225865C | 1;
@@ -457,7 +459,7 @@ GetBallID_ov7 = 0x0223251C | 1;
 
 TypeCheckCalc = 0x022583B4 | 1;
 ShouldDelayTurnEffectivenessChecking = 0x02258440 | 1;
-ShouldUseNormalTypeEffCalc = 0x02251C74 | 1;
+
 AI_TypeCheckCalc = 0x022521C8 | 1;
 AI_ShouldUseNormalTypeEffCalc = 0x02252178 | 1;
 
@@ -878,6 +880,10 @@ GameStats_Inc = 0x0202D0FC | 1;
 StringExpandPlaceholders = 0x0200CBBC | 1;
 
 ov12_02256694 = 0x02256694 | 1;
+BattleBuffer_GetNext = 0x0225682C | 1;
+BattleController_EmitShowMonList = 0x022632DC | 1;
+BattleController_EmitShowWaitMessage = 0x02263F30 | 1;
+ov12_0223BDDC = 0x0223BDDC | 1;
 BattleSystem_GetMaxBattlers = 0x0223A7F0 | 1;
 BattleSystem_GetFieldSide = 0x0223AB1C | 1;
 ov12_0223BB88 = 0x0223BB88 | 1;

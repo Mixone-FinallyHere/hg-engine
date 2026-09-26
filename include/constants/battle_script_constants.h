@@ -522,8 +522,15 @@
 #define BATTLE_SUBSCRIPT_ENDURE_HIT                             (513)
 #define BATTLE_SUBSCRIPT_PERISH_BODY                            (514)
 #define BATTLE_SUBSCRIPT_BATTLE_BOND_BOOST                      (515)
+#define BATTLE_SUBSCRIPT_ZERO_TO_HERO                           (516)
+#define BATTLE_SUBSCRIPT_WANDERING_SPIRIT                       (517)
+#define BATTLE_SUBSCRIPT_SCREEN_CLEANER                         (518)
+#define BATTLE_SUBSCRIPT_FELL_STRAIGHT_DOWN                     (519)
+#define BATTLE_SUBSCRIPT_MAGIC_ROOM_END                         (520)
+#define BATTLE_SUBSCRIPT_HEAVY_RECOIL                           (521)
+#define BATTLE_SUBSCRIPT_PREVENT_INTIMIDATE                     (522)
 
-#define MAX_BASE_SUBSCRIPT_NUM 515
+#define MAX_BASE_SUBSCRIPT_NUM 522
 
 // define your custom subscripts below like this
 // #define MOVE_SUBSCRIPT_CUSTOM_1 (MAX_BASE_SUBSCRIPT_NUM + 1)
