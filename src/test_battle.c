@@ -639,7 +639,14 @@ static BOOL TestBattle_IsPartySlotAlreadyActive(struct BattleSystem *bsys, struc
     u8 side = IsClientEnemy(bsys, battler);
 
     for (int other = 0; other < maxBattlers; other++) {
-        if (IsClientEnemy(bsys, other) == side && ctx->sel_mons_no[other] == partySlot) {
+        if (IsClientEnemy(bsys, other) != side) {
+            continue;
+        }
+        if (ctx->sel_mons_no[other] == partySlot) {
+            return TRUE;
+        }
+
+        if (other != battler && ctx->reshuffle_sel_mons_no[other] == partySlot) {
             return TRUE;
         }
     }
@@ -679,7 +686,7 @@ static int TestBattle_FindNextLivePartySlot(struct BattleSystem *bsys, struct Ba
 static BOOL TestBattle_ShouldAutoSelectKOSwitch(struct BattleSystem *bsys, struct BattleStruct *ctx, int battler)
 {
     return sCurrentScenario != NULL
-        && (battler == BATTLER_PLAYER_FIRST || battler == BATTLER_PLAYER_SECOND)
+        //&& (battler == BATTLER_PLAYER_FIRST || battler == BATTLER_PLAYER_SECOND) // do it for all
         && (ctx->client_status[battler] & 1)
         && TestBattle_FindNextLivePartySlot(bsys, ctx, battler) != 6;
 }

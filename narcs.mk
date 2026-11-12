@@ -225,12 +225,14 @@ REQUIRED_DIRECTORIES += $(EVOS_DIR)
 REGIONALDEX_DIR := $(BUILD)/a138
 REGIONALDEX_NARC := $(BUILD_NARC)/a138.narc
 REGIONALDEX_TARGET := $(FILESYS)/a/1/3/8
-REGIONALDEX_DEPENDENCIES := data/RegionalDex.c
-REGIONALDEX_OBJS := $(patsubst data/%.c,build/%.o,$(REGIONALDEX_DEPENDENCIES))
+REGIONALDEX_DEPENDENCIES := data/RegionalDex.c include/types.h include/config.h include/constants/species.h tools/narcpy.py
+REGIONALDEX_OBJS := $(BUILD)/RegionalDex.o
 REGIONALDEX_BIN := $(REGIONALDEX_DIR)/pokezukan.bin
 
 $(REGIONALDEX_NARC): $(REGIONALDEX_DEPENDENCIES)
-	$(CC) $(CFLAGS) -c $(REGIONALDEX_DEPENDENCIES) -o $(REGIONALDEX_OBJS)
+	rm -rf $(REGIONALDEX_DIR)
+	mkdir -p $(REGIONALDEX_DIR)
+	$(CC) $(CFLAGS) -c data/RegionalDex.c -o $(REGIONALDEX_OBJS)
 	$(OBJCOPY) -O binary $(REGIONALDEX_OBJS) $(REGIONALDEX_BIN)
 	$(NARCHIVE) create $@ $(REGIONALDEX_DIR) -nf
 
@@ -774,7 +776,7 @@ $(ZONE_EVENT_NARC): $(ZONE_EVENT_OBJS) | $(ZONE_EVENT_DIR)
 
 ifneq ($(strip $(ZONE_EVENT_OBJS)),)
 ifeq ($(strip $(wildcard $(SCR_SEQ_DEPENDENCIES_DIR)/include/event_*.inc)),)
-$(error BUILD_DUMPED_EVENTDATA is enabled, but the script labels the maps reference are not in $(SCR_SEQ_DEPENDENCIES_DIR)/event_*.inc$(n)Either restore them or turn the toggle back off in $(CONFIG_H))
+$(error BUILD_DUMPED_EVENTDATA is enabled, but the script labels the maps reference are not in $(SCR_SEQ_DEPENDENCIES_DIR)/include/event_*.inc$(n)Either restore them or turn the toggle back off in $(CONFIG_H))
 endif
 NARC_FILES += $(ZONE_EVENT_NARC)
 endif
@@ -898,3 +900,7 @@ $(MSGDATA_NARC): $(MSGDATA_DEPENDENCIES) $(MSGDATA_COMPILETIME_DEPENDENCIES) $(w
 		$(MSGENC) -e -c $(CHARMAP) $${key:+-k $$key} $$file $(MSGDATA_DIR)/7_$$archive; \
 	done
 	$(NARCHIVE) create $@ $(MSGDATA_DIR) -nf
+
+# rebuild every build so edits other tools make to base/root are not overwritten by a stale copy
+.PHONY: $(BATTLEHUD_NARC) $(MOVEPARTICLES_NARC) $(OPENDEMO_NARC) $(BAGGFX_NARC) $(DEXGFX_NARC) $(BATTLEGFX_NARC)
+.PHONY: $(OTHERPOKE_NARC) $(FONT_NARC) $(TEXTBOX_NARC) $(BALL_SPA_NARC) $(MSGDATA_NARC)

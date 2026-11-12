@@ -522,7 +522,7 @@ struct __attribute__((packed)) side_condition_work {
 
     u32 followMeFlag : 1;
     u32 battlerIdFollowMe : 2;
-    u32 knockoff_item : 6;
+    u32 knockoff_item : 6; // unused
     u32 oikaze_count : 3;
 
     u32 spikesLayers : 2;
@@ -780,7 +780,11 @@ typedef struct MoveConditionsFlags {
     u8 dragonDartsStatus : 3;
     u8 grounded : 1;
     u8 mindBlownOrSteelBeam : 1;
-    u8 padding : 3;
+    u8 ejectPackFlag : 1;
+    u8 firstTurnOut : 2;
+
+    u8 usedRagePowder : 1;
+    u8 padding : 7;
 } MoveConditionsFlags;
 
 typedef struct MovePerformanceContext {
@@ -839,7 +843,16 @@ typedef struct HealingWishQueue {
     HealingWishCounter counter[CLIENT_MAX];
 } HealingWishQueue;
 
-#define BATTLE_SCRIPT_PUSH_DEPTH 4
+typedef struct SwitchInFlags {
+    u8 healingWishProcessed : 1;
+    u8 hazardsProcessed : 1;
+    u8 pastelVeilProcessed : 1;
+    u8 unnerveInactive : 1; // marks switching/fainting unnerve mon
+    u8 padding : 4;
+} SwitchInFlags;
+
+#define VANILLA_BATTLE_SCRIPT_PUSH_DEPTH 4
+#define BATTLE_SCRIPT_PUSH_DEPTH         8
 
 /**
  *  @brief the entire battle structure that we are interested in (for the most part)
@@ -896,9 +909,9 @@ struct BattleStruct {
     /*0xB0*/ int skill_arc_index;
     /*0xB4*/ int skill_seq_no;
     /*0xB8*/ int push_count;
-    /*0xBC*/ int push_skill_arc_kind[BATTLE_SCRIPT_PUSH_DEPTH];
-    /*0xCC*/ int push_skill_arc_index[BATTLE_SCRIPT_PUSH_DEPTH];
-    /*0xDC*/ int push_skill_seq_no[BATTLE_SCRIPT_PUSH_DEPTH];
+    /*0xBC*/ int push_skill_arc_kind_old[VANILLA_BATTLE_SCRIPT_PUSH_DEPTH]; // unused
+    /*0xCC*/ int push_skill_arc_index_old[VANILLA_BATTLE_SCRIPT_PUSH_DEPTH]; // unused
+    /*0xDC*/ int push_skill_seq_no_old[VANILLA_BATTLE_SCRIPT_PUSH_DEPTH]; // unused, callstack for subscripts
     /*0xEC*/ int executionIndex;
     /*0xF0*/ int wait_cnt;
     /*0xF4*/ BattleMessage mp; // buffMsg
@@ -968,13 +981,16 @@ struct BattleStruct {
     /*0x2200*/ u8 ServerQue[4][4][16];
     /*0x2300*/ u8 server_buffer[4][256];
     /*0x2700*/ struct ABILITY_POPUP_WORK *abilityPopupWork;
-    /*0x2704*/ int SkillSeqWorkOld[399];
+    int push_skill_arc_kind[BATTLE_SCRIPT_PUSH_DEPTH]; // new subscript callstack
+    int push_skill_arc_index[BATTLE_SCRIPT_PUSH_DEPTH]; // new subscript callstack
+    int push_skill_seq_no[BATTLE_SCRIPT_PUSH_DEPTH]; // new subscript callstack
+    int SkillSeqWorkOld[375]; // unused, we knock off bytes here to safe space
     /*0x2D40*/ struct BattlePokemon battlemon[CLIENT_MAX]; // 0xc0
     /*0x3040*/ u32 moveNoTemp;
     /*0x3044*/ u32 current_move_index;
     // u8 unk_bytes4[0x74];
 
-    /*0x3048*/ u32 waza_no_last; // The most recently used move in the battle (other than the current one).
+    /*0x3048*/ u32 lastSuccessfulMove; // The most recently used move in the battle (other than the current one).
     /*0x304C*/ u32 waza_no_keep[CLIENT_MAX];
 
     /*0x305C*/ u16 moveProtect[CLIENT_MAX];
@@ -1075,7 +1091,8 @@ struct BattleStruct {
     u8 futureSightHitTurn : 1;
     u8 futureSightNoAttacker : 1;
     u8 futureSightSTAB : 1;
-    u8 gemBoostingMovePadding : 4;
+    u8 ejectPackActivated : 1;
+    u8 gemBoostingMovePadding : 3;
 
     int currentMoveSwitchStatus;
 
@@ -1087,8 +1104,11 @@ struct BattleStruct {
     DancerContext dancerContext;
     MagicBounceContext magicBounceContext;
     HealingWishQueue healingWishQueue;
+    SwitchInFlags switchInFlags[CLIENT_MAX];
     int field_condition2; // gen5+ field conditions
     int magicRoomCounter;
+
+    int recoilDamage;
 };
 
 enum {
@@ -1977,6 +1997,12 @@ u8 LONG_CALL IsClientEnemy(void *bw, int client);
 int LONG_CALL TypeCalc(void *bw, struct BattleStruct *sp, int movenum, int movetype, int attacker, int defender, int damage, u32 *flag);
 
 /**
+ *  @brief used to calculate effectiveness of Stealth Rock during switch-in
+ *
+ */
+int LONG_CALL CalculateTypeEffectiveness(u8 typeMove, u8 typeMon1, u8 typeMon2);
+
+/**
  *  @brief sees if anticipation will automatially log a certain move (i.e. OHKO moves)
  *
  *  @param sp global battle structure
@@ -2219,6 +2245,8 @@ void LONG_CALL SCIO_IncRecord(void *bw, int attack_client, int param1, int param
  */
 BOOL LONG_CALL CheckStatusRecoverFromAbilityOnSwitch(struct BattleStruct *sp, int ability, int condition);
 
+BOOL LONG_CALL CheckStatusRecoverFromAbilityOnSwitchWrapper(struct BattleStruct *ctx, int ability, int status);
+
 /**
  *  @brief check if pressure should further decrement power points
  *
@@ -2343,9 +2371,15 @@ BOOL LONG_CALL Battle_IsFishingEncounter(void *bw);
  *  @param bw battle work structure; void * because we haven't defined the battle work structure
  *  @param sp global battle structure
  *  @param client_no is the battler to check
+ *  @param filter timing
  *  @return TRUE if a held item effect is going to happen; FALSE otherwise
  */
-BOOL LONG_CALL TryUseHeldItem(void *bw, struct BattleStruct *sp, int client_no);
+BOOL LONG_CALL TryUseHeldItem(void *bw, struct BattleStruct *sp, int client_no, u32 filter);
+
+BOOL LONG_CALL TryUseHeldItem_Vanilla(void *bw, struct BattleStruct *sp, int client_no);
+
+// helpers
+BOOL LONG_CALL GetHeldItemUseSubscript(void *bw, struct BattleStruct *sp, int client_no, int *seq_no, u32 filter);
 BOOL LONG_CALL GetHeldItemStatusRecoverySubscript(struct BattleStruct *sp, int client_no, int *seq_no);
 
 /**
@@ -2591,17 +2625,25 @@ extern struct BattleSystem *gBattleSystem;
 enum {
     SWITCH_IN_CHECK_WEATHER = 0,
     SWITCH_IN_CHECK_FIELD, // SwSh DLC Psychic Terrain, Toxic Spikes
-    SWITCH_IN_CHECK_ENTRY_EFFECT_NEUTRALIZING_GAS_TERA_SHIFT,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_UNNERVE,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_HEALING_WISH,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_HAZARDS,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_ABILITIES_AIR_BALLOON,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_PRIMAL_REVERSION_SEEDS_SCHOOLING_SHIELDS_DOWN,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_WHITE_HERB_FLOWER_GIFT_FORECAST_ICE_FACE_COSTAR_COMMANDER_PROTOSYNTHESIS_QUARK_DRIVE_HOSPITALITY,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_OPPORTUNIST,
+    // we are using expansion, not https://bulbapedia.bulbagarden.net/wiki/User:FIQ/Turn_sequence
+    SWITCH_IN_CHECK_4_TERA_SHIFT,
+    SWITCH_IN_CHECK_5_NEUTRALIZING_GAS,
+    SWITCH_IN_CHECK_6_UNNERVE_AS_ONE,
+    SWITCH_IN_CHECK_7A_HEALING_WISH_LUNAR_DANCE,
+    SWITCH_IN_CHECK_7B_ENTRY_HAZARDS,
+    SWITCH_IN_CHECK_RESOLVE_SWITCHES, // EE/WO from hazards
+    SWITCH_IN_CHECK_7C_ENTRY_ABILITIES,
+    SWITCH_IN_CHECK_7D_BERRIES_FRUIT_JUICE_AIR_BALLOON_MENTAL_HERB,
+    SWITCH_IN_CHECK_8A_MIMICRY_SCHOOLING_SHIELDS_DOWN,
+    SWITCH_IN_CHECK_8B_TERRAIN_SEEDS_ROOM_SERVICE,
+    SWITCH_IN_CHECK_8C_PRIMAL_REVERSION,
+    SWITCH_IN_CHECK_9A_ICE_FACE_COSTAR_QUARK_DRIVE_PROTOSYNTHESIS_COMMANDER_HOSPITALITY_FORECAST_FLOWER_GIFT,
+    SWITCH_IN_CHECK_9B_BOOSTER_ENERGY,
+    SWITCH_IN_CHECK_10_WHITE_HERB,
+    SWITCH_IN_CHECK_11_OPPORTUNIST,
+    SWITCH_IN_CHECK_12_MIRROR_HERB,
     SWITCH_IN_CHECK_AMULET_COIN,
-    SWITCH_IN_CHECK_ABILITY_HEAL_STATUS,
-    SWITCH_IN_CHECK_ENTRY_EFFECT_EJECT_PACK,
+    SWITCH_IN_CHECK_13_EJECT_PACK,
     SWITCH_IN_CHECK_END,
 };
 
@@ -2620,6 +2662,10 @@ enum {
  *  @return
  */
 u16 LONG_CALL GetBattleMonItem(struct BattleStruct *sp, int client_no);
+
+u16 LONG_CALL GetBattleMonItemIgnoringUnnerve(struct BattleStruct *sp, int client_no);
+
+BOOL LONG_CALL HasUnnerveAbility(struct BattleStruct *sp, int client_no);
 
 // defined in battle_pokemon.c
 /**
@@ -2707,17 +2753,6 @@ BOOL LONG_CALL DoesSideHave2Battlers(void *bw, u32 client);
 
 BOOL LONG_CALL ClientBelongsToPlayer(struct BattleSystem *bsys, int client);
 
-// defined in battle_item.c
-/**
- *  @brief queue up or perform item effects on u-turn hit
- *
- *  @param bw battle work structure; void * because we haven't defined the battle work structure
- *  @param sp global battle structure
- *  @param seq_no battle subscript to run
- *  @return TRUE to load the battle subscript in *seq_no and run it; FALSE otherwise
- */
-u32 LONG_CALL MoveHitUTurnHeldItemEffectCheck(void *bw, struct BattleStruct *sp, int *seq_no);
-
 /**
  *  @brief handle shell bell hp restore, rage is building message, and life orb after getting a hit
  *
@@ -2791,6 +2826,8 @@ s32 LONG_CALL GrabClientFromBattleScriptParam(void *bw, struct BattleStruct *sp,
  *  @param index number to load
  */
 void LONG_CALL LoadBattleSubSeqScript(struct BattleStruct *sp, int kind, int index);
+/* https://github.com/pret/pokeheartgold/blob/master/src/battle/overlay_12_0224E4FC.c#L202 */
+BOOL LONG_CALL PopBattleScript(struct BattleStruct *sp);
 
 /**
  *  @brief load battle script and queue up the current one to go after this one
@@ -3030,6 +3067,8 @@ BOOL LONG_CALL IsValidParentalBondMove(void *bw, struct BattleStruct *sp, BOOL c
  */
 BOOL LONG_CALL IsPowderMove(u32 moveIndex);
 
+BOOL LONG_CALL CanIgnoreRedirection(struct BattleStruct *ctx, int attacker, int side);
+
 /**
  * @brief Check if the current move is a Weight move
  * @param moveIndex move index
@@ -3113,6 +3152,7 @@ BOOL LONG_CALL CanUndergoPrimalReversion(struct BattleStruct *sp, u8 client_no);
 
 // defined in mega.c
 BOOL LONG_CALL CheckMegaData(u32 mon, u32 item, u32 form);
+BOOL LONG_CALL IsMegaSpecies(u32 mon, u32 form);
 
 /**
  *  @brief grab mega form of a specific species with specific item
@@ -3237,6 +3277,19 @@ BOOL LONG_CALL ov12_0224DD18(struct BattleStruct *ctx, ControllerCommand a1, Con
 
 // Possibly BattleController_CheckBattleOver
 BOOL LONG_CALL ov12_0224D7EC(struct BattleSystem *bsys, struct BattleStruct *ctx);
+
+/**
+ *  @brief at the end of the turn, ask for a replacement for every fainted battler that can still be replaced
+ *  https://github.com/pret/pokeheartgold/blob/6988158691eb6178cff697cda0428045ddcba5fb/src/battle/battle_controller_player.c#L3416
+ *  in EndTurn
+ *  @param bsys battle system structure
+ *  @param ctx global battle structure
+ *  @return TRUE if a replacement script was loaded
+ */
+BOOL LONG_CALL EndTurn_CheckIfReplacementsCanBeSendOut(struct BattleSystem *bsys, struct BattleStruct *ctx);
+
+// 0 = shift, 1 = set
+u32 LONG_CALL BattleSystem_GetBattleStyle(struct BattleSystem *bsys);
 
 // Possibly BattleController_ToggleSemiInvulnMons
 BOOL LONG_CALL ov12_0224E130(struct BattleSystem *bsys, struct BattleStruct *ctx);
@@ -3707,6 +3760,8 @@ BOOL LONG_CALL TryEatOpponentBerry(struct BattleSystem *bsys, struct BattleStruc
 
 BOOL LONG_CALL TryFling(struct BattleSystem *bsys, struct BattleStruct *ctx, int battlerId);
 
+BOOL LONG_CALL TryPluckBerry(struct BattleSystem *bsys, struct BattleStruct *sp, int battlerId);
+
 void LONG_CALL BattleController_EmitPlayFaintAnimation(struct BattleSystem *bsys, struct BattleStruct *ctx, int batlterId);
 
 void LONG_CALL InitFaintedWork(struct BattleSystem *bsys, struct BattleStruct *ctx, int battlerId);
@@ -3799,5 +3854,20 @@ PokepicManager LONG_CALL *BattleSystem_GetPokepicManager(struct BattleSystem *ba
 BOOL LONG_CALL sub_02017068(void *animManager, int battlerId);
 void LONG_CALL *ov12_0223B750(struct BattleSystem *battleSystem);
 void LONG_CALL ov12_022600F0(SysTask *task, void *data); // Task_PlayFaintingSequence
+
+/// @brief Check if ability causes Receiver and Power of Alchemy to fail
+/// @param ability
+/// @return `TRUE` or `FALSE`
+BOOL LONG_CALL AbilityNoReceiver(int ability);
+
+BOOL LONG_CALL IsBattlerOnField(struct BattleStruct *ctx, int battlerId);
+
+BOOL LONG_CALL AnyPendingSwitches(struct BattleSystem *bsys, struct BattleStruct *ctx);
+BOOL LONG_CALL BattlerFirstTurnOut(struct BattleStruct *ctx, int battlerId);
+
+BOOL LONG_CALL CanSwitchMon(struct BattleSystem *bsys, struct BattleStruct *ctx, int battlerId);
+
+void LONG_CALL InitSwitchWork(struct BattleSystem *bsys, struct BattleStruct *ctx, int battlerId);
+void LONG_CALL ov12_02256F78(struct BattleSystem *bsys, struct BattleStruct *ctx, int battlerId, u8 selectedMonIndex);
 
 #endif // BATTLE_H

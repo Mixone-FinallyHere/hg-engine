@@ -63,6 +63,7 @@ enum EndTurnResolutionOrder {
     ENDTURN_RESOLVE_SWITCHES_4,
     ENDTURN_FORM_CHANGE,
     ENDTURN_FOURTH_EVENT_BLOCK,
+    ENDTURN_RESOLVE_SWITCHES_5,
     ENDTURN_ION_DELUGE_FADING,
     ENDTURN_END,
 };
@@ -288,8 +289,14 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             debug_printf("In ENDTURN_RESOLVE_SWITCHES_1\n");
 
 #endif
-
+            if (AnyPendingSwitches(bw, sp)) {
+                LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_SHOW_PARTY_LIST);
+                sp->next_server_seq_no = sp->server_seq_no;
+                sp->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+                return;
+            }
             sp->fcc_seq_no++;
+
             break;
         }
         // TODO
@@ -630,8 +637,14 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             debug_printf("In ENDTURN_RESOLVE_SWITCHES_2\n");
 
 #endif
-
+            if (AnyPendingSwitches(bw, sp)) {
+                LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_SHOW_PARTY_LIST);
+                sp->next_server_seq_no = sp->server_seq_no;
+                sp->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+                return;
+            }
             sp->fcc_seq_no++;
+
             break;
         }
         case ENDTURN_AQUA_RING: {
@@ -712,7 +725,8 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
 
                 if ((sp->battlemon[battlerId].effect_of_moves & MOVE_EFFECT_FLAG_LEECH_SEED)
                     && (sp->battlemon[sp->battlemon[battlerId].effect_of_moves & MOVE_EFFECT_FLAG_LEECH_SEED_RECIPIENT].hp != 0)
-                    && (GetBattlerAbility(sp, battlerId) != ABILITY_MAGIC_GUARD && sp->battlemon[battlerId].hp != 0)) {
+                    && (GetBattlerAbility(sp, battlerId) != ABILITY_MAGIC_GUARD)
+                    && IsBattlerOnField(sp, battlerId)) {
                     sp->attack_client_work = sp->battlemon[battlerId].effect_of_moves & MOVE_EFFECT_FLAG_LEECH_SEED_RECIPIENT;
                     sp->defence_client_work = battlerId;
                     LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_LEECH_SEED_EFFECT);
@@ -739,14 +753,14 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             while (sp->scc_work < client_set_max) {
                 battlerId = sp->turnOrder[sp->scc_work];
 
-                if ((sp->battlemon[battlerId].condition & STATUS_POISON) && sp->battlemon[battlerId].hp != 0) {
+                if ((sp->battlemon[battlerId].condition & STATUS_POISON) && IsBattlerOnField(sp, battlerId)) {
                     sp->battlerIdTemp = battlerId;
                     sp->hp_calc_work = BattleDamageDivide(sp->battlemon[battlerId].maxhp * -1, 8);
                     LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_POISON_DAMAGE);
                     sp->next_server_seq_no = sp->server_seq_no;
                     sp->server_seq_no = 22;
                     ret = 1;
-                } else if ((sp->battlemon[battlerId].condition & STATUS_BAD_POISON) && sp->battlemon[battlerId].hp != 0) {
+                } else if ((sp->battlemon[battlerId].condition & STATUS_BAD_POISON) && IsBattlerOnField(sp, battlerId)) {
                     sp->battlerIdTemp = battlerId;
                     sp->hp_calc_work = BattleDamageDivide(sp->battlemon[battlerId].maxhp, 16);
                     if ((sp->battlemon[battlerId].condition & STATUS_POISON_COUNT) != STATUS_POISON_COUNT) {
@@ -779,7 +793,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             while (sp->scc_work < client_set_max) {
                 battlerId = sp->turnOrder[sp->scc_work];
 
-                if ((sp->battlemon[battlerId].condition & STATUS_BURN) && sp->battlemon[battlerId].hp != 0) {
+                if ((sp->battlemon[battlerId].condition & STATUS_BURN) && IsBattlerOnField(sp, battlerId)) {
                     sp->battlerIdTemp = battlerId;
                     LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_BURN_DAMAGE);
                     sp->next_server_seq_no = sp->server_seq_no;
@@ -806,7 +820,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             while (sp->scc_work < client_set_max) {
                 battlerId = sp->turnOrder[sp->scc_work];
 
-                if ((sp->battlemon[battlerId].condition2 & STATUS2_NIGHTMARE) && sp->battlemon[battlerId].hp != 0) {
+                if ((sp->battlemon[battlerId].condition2 & STATUS2_NIGHTMARE) && IsBattlerOnField(sp, battlerId)) {
                     if (sp->battlemon[battlerId].condition & STATUS_SLEEP) {
                         sp->battlerIdTemp = battlerId;
                         LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_NIGHTMARE_EFFECT);
@@ -837,7 +851,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             while (sp->scc_work < client_set_max) {
                 battlerId = sp->turnOrder[sp->scc_work];
 
-                if ((sp->battlemon[battlerId].condition2 & STATUS2_CURSE) && sp->battlemon[battlerId].hp != 0) {
+                if ((sp->battlemon[battlerId].condition2 & STATUS2_CURSE) && IsBattlerOnField(sp, battlerId)) {
                     sp->battlerIdTemp = battlerId;
                     LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_CURSE_DAMAGE);
                     sp->next_server_seq_no = sp->server_seq_no;
@@ -864,7 +878,7 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             while (sp->scc_work < client_set_max) {
                 battlerId = sp->turnOrder[sp->scc_work];
 
-                if (sp->binding_turns[battlerId] && sp->battlemon[battlerId].hp != 0) {
+                if (sp->binding_turns[battlerId] && IsBattlerOnField(sp, battlerId)) {
                     // sp->battlemon[battlerId].condition2 -= 1 << 13;
                     sp->binding_turns[battlerId]--;
                     if (sp->binding_turns[battlerId]) {
@@ -1229,8 +1243,14 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             debug_printf("In ENDTURN_RESOLVE_SWITCHES_3\n");
 
 #endif
-
+            if (AnyPendingSwitches(bw, sp)) {
+                LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_SHOW_PARTY_LIST);
+                sp->next_server_seq_no = sp->server_seq_no;
+                sp->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+                return;
+            }
             sp->fcc_seq_no++;
+
             break;
         }
         case ENDTURN_SECOND_EVENT_BLOCK: {
@@ -1653,7 +1673,8 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                             sp->addeffect_param = MOVE_SUBSCRIPT_PTR_SPEED_UP_1_STAGE;
                             sp->addeffect_type = SIDE_EFFECT_TYPE_ABILITY;
                             sp->state_client = battlerId;
-                            seq_no = BATTLE_SUBSCRIPT_UPDATE_STAT_STAGE;
+                            sp->battlerIdTemp = battlerId;
+                            seq_no = BATTLE_SUBSCRIPT_HANDLE_ABILITY_STAT_CHANGE;
                             ret = TRUE;
                         }
                         break;
@@ -1812,8 +1833,14 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
             debug_printf("In ENDTURN_RESOLVE_SWITCHES_4\n");
 
 #endif
-
+            if (AnyPendingSwitches(bw, sp)) {
+                LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_SHOW_PARTY_LIST);
+                sp->next_server_seq_no = sp->server_seq_no;
+                sp->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+                return;
+            }
             sp->fcc_seq_no++;
+
             break;
         }
         // TODO
@@ -1867,25 +1894,28 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
 #ifdef DEBUG_ENDTURN_LOGIC
                     debug_printf("In FOURTH_EVENT_BLOCK_EJECT_PACK\n", NULL);
 #endif
+                    sp->endTurnEventBlockSequenceNumber++;
 
-                    /*
-                    if (HeldItemHoldEffectGet(sp, battlerId) == HOLD_EFFECT_SWITCH_OUT_ON_STAT_DROP) {
-                        int stat;
-                        for (stat = 0; stat < 8; stat++) {
-                            if (sp->battlemon[battlerId].states[stat] < 6) {
-                                sp->battlemon[battlerId].states[stat] = 6;
-                                ret = TRUE;
+                    if (HeldItemHoldEffectGet(sp, battlerId) == HOLD_EFFECT_SWITCH_OUT_ON_STAT_DROP
+                        && !sp->ejectPackActivated
+                        && CanSwitchMon(bw, sp, battlerId)) {
+                        if (sp->moveConditionsFlags[battlerId].ejectPackFlag) {
+                            for (int ll = 0; ll < client_set_max; ll++) {
+                                sp->moveConditionsFlags[ll].ejectPackFlag = 0;
                             }
-                        }
-                        if (ret == TRUE) {
+                            sp->ejectPackActivated = TRUE;
+                            sp->addeffect_type = SIDE_EFFECT_TYPE_NONE;
+                            sp->battlerIdTemp = battlerId;
+                            sp->state_client = battlerId;
+
                             LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_HANDLE_SWITCHING_ITEMS);
                             sp->next_server_seq_no = sp->server_seq_no;
                             sp->server_seq_no = 22;
+                            ret = 1;
+                            break;
                         }
                     }
-                    */
 
-                    sp->endTurnEventBlockSequenceNumber++;
                     break;
                 }
                 case FOURTH_EVENT_BLOCK_END: {
@@ -1904,6 +1934,21 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                 sp->scc_work = 0;
                 sp->fcc_seq_no++;
             }
+
+            break;
+        }
+        case ENDTURN_RESOLVE_SWITCHES_5: {
+#ifdef DEBUG_ENDTURN_LOGIC
+            debug_printf("In ENDTURN_RESOLVE_SWITCHES_5\n");
+
+#endif
+            if (AnyPendingSwitches(bw, sp)) {
+                LoadBattleSubSeqScript(sp, ARC_BATTLE_SUB_SEQ, BATTLE_SUBSCRIPT_SHOW_PARTY_LIST);
+                sp->next_server_seq_no = sp->server_seq_no;
+                sp->server_seq_no = CONTROLLER_COMMAND_RUN_SCRIPT;
+                return;
+            }
+            sp->fcc_seq_no++;
 
             break;
         }
@@ -1952,10 +1997,13 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                 sp->moveConditionsFlags[i].moveFailureLastTurn = sp->moveConditionsFlags[i].moveFailureThisTurn;
                 sp->moveConditionsFlags[i].moveFailureThisTurn = 0;
                 sp->moveConditionsFlags[i].powderBlockingFireMove = 0;
+                sp->moveConditionsFlags[i].usedRagePowder = 0;
                 if (sp->moveConditionsFlags[i].laserFocusTimer > 0) {
                     sp->moveConditionsFlags[i].laserFocusTimer--;
                 }
                 sp->moveConditionsFlags[i].anyStatLoweredThisTurn = 0;
+                sp->moveConditionsFlags[i].ejectPackFlag = 0;
+
                 if (sp->moveConditionsFlags[i].throatChopTimer > 0) {
                     sp->moveConditionsFlags[i].throatChopTimer--;
                 }
@@ -1963,12 +2011,20 @@ void ServerFieldConditionCheck(void *bw, struct BattleStruct *sp)
                 sp->moveConditionsFlags[i].endure = 0;
                 sp->moveConditionsFlags[i].mindBlownOrSteelBeam = 0;
                 sp->moveProtect[i] = 0;
+
+                if (sp->moveConditionsFlags[i].firstTurnOut > 0) {
+                    sp->moveConditionsFlags[i].firstTurnOut--;
+                }
             }
 
             sp->playerSideHasFaintedTeammateLastTurn = sp->playerSideHasFaintedTeammateThisTurn;
             sp->enemySideHasFaintedTeammateLastTurn = sp->enemySideHasFaintedTeammateThisTurn;
             sp->playerSideHasFaintedTeammateThisTurn = 0;
             sp->enemySideHasFaintedTeammateThisTurn = 0;
+
+            sp->ejectPackActivated = FALSE;
+            sp->currentMoveSwitchStatus = CURRENT_MOVE_NO_SWITCH;
+
             ret = 2;
             break;
         }

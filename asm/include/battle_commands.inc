@@ -1547,10 +1547,11 @@
     .long (((\arg_0 - .) / 4) - 1)
     .endm
 
-    .macro TryCureStatusBerry arg_0, arg_1
+    .macro TryEatBerry arg_0, arg_1, arg_2
     .long 283
     .long \arg_0
-    .long (((\arg_1 - .) / 4) - 1)
+    .long \arg_1
+    .long (((\arg_2 - .) / 4) - 1)
     .endm
 
     .macro BatchUpdateHealthBar
@@ -1633,7 +1634,25 @@
     .long (((\arg_2 - .) / 4) - 1)
     .endm
 
-    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 298
+    .macro TryActivateReceiver arg_0, arg_1
+    .long 299
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro TryActivateEmergencyExit arg_0, arg_1
+    .long 300
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .macro TryClearUnnerve arg_0, arg_1
+    .long 301
+    .long \arg_0
+    .long (((\arg_1 - .) / 4) - 1)
+    .endm
+
+    .equ BASE_ENGINE_BTL_SCR_CMDS_MAX, 301
 
     // .macro YourCustomCommand
     // .long (BASE_ENGINE_BTL_SCR_CMDS_MAX + 1)

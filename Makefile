@@ -159,6 +159,7 @@ config_enabled = $(shell grep -E -c '^[[:space:]]*\#define[[:space:]]+$(1)[[:spa
 
 BUILD_DUMPED_EVENTDATA := $(call config_enabled,BUILD_DUMPED_EVENTDATA)
 BUILD_DUMPED_SCR_SEQ := $(call config_enabled,BUILD_DUMPED_SCR_SEQ)
+IMPLEMENT_TRANSPARENT_TEXTBOXES := $(call config_enabled,IMPLEMENT_TRANSPARENT_TEXTBOXES)
 
 ## includes
 include data/graphics/pokegra.mk
@@ -257,7 +258,7 @@ $(MOVEDATAGEN): $(wildcard tools/source/movedatagen/*.c) data/Moves.c include/mo
 
 TOOLS += $(MOVEDATAGEN)
 
-$(POKEDEXDATAGEN): $(wildcard tools/source/pokedexdatagen/*.c) data/PokedexSort.c data/PokedexArea.c include/pokedex_archive_data.h include/constants/pokedex.h
+$(POKEDEXDATAGEN): $(wildcard tools/source/pokedexdatagen/*.c) data/PokedexSort.c data/PokedexArea.c data/RegionalDex.c include/pokedex_archive_data.h include/constants/pokedex.h include/constants/species.h
 	cd tools/source/pokedexdatagen ; $(MAKE) clean; $(MAKE)
 
 TOOLS += $(POKEDEXDATAGEN)
@@ -337,7 +338,7 @@ $(OUTPUT):$(LINK)
 
 # only reextract from the rom if the romname is newer than the extracted arm9.bin
 ifeq ($(ROM_TOOL),$(DSROM))
-$(BASE)/arm9.bin: $(ROMNAME) $(DSROM) $(VENV_ACTIVATE)
+$(BASE)/arm9.bin: $(ROMNAME) $(DSROM) $(VENV_ACTIVATE) scripts/dsrom_bridge.py
 	rm -rf $(BASE) $(BASE)_dsrom
 	@mkdir -p $(REQUIRED_DIRECTORIES)
 	$(DSROM_BRIDGE) extract --rom $(ROMNAME)
@@ -394,7 +395,7 @@ clean_code:
 	rm -f $(ALL_CODE_OBJS) $(LINKED_OUTPUTS) $(OUTPUT) $(OVERLAY_OUTPUTS) $(BUILD)/rom_gen.ld $(BUILD)/rom_gen_battle.ld
 
 ####################### Final ROM Build #######################
-CODE_ADDON_ARTIFACTS := $(wildcard $(BUILD)/a028/9_*) $(wildcard $(BUILD)/a028/8_1*) $(wildcard build/$(BUILD)/8_2*) $(BUILD)/a028/8_07 $(BUILD)/a028/8_08 $(BUILD)/a028/8_09
+CODE_ADDON_ARTIFACTS := $(wildcard $(BUILD)/a028/9_*) $(wildcard $(BUILD)/a028/8_1*) $(wildcard $(BUILD)/a028/8_2*) $(BUILD)/a028/8_07 $(BUILD)/a028/8_08 $(BUILD)/a028/8_09
 CODE_ADDON_ARTIFACTS := $(filter-out $(BUILD)/a028/8_1 $(BUILD)/a028/8_2 $(BUILD)/a028/8_3 $(BUILD)/a028/8_4 $(BUILD)/a028/8_5 $(BUILD)/a028/8_6, $(CODE_ADDON_ARTIFACTS))
 
 move_narc: $(NARC_FILES)
@@ -514,11 +515,13 @@ endif
 	@echo "pokewalker icons:"
 	cp $(PW_POKEICON_NARC) $(PW_POKEICON_TARGET)
 
+ifneq ($(IMPLEMENT_TRANSPARENT_TEXTBOXES),0)
 	@echo "font:"
-	if [ $$(grep -i -c "//#define IMPLEMENT_TRANSPARENT_TEXTBOXES" $(INCLUDE_SUBDIR)/config.h) -eq 0 ]; then cp $(FONT_NARC) $(FONT_TARGET); fi
+	cp $(FONT_NARC) $(FONT_TARGET)
 
 	@echo "textbox:"
-	if [ $$(grep -i -c "//#define IMPLEMENT_TRANSPARENT_TEXTBOXES" $(INCLUDE_SUBDIR)/config.h) -eq 0 ]; then cp $(TEXTBOX_NARC) $(TEXTBOX_TARGET); fi
+	cp $(TEXTBOX_NARC) $(TEXTBOX_TARGET)
+endif
 
 ifneq ($(strip $(SCR_SEQ_OBJS)),)
 	@echo "scripts:"
@@ -591,6 +594,9 @@ endif
 
 	@echo "ability flag params:"
 	cp $(ABILITY_FLAG_PARAMS_BIN) $(ABILITY_FLAG_PARAMS_TARGET)
+
+	@echo "machine moves:"
+	cp $(MACHINE_MOVES_PARAMS_BIN) $(MACHINE_MOVES_PARAMS_TARGET)
 
 update_machine_moves: $(VENV_ACTIVATE)
 	$(PYTHON) scripts/update_machine_moves.py --descriptions --sprites
